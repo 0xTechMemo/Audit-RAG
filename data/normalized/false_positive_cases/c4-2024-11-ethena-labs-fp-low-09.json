@@ -1,0 +1,26 @@
+{
+  "id": "c4-2024-11-ethena-labs-fp-low-09",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "protocol_name": "Ethena Labs",
+  "issue_claim": "Non-blacklisted addresses can’t burn UStb tokens in a FULLY_ENABLED transfer state if address(0) is blaklisted",
+  "why_it_looked_bad": "- Only non-blacklisted addresses can send/receive/burn UStb tokens in a FULLY_ENABLED transfer state.",
+  "why_not_valid": "address(0) blacklist interaction is a configuration edge case that blocks burns rather than enabling unauthorized asset extraction",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "address(0) blacklist interaction is a configuration edge case that blocks burns rather than enabling unauthorized asset extraction",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "blacklist",
+    "zero-address",
+    "burn",
+    "configuration-edge-case",
+    "minting",
+    "access-control",
+    "token-transfer"
+  ]
+}

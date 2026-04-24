@@ -20,11 +20,11 @@
   ],
   "finding_title": "Malicious users can front-run to cause a denial of service (DoS) for StakedUSDe due to MinShares checks",
   "summary": "Malicious users can transfer USDe token to StakedUSDe protocol directly lead to a denial of service (DoS) for StakedUSDe due to the limit shares check.",
-  "root_cause": "Report-described logic/accounting flaw: Malicious users can transfer USDe token to StakedUSDe protocol directly lead to a denial of service (DoS) for StakedUSDe due to the limit shares check.",
+  "root_cause": "ERC4626 donation/inflation edge case: direct asset transfers skew share math so minShares checks can revert otherwise valid deposits",
   "broken_invariants": [
-    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The minting-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The token flow should preserve protocol accounting, authorization, and user fund invariants."
+    "direct underlying-token donations to the vault must not let an attacker make normal deposits fail their minimum-share checks",
+    "share minting safeguards must tolerate unsolicited asset balance changes or enforce a minimum deposit that makes rounding griefing uneconomic",
+    "vault accounting must distinguish intended deposits from direct token transfers when enforcing slippage/min-share constraints"
   ],
   "attack_preconditions": [
     "the affected code version and configuration match the public report",
@@ -102,17 +102,12 @@
     }
   ],
   "tags": [
-    "staking",
-    "withdrawal",
-    "minting",
+    "erc4626",
+    "donation-attack",
     "share-accounting",
-    "access-control",
-    "denial-of-service",
     "rounding",
-    "decimal-conversion",
-    "token-transfer",
-    "usde",
-    "ethena",
-    "medium"
+    "min-shares",
+    "denial-of-service",
+    "deposit"
   ]
 }

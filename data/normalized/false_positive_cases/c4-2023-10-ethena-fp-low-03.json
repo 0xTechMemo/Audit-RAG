@@ -1,0 +1,27 @@
+{
+  "id": "c4-2023-10-ethena-fp-low-03",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "protocol_name": "Ethena",
+  "issue_claim": "Delta neutrality caution",
+  "why_it_looked_bad": "Users should be cautioned about the impermanent losses entailed arising from the delta-neutral stability strategy adopted by the protocol, specifically if the short positions were to encounter hefty losses. Apparently, the users could have held on to their collateral, e.g. stETH or WETH, and ended up a lot richer with the equivalent amount of USDe. I suggest all minting entries to begin with stable coins like USDC, DAI etc that could be converted to stETH to generate yield if need be instead of having users depositing stETH from their wallet reserves. Psychologically, this will make the users feel better as the mentality has been fostered more on preserving the 1:1 peg of USDe at all times.",
+  "why_not_valid": "delta-neutrality is an operational/market-risk caution rather than a concrete on-chain exploit path",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "delta-neutrality is an operational/market-risk caution rather than a concrete on-chain exploit path",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "delta-neutrality",
+    "market-risk",
+    "operational-assumption",
+    "risk-model",
+    "minting",
+    "collateral",
+    "yield-accounting",
+    "usde"
+  ]
+}

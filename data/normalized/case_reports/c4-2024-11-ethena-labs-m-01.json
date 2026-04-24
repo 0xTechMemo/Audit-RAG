@@ -18,10 +18,11 @@
   ],
   "finding_title": "Blacklisted user can burn tokens during WHITELIST_ENABLED state",
   "summary": "Blacklisted user can burn tokens during WHITELIST_ENABLED state. This breaks the main invariant from the README. This could become an issue when the admin tries to redistribute the blacklisted user’s UStb balance using redistributeLockedAmount() but the blacklisted user frontruns it with a burn.",
-  "root_cause": "Report-described logic/accounting flaw: Blacklisted user can burn tokens during WHITELIST_ENABLED state. This breaks the main invariant from the README. This could become an issue when the admin tries to redistribute the blacklisted user’s UStb balance using redistributeLockedAmount() but the blacklisted user frontruns it with a burn.",
+  "root_cause": "whitelist-mode burn path checks WHITELISTED_ROLE but not BLACKLISTED_ROLE, allowing dual-role blacklisted users to burn before redistribution",
   "broken_invariants": [
-    "The collateral-management flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The token flow should preserve protocol accounting, authorization, and user fund invariants."
+    "a blacklisted account must not be able to dispose of locked UStb by burning while blacklist enforcement is active",
+    "whitelist mode must not override blacklist restrictions when an address accidentally or operationally holds both roles",
+    "redistributeLockedAmount must not be front-runnable by the blacklisted holder through an allowed burn path"
   ],
   "attack_preconditions": [
     "the affected code version and configuration match the public report",
@@ -79,11 +80,12 @@
     }
   ],
   "tags": [
-    "collateral",
-    "access-control",
+    "access-control-bypass",
     "blacklist",
-    "token-transfer",
-    "ethena",
-    "medium"
+    "whitelist",
+    "dual-role-conflict",
+    "burn",
+    "locked-funds",
+    "token-transfer"
   ]
 }

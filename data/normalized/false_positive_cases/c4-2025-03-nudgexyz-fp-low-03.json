@@ -1,0 +1,27 @@
+{
+  "id": "c4-2025-03-nudgexyz-fp-low-03",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz#low-risk-and-non-critical-issues",
+  "protocol_name": "Nudge.xyz",
+  "issue_claim": "Missing UUID uniqueness validation in campaign deployment",
+  "why_it_looked_bad": "NudgeCampaignFactory does not enforce uniqueness of campaign UUIDs in deployCampaign or deployAndFundCampaign. CREATE2 may still produce unique addresses because other salt inputs differ, but duplicated UUIDs can confuse off-chain tracking, analytics, or integrations that rely on UUID as a unique identifier.",
+  "why_not_valid": "admin/configuration issue should not be escalated without untrusted reachability or direct reward-loss mechanics",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "admin/configuration issue should not be escalated without untrusted reachability or direct reward-loss mechanics",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if UUIDs are used for authorization, reward attribution, or settlement outside the contract",
+    "if integrators treat UUID as a unique primary key",
+    "if campaign creation is delegated to untrusted parties"
+  ],
+  "tags": [
+    "configuration-risk",
+    "admin-trust",
+    "campaign",
+    "uuid",
+    "off-chain-indexing",
+    "campaign-factory",
+    "identifier-uniqueness"
+  ]
+}

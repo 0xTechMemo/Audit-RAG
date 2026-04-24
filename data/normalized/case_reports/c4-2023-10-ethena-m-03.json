@@ -26,11 +26,11 @@
   ],
   "finding_title": "users still forced to follow previously set cooldownDuration even when cooldown is off (set to zero) before unstaking",
   "summary": "The StakedUSDeV2 contract can enforces coolDown periods for users before they are able to unstake/ take out their funds from the silo contract if coolDown is on. Based on the presence of the modifiers ensureCooldownOff and ensureCooldownOn, it is known that the coolDown state of the StakedUSDeV2 contract can be toggled on or off. In a scenario where coolDown is on (always turned on by default) and Alice and Bob deposits, two days after Alice wants to withdraw/redeem. Alice is forced to wait for 90 days before completing withdrawal/getting her tokens from the silo contract because Alice must call coolDownAsset()/coolDownShares() fcns respectively. Bob decides to wait an extra day.",
-  "root_cause": "Report-described logic/accounting flaw: The StakedUSDeV2 contract can enforces coolDown periods for users before they are able to unstake/ take out their funds from the silo contract if coolDown is on. Based on the presence of the modifiers ensureCooldownOff and ensureCooldownOn, it is known that the coolDown state of the StakedUSDeV2 contract can be toggled on or off. In a scenario where coolDown is on (always turned on by default) and Alice and Bob deposits, two days after Alice wants to withdraw/redeem. Alice is forced to wait for 90 days before completing withdrawal/getting her tokens from the silo contract because Alice must ca",
+  "root_cause": "cooldown state transition bug: unstake requires a per-user cooldown expiry even after global cooldownDuration is set to zero",
   "broken_invariants": [
-    "The staking flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants."
+    "when global cooldown is disabled, previously cooled-down users should be able to exit without waiting for stale per-user cooldown timestamps",
+    "admin changes to the global cooldown mode must be reflected consistently by all unstake/withdraw paths",
+    "stored user cooldown records must not keep funds locked after the protocol has turned cooldown off"
   ],
   "attack_preconditions": [
     "the affected code version and configuration match the public report",
@@ -108,18 +108,11 @@
     }
   ],
   "tags": [
-    "staking",
-    "withdrawal",
-    "minting",
-    "redemption",
-    "reward-accounting",
-    "share-accounting",
-    "access-control",
-    "blacklist",
     "cooldown",
-    "usde",
-    "susde",
-    "ethena",
-    "medium"
+    "state-transition",
+    "withdrawal-lock",
+    "stale-user-state",
+    "admin-configuration",
+    "availability"
   ]
 }

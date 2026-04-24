@@ -24,11 +24,11 @@
   ],
   "finding_title": "FULL_RESTRICTED Stakers can bypass restriction through approvals",
   "summary": "The StakedUSDe contract implements a method to SOFTLY or FULLY restrict user address, and either transfer to another user or burn.",
-  "root_cause": "Report-described logic/accounting flaw: The StakedUSDe contract implements a method to SOFTLY or FULLY restrict user address, and either transfer to another user or burn.",
+  "root_cause": "auth-bypass via missing owner check in ERC4626 _withdraw, allowing approval-based withdrawal to bypass FULL_RESTRICTED enforcement",
   "broken_invariants": [
-    "The staking flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants."
+    "a FULL_RESTRICTED staker must not be able to move value out through either direct calls or allowance-mediated ERC4626 withdraw/redeem paths",
+    "restriction checks must cover caller, receiver, and token owner because ERC4626 allows approved third parties to withdraw on behalf of an owner",
+    "approval-based flows must not create an alternate path around compliance transfer restrictions"
   ],
   "attack_preconditions": [
     "the affected code version and configuration match the public report",
@@ -106,20 +106,12 @@
     }
   ],
   "tags": [
-    "staking",
-    "withdrawal",
-    "minting",
-    "redemption",
-    "reward-accounting",
-    "share-accounting",
-    "access-control",
-    "blacklist",
-    "gas-dos",
-    "rounding",
-    "token-transfer",
-    "usde",
-    "susde",
-    "ethena",
-    "medium"
+    "erc4626",
+    "access-control-bypass",
+    "restriction-bypass",
+    "allowance-mediated-withdrawal",
+    "owner-validation",
+    "compliance-controls",
+    "withdrawal"
   ]
 }

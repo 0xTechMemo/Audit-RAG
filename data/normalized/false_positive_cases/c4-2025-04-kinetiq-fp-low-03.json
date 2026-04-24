@@ -1,0 +1,24 @@
+{
+  "id": "c4-2025-04-kinetiq-fp-low-03",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Kinetiq Findings and Analysis Report (2025-04) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2025-04-kinetiq#low-risk-and-non-critical-issues",
+  "protocol_name": "Kinetiq",
+  "issue_claim": "Unbounded Oracle Iteration",
+  "why_it_looked_bad": "The function iterates over the authorizedOracles array without an upper bound, risking high gas costs or transaction failures if the list grows excessively large.",
+  "why_not_valid": "unbounded oracle iteration is primarily gas/availability hygiene unless oracle set growth can be attacker-controlled and blocks critical updates",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "unbounded oracle iteration is primarily gas/availability hygiene unless oracle set growth can be attacker-controlled and blocks critical updates",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access, stale oracle data, or large unbounded sets",
+    "if protocol configuration makes this path critical to solvency or withdrawal availability"
+  ],
+  "tags": [
+    "unbounded-loop",
+    "oracle",
+    "gas-risk",
+    "availability",
+    "gas-dos"
+  ]
+}

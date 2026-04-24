@@ -24,11 +24,11 @@
   ],
   "finding_title": "Soft Restricted Staker Role can withdraw stUSDe for USDe",
   "summary": "A requirement is stated that a user with the SOFT_RESTRICTED_STAKER_ROLE is not allowed to withdraw USDe for stUSDe.",
-  "root_cause": "Report-described logic/accounting flaw: A requirement is stated that a user with the SOFT_RESTRICTED_STAKER_ROLE is not allowed to withdraw USDe for stUSDe.",
+  "root_cause": "restriction logic only blocks FULL_RESTRICTED users in _withdraw and omits SOFT_RESTRICTED callers, allowing soft-restricted stakers to redeem stUSDe for USDe",
   "broken_invariants": [
-    "The staking flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants."
+    "a SOFT_RESTRICTED staker must not be able to withdraw or redeem stUSDe into USDe while the restriction is active",
+    "all exit paths that convert staked shares into the underlying asset must enforce the same soft-restriction policy",
+    "role-based transfer restrictions must be applied at the asset conversion boundary, not only at ordinary token transfer boundaries"
   ],
   "attack_preconditions": [
     "the affected code version and configuration match the public report",
@@ -106,20 +106,12 @@
     }
   ],
   "tags": [
-    "staking",
-    "withdrawal",
-    "minting",
+    "erc4626",
+    "access-control-bypass",
+    "soft-restriction",
     "redemption",
-    "reward-accounting",
-    "share-accounting",
-    "access-control",
-    "blacklist",
-    "cooldown",
-    "rounding",
-    "token-transfer",
-    "yield-accounting",
-    "usde",
-    "ethena",
-    "medium"
+    "withdrawal",
+    "role-enforcement",
+    "compliance-controls"
   ]
 }

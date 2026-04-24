@@ -1,0 +1,25 @@
+{
+  "id": "c4-2024-11-ethena-labs-fp-low-11",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "protocol_name": "Ethena Labs",
+  "issue_claim": "There is no function available to transfer UStb from unwhitelisted users to whitelisted users.",
+  "why_it_looked_bad": "The redistributeLockedAmount() function facilitates the transfer of UStb from a blacklisted user to an unblacklisted user. However, when the state is WHITELIST_ENABLED, there is no mechanism in place to transfer UStb from an unwhitelisted user to a whitelisted user.",
+  "why_not_valid": "missing helper to move balances from unwhitelisted to whitelisted users is an operational limitation, not an exploitable invariant break by itself",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "missing helper to move balances from unwhitelisted to whitelisted users is an operational limitation, not an exploitable invariant break by itself",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "whitelist",
+    "operational-limitation",
+    "token-transfer",
+    "minting",
+    "access-control",
+    "blacklist"
+  ]
+}

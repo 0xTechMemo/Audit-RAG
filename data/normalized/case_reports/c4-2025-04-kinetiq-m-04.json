@@ -22,11 +22,11 @@
   ],
   "finding_title": "Processing all withdrawals before all deposits can cause some deposit to not be delegated in processL1Operations",
   "summary": "The way withdrawals and deposits are processed in processL1Operations (all withdrawals requests first, then all deposits) can lead in some cases, to balance not being delegated, which ultimately reduce earned rewards from validator, making the vault less profitable than expected.",
-  "root_cause": "Report-described logic/accounting flaw: The way withdrawals and deposits are processed in processL1Operations (all withdrawals requests first, then all deposits) can lead in some cases, to balance not being delegated, which ultimately reduce earned rewards from validator, making the vault less profitable than expected.",
+  "root_cause": "processL1Operations batches all withdrawals before deposits instead of netting opposing flows, leaving some deposited HYPE undelegated and reducing yield",
   "broken_invariants": [
-    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
-    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
-    "The validator-management accounting/control flow should preserve user funds and protocol solvency."
+    "same-batch deposits and withdrawals should be netted where possible before issuing L1 operations",
+    "processing order must not leave stakeable funds idle when offsetting withdrawal demand exists in the same batch",
+    "L1 operation batching should preserve expected validator delegation and yield efficiency"
   ],
   "attack_preconditions": [
     "Protocol state reaches the report-described edge case or queue configuration",
@@ -59,14 +59,11 @@
     }
   ],
   "tags": [
-    "kinetiq",
-    "staking",
-    "withdrawal",
+    "batch-processing",
+    "operation-ordering",
+    "deposit-withdrawal-netting",
     "delegation",
-    "l1-integration",
-    "queue-processing",
-    "gas-dos",
-    "validator-management",
-    "medium"
+    "yield-loss",
+    "l1-operations"
   ]
 }

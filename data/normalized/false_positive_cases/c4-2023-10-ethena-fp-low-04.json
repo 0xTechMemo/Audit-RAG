@@ -1,0 +1,26 @@
+{
+  "id": "c4-2023-10-ethena-fp-low-04",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "protocol_name": "Ethena",
+  "issue_claim": "Easy DoS on big players when minting and redeeming in EthenaMinting.sol",
+  "why_it_looked_bad": "As indicated on the audit description, users intending to mint/redeem a large amount will need to mint/redeem over several blocks due to maxMintPerBlock or maxRedeemPerBlock. However, these RFQ’s are prone to DoS because mintedPerBlock[block.number] + mintAmount > maxMintPerBlock or redeemedPerBlock[block.number] + redeemAmount > maxRedeemPerBlock could revert by only 1 wei in excess.",
+  "why_not_valid": "large-player mint/redeem DoS requires size-dependent operational conditions and was judged as low-risk rather than a direct protocol-wide HM exploit",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "large-player mint/redeem DoS requires size-dependent operational conditions and was judged as low-risk rather than a direct protocol-wide HM exploit",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "denial-of-service",
+    "minting",
+    "redemption",
+    "large-position",
+    "operational-limit",
+    "signature-validation",
+    "queue-processing"
+  ]
+}

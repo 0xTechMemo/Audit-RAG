@@ -1,0 +1,28 @@
+{
+  "id": "c4-2024-11-ethena-labs-fp-low-12",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "protocol_name": "Ethena Labs",
+  "issue_claim": "The _beforeTokenTransfer() function does not verify whether addresses are whitelisted when WHITELIST_ENABLED is set.",
+  "why_it_looked_bad": "As noted in line 191, the function only checks if the address to is not blacklisted. Consequently, unwhitelisted users can still receive UStb when WHITELIST_ENABLED is active. This issue appears in several locations.",
+  "why_not_valid": "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "whitelist",
+    "token-transfer",
+    "role-check",
+    "downgrade-reference",
+    "minting",
+    "redemption",
+    "reward-accounting",
+    "access-control",
+    "blacklist"
+  ]
+}

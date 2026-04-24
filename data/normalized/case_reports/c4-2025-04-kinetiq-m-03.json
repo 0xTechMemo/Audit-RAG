@@ -21,11 +21,11 @@
   ],
   "finding_title": "Inconsistent State Restoration in cancelWithdrawal Function",
   "summary": "The cancelWithdrawal function in StakingManager.sol does not properly restore the contract’s internal state when a withdrawal request is canceled. Specifically, during a withdrawal initiated via queueWithdrawal, the _withdrawFromValidator function may:",
-  "root_cause": "The cancelWithdrawal function in StakingManager.sol does not properly restore the contract’s internal state when a withdrawal request is canceled. Specifically, during a withdrawal initiated via queueWithdrawal, the _withdrawFromValidator function may: - Deduct from the hypeBuffer state variable if sufficient liquidity is available. - Append a PendingOperation to the _pendingWithdrawals array for any remaining amount to be processed on L1 if hypeBuffer is insufficient. When a manager calls cancelWithdrawal to cancel a user’s withdrawal request, the function: - Refunds the user’s kHYPE (includi",
+  "root_cause": "cancelWithdrawal returns kHYPE but does not fully roll back buffer deductions or pending withdrawal queue state created by queueWithdrawal",
   "broken_invariants": [
-    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
-    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
-    "The validator-management accounting/control flow should preserve user funds and protocol solvency."
+    "cancelling a withdrawal must restore every accounting bucket changed by queueWithdrawal and _withdrawFromValidator",
+    "pending L1 withdrawal operations associated with a cancelled request must be removed, marked cancelled, or reconciled",
+    "the user-visible cancellation result and internal buffer/pending-operation state must remain synchronized"
   ],
   "attack_preconditions": [
     "Protocol state reaches the report-described edge case or queue configuration",
@@ -58,17 +58,11 @@
     }
   ],
   "tags": [
-    "kinetiq",
-    "staking",
-    "withdrawal",
+    "withdrawal-cancellation",
+    "state-restoration",
     "buffer-accounting",
-    "l1-integration",
-    "queue-processing",
-    "gas-dos",
-    "event-emission",
-    "validator-management",
-    "minting",
-    "access-control",
-    "medium"
+    "pending-operation",
+    "accounting-desync",
+    "l1-queue"
   ]
 }

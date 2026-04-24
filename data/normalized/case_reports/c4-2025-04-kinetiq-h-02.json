@@ -21,11 +21,11 @@
   ],
   "finding_title": "Users Who Queue Withdrawal Before A Slashing Event Disadvantage Users Who Queue After And Eventually Leads To Loss Of Funds For Them",
   "summary": "Lets take the scenario where the HYPE to KHYPE exchange is 1 KHYPE = 1.5 KHYPE.",
-  "root_cause": "Report-described logic/accounting flaw: Lets take the scenario where the HYPE to KHYPE exchange is 1 KHYPE = 1.5 KHYPE.",
+  "root_cause": "withdrawal confirmation uses a queued snapshot hypeAmount instead of recalculating claim value with the current exchange rate after slashing",
   "broken_invariants": [
-    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
-    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
-    "The validator-management accounting/control flow should preserve user funds and protocol solvency."
+    "queued withdrawals must share post-queue slashing losses consistently with remaining and later-withdrawing holders",
+    "confirmWithdrawal must not pay a stale pre-slash HYPE amount when the kHYPE/HYPE exchange rate has changed",
+    "withdrawal request snapshots must not let early queueing users extract value from users who queue after a slash"
   ],
   "attack_preconditions": [
     "Protocol state reaches the report-described edge case or queue configuration",
@@ -58,16 +58,11 @@
     }
   ],
   "tags": [
-    "kinetiq",
-    "staking",
-    "withdrawal",
     "slashing",
     "exchange-rate",
-    "pause-control",
-    "l1-integration",
-    "queue-processing",
-    "event-emission",
-    "validator-management",
-    "high"
+    "withdrawal-accounting",
+    "snapshot-staleness",
+    "loss-socialization",
+    "share-accounting"
   ]
 }

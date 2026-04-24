@@ -1,0 +1,26 @@
+{
+  "id": "c4-2024-11-ethena-labs-fp-low-10",
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "protocol_name": "Ethena Labs",
+  "issue_claim": "The redistributeLockedAmount() function does not verify if the address to possesses the WHITELISTED_ROLE when WHITELIST_ENABLED.",
+  "why_it_looked_bad": "When the state is WHITELIST_ENABLED, only addresses with the WHITELISTED_ROLE are permitted to receive UStb. However, in the redistributeLockedAmount() function, the only check performed is to ensure that the address to does not have the BLACKLISTED_ROLE. Consequently, redistribution to an unwhitelisted address is allowed.",
+  "why_not_valid": "redistribution whitelist omission matters under admin-controlled redistribution assumptions and lacks a standalone permissionless exploit path",
+  "classification": "low-or-non-critical-downgrade-reference",
+  "downgrade_reason": "redistribution whitelist omission matters under admin-controlled redistribution assumptions and lacks a standalone permissionless exploit path",
+  "trust_assumption": "Treat as a caution/false-positive reference unless the current target shows permissionless reachability, direct value loss, and concrete affected code path.",
+  "when_it_could_be_real": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "redistribution",
+    "whitelist",
+    "admin-operation",
+    "blacklist",
+    "minting",
+    "access-control",
+    "permit"
+  ]
+}

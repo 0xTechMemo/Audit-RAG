@@ -69,7 +69,6 @@
     "invalidation-accounting",
     "denial-of-service",
     "cross-protocol-integration",
-    "lifi",
-    "medium"
+    "lifi"
   ]
 }

@@ -19,11 +19,11 @@
   ],
   "finding_title": "Incorrect Balance Check in Validator Redelegation Process May Block Legitimate Rebalancing Operations",
   "summary": "The processValidatorRedelegation function in the StakingManager contract contains an incorrect balance check that could prevent legitimate rebalancing operations from being executed. The function checks the HyperEVM balance of the StakingManager contract, but the funds being redelegated exist on HyperCore, not on the HyperEVM.",
-  "root_cause": "Report-described logic/accounting flaw: The processValidatorRedelegation function in the StakingManager contract contains an incorrect balance check that could prevent legitimate rebalancing operations from being executed. The function checks the HyperEVM balance of the StakingManager contract, but the funds being redelegated exist on HyperCore, not on the HyperEVM.",
+  "root_cause": "redelegation checks the HyperEVM contract balance even though the redelegated funds already reside on HyperCore/L1, causing false insufficient-balance reverts",
   "broken_invariants": [
-    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
-    "The validator-management accounting/control flow should preserve user funds and protocol solvency.",
-    "The deposit-flow accounting/control flow should preserve user funds and protocol solvency."
+    "validator redelegation must validate balances in the domain where the funds actually reside",
+    "cross-domain staking operations must not use EVM balance as a proxy for HyperCore/L1 delegated or undelegated funds",
+    "legitimate rebalancing must not be blocked by an irrelevant local contract balance check"
   ],
   "attack_preconditions": [
     "Protocol state reaches the report-described edge case or queue configuration",
@@ -56,14 +56,11 @@
     }
   ],
   "tags": [
-    "kinetiq",
-    "staking",
-    "pause-control",
-    "delegation",
+    "cross-domain-accounting",
+    "balance-domain-mismatch",
     "redelegation",
-    "event-emission",
     "validator-management",
-    "access-control",
-    "medium"
+    "l1-integration",
+    "availability"
   ]
 }

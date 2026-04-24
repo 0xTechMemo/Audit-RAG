@@ -71,7 +71,6 @@
     "executor-trust-boundary",
     "reward-lock",
     "campaign-dos",
-    "lifi",
-    "medium"
+    "lifi"
   ]
 }

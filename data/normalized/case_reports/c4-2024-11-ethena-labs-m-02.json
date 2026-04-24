@@ -20,11 +20,11 @@
   ],
   "finding_title": "Non-whitelisted users can burn UStb and redeem collateral during WHITELIST_ENABLED state",
   "summary": "Non-whitelisted users can redeem collateral tokens and burn their UStb even when whitelist mode has been enabled on UStb contract. This breaks the main invariant mentioned in the README.",
-  "root_cause": "Report-described logic/accounting flaw: Non-whitelisted users can redeem collateral tokens and burn their UStb even when whitelist mode has been enabled on UStb contract. This breaks the main invariant mentioned in the README.",
+  "root_cause": "whitelist-mode burn/redeem path validates the redeemer/minter role but fails to require the token owner/from address to be whitelisted",
   "broken_invariants": [
-    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The minting-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
-    "The collateral-management flow should preserve protocol accounting, authorization, and user fund invariants."
+    "during WHITELIST_ENABLED state, collateral redemption that burns UStb must only consume tokens from whitelisted holders",
+    "privileged redeemer execution must not bypass holder-level whitelist restrictions on the from address",
+    "off-chain RFQ or redeemer mediation must not replace the on-chain invariant that non-whitelisted balances cannot be burned for redemption"
   ],
   "attack_preconditions": [
     "the affected code version and configuration match the public report",
@@ -107,13 +107,12 @@
     }
   ],
   "tags": [
-    "minting",
+    "access-control-bypass",
+    "whitelist",
+    "redeemer-role",
+    "burn",
     "redemption",
-    "collateral",
-    "access-control",
-    "blacklist",
-    "token-transfer",
-    "ethena",
-    "medium"
+    "holder-validation",
+    "collateral"
   ]
 }

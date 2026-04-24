@@ -69,7 +69,6 @@
     "address-mismatch",
     "fund-loss",
     "reward-lock",
-    "safe-wallet",
-    "medium"
+    "safe-wallet"
   ]
 }

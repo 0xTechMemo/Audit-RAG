@@ -24,11 +24,11 @@
   ],
   "finding_title": "Mishandling of receiving HYPE in the StakingManager, user can’t confirm withdrawal and inflate the exchange ratio",
   "summary": "Mishandling of receiving HYPE in the StakingManager , user can’t confirm withdrawal and inflate the exchange ratio.",
-  "root_cause": "Report-described logic/accounting flaw: Mishandling of receiving HYPE in the StakingManager , user can’t confirm withdrawal and inflate the exchange ratio.",
+  "root_cause": "receive() auto-stakes all incoming HYPE, so L1 withdrawal proceeds sent back to StakingManager are redeposited instead of remaining available for withdrawal confirmation",
   "broken_invariants": [
-    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
-    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
-    "The oracle-manager accounting/control flow should preserve user funds and protocol solvency."
+    "HYPE returned from L1 for a pending withdrawal must remain available in the StakingManager to satisfy confirmWithdrawal",
+    "generic receive handlers must distinguish user deposits from protocol/system settlement transfers",
+    "automatic staking of native-token receipts must not trap withdrawal liquidity or inflate the share exchange ratio"
   ],
   "attack_preconditions": [
     "Protocol state reaches the report-described edge case or queue configuration",
@@ -61,19 +61,11 @@
     }
   ],
   "tags": [
-    "kinetiq",
-    "staking",
-    "withdrawal",
-    "buffer-accounting",
-    "exchange-rate",
-    "oracle",
-    "pause-control",
-    "delegation",
-    "l1-integration",
-    "queue-processing",
-    "gas-dos",
-    "validator-management",
-    "minting",
-    "high"
+    "native-token-receive",
+    "auto-stake",
+    "withdrawal-liquidity",
+    "l1-settlement",
+    "exchange-rate-inflation",
+    "fund-lock"
   ]
 }

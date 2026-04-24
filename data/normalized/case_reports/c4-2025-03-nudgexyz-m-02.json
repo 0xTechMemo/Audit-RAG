@@ -68,7 +68,6 @@
     "executor-trust-boundary",
     "lifi",
     "campaign-factory",
-    "denial-of-service",
-    "medium"
+    "denial-of-service"
   ]
 }

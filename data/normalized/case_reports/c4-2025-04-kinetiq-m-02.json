@@ -18,10 +18,11 @@
   ],
   "finding_title": "Missing withdrawal pause check in confirmWithdrawal allows bypassing withdrawal restrictions",
   "summary": "The StakingManager::confirmWithdrawal() function does not include the whenWithdrawalNotPaused modifier, despite being a withdrawal operation. According to the natspec docs of pauseWithdrawal(), it should pause all withdrawal operations:",
-  "root_cause": "Report-described logic/accounting flaw: The StakingManager::confirmWithdrawal() function does not include the whenWithdrawalNotPaused modifier, despite being a withdrawal operation. According to the natspec docs of pauseWithdrawal(), it should pause all withdrawal operations:",
+  "root_cause": "withdrawal pause coverage gap: confirmWithdrawal lacks whenWithdrawalNotPaused even though it completes the withdrawal operation",
   "broken_invariants": [
-    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
-    "The withdrawal-flow accounting/control flow should preserve user funds and protocol solvency."
+    "pausing withdrawals must block both queueing and confirmation paths that release HYPE to users",
+    "all withdrawal lifecycle functions must enforce the same withdrawal-specific pause gate",
+    "users must not be able to bypass emergency withdrawal restrictions by entering through a later lifecycle stage"
   ],
   "attack_preconditions": [
     "Protocol state reaches the report-described edge case or queue configuration",
@@ -54,11 +55,10 @@
     }
   ],
   "tags": [
-    "kinetiq",
-    "staking",
-    "withdrawal",
     "pause-control",
-    "access-control",
-    "medium"
+    "modifier-missing",
+    "withdrawal-confirmation",
+    "emergency-control",
+    "access-control-bypass"
   ]
 }
