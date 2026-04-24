@@ -19,7 +19,7 @@
   "summary": "The resetMiddle function in the AccountingManager contract is designed to reset the middle index of either the deposit or withdraw queue. This function is crucial for managing the order and processing of transactions within these queues, particularly in scenarios where recalculations are necessary to ensure fairness and accuracy in the distribution of shares or handling of withdrawals.",
   "root_cause": "queue middle-index reset mutates accounting pointers without preserving the intended deposit/withdraw queue ordering semantics",
   "broken_invariants": [
-    "the withdrawal flow path must not allow the condition described by \"AccountingManager::resetMiddle will not behave as expected\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: queue middle-index reset mutates accounting pointers without preserving the intended deposit/withdraw queue ordering semantics",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes"
   ],

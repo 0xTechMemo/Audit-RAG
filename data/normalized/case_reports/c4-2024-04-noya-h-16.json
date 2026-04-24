@@ -22,7 +22,7 @@
   "summary": "NOYA uses Connectors to interact with different protocols - deposit, borrow, repay, withdraw. One of the protocols is Silo through the SiloConnector.",
   "root_cause": "missing validation or protection in It is possible to open insolvent position in Silo connector, due to missing check in borrow function, leaving the affected path without the required safety check",
   "broken_invariants": [
-    "the withdrawal flow path must not allow the condition described by \"It is possible to open insolvent position in Silo connector, due to missing check in borrow function\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: missing validation or protection in It is possible to open insolvent position in Silo connector, due to missing check in borrow function, leaving the affected path without the required safety check",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

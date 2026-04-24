@@ -21,7 +21,7 @@
   "summary": "SNXConnector allows depositing collateral and minting SUSD.",
   "root_cause": "incorrect accounting or validation logic in SNXConnector.sol TVL calculation is incorrect, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"SNXConnector.sol TVL calculation is incorrect\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: incorrect accounting or validation logic in SNXConnector.sol TVL calculation is incorrect, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

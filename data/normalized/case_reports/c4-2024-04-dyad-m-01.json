@@ -20,7 +20,7 @@
   "summary": "When a liquidator liquidates a user, he will pay his debt and must receive the debt + 20% bonus in form of collateral (from the user). But now the 20% bonus is based on the user’s (collateral - debt), which removes the entire incentive for liquidation.",
   "root_cause": "incorrect accounting or validation logic in Liquidation bonus logic is wrong, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Liquidation bonus logic is wrong\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: incorrect accounting or validation logic in Liquidation bonus logic is wrong, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

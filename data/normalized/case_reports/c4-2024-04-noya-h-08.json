@@ -18,9 +18,9 @@
   ],
   "finding_title": "A Vault can steal all funds from another Vault through the Registry’s flash loan contract due to insufficient access control in Connector.sendTokensToTrustedAddress()",
   "summary": "The keeper of a Vault can steal all funds from another Vault.",
-  "root_cause": "state/accounting validation gap in A Vault can steal all funds from another Vault through the Registry’s flash loan contract due to insufficient access control in Connector.sendTokensToTrustedAddress()",
+  "root_cause": "flash-loan connector authorization gap lets one vault keeper call trusted-token transfer logic against another vault and steal its funds",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"A Vault can steal all funds from another Vault through the Registry’s flash loan contract due to insufficient access control in Connector.sendTokensToTrustedAddress()\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "protocol accounting and authorization must remain consistent under the root cause: flash-loan connector authorization gap lets one vault keeper call trusted-token transfer logic against another vault and steal its funds",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

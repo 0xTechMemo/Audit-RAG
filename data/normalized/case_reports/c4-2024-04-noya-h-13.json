@@ -21,7 +21,7 @@
   "summary": "BalancerConnector misuses the weight of pool tokens, leading to decreased TVL of these positions.",
   "root_cause": "incorrect accounting or validation logic in BalancerConnector::_getPositionTVL is calculated incorrectly, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"BalancerConnector::_getPositionTVL is calculated incorrectly\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: incorrect accounting or validation logic in BalancerConnector::_getPositionTVL is calculated incorrectly, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

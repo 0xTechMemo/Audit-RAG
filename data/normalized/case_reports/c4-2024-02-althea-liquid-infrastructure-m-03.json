@@ -21,7 +21,7 @@
   "summary": "Double claim, DOS by bricking distribution, few holders can lose some rewards due to missing validation of distribution timing when owner is calling LiquidInfrastructureERC20::setDistributableERC20s.",
   "root_cause": "permissionless denial-of-service condition in Distribution can be bricked, and double claims by a few holders are possible when owner calls LiquidInfrastructureERC20::setDistributableERC20s, allowing one actor to block a required user or protocol operation",
   "broken_invariants": [
-    "the reward distribution path must not allow the condition described by \"Distribution can be bricked, and double claims by a few holders are possible when owner calls LiquidInfrastructureERC20::setDistributableERC20s\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "reward and distribution accounting must preserve each participant’s accrued value under the root cause: permissionless denial-of-service condition in Distribution can be bricked, and double claims by a few holders are possible when owner calls LiquidInfrastructureERC20::setDistributableERC20s, allowing one actor to block a required user or protocol operation",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes"
   ],

@@ -20,7 +20,7 @@
   "summary": "The order of ts.collateralList is not stable: Whenever LibSetters.revokeCollateral is used to revoke a collateral, it may change because of the swap that is performed. However, the function Redeemer.redeem relies on this order, as the user has to provide the minAmountsOut in the order of ts.collateralList. This can lead to situations where the user has crafted the minAmountsOut array when the order was still different, leading to unintended results (and potentially redemptions that the user did not want to accept). It also means that revoking a collateral can be challenging for the team / governance because it should never be done when a user has already prepared a redemption (either via the frontend which he had open or some other way to interact with the contract). But there is of course no way to know this.",
   "root_cause": "redemption output depends on mutable collateral list ordering, so collateral revocation can make users receive a different token mix than expected",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"User may get less tokens than expected when collateral list order changes\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: redemption output depends on mutable collateral list ordering, so collateral revocation can make users receive a different token mix than expected",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

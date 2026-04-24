@@ -20,7 +20,7 @@
   "summary": "Redeemers might charge more collaterals during redemption/swap by the reentrancy attack.",
   "root_cause": "reentrancy-sensitive external interaction in Possible reentrancy during redemption/swap, allowing transient or nested state to affect protocol accounting",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Possible reentrancy during redemption/swap\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: reentrancy-sensitive external interaction in Possible reentrancy during redemption/swap, allowing transient or nested state to affect protocol accounting",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

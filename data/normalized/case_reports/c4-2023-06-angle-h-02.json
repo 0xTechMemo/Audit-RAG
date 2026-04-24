@@ -19,7 +19,7 @@
   "summary": "Users can dispute the current tree using disputeTree() and the governor refunds the dispute funds if the dispute is valid in resolveDispute().",
   "root_cause": "dispute refund accounting does not guarantee reimbursement to the first valid disputer, allowing valid dispute collateral to be lost",
   "broken_invariants": [
-    "the token path must not allow the condition described by \"The first disputer might lose funds although his dispute is valid\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "token state transitions must remain internally consistent under the root cause: dispute refund accounting does not guarantee reimbursement to the first valid disputer, allowing valid dispute collateral to be lost",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],
   "attack_preconditions": [

@@ -22,7 +22,7 @@
   "summary": "The protocol implements a flash-loan manipulation protection mechanism with the idToBlockOfLastDeposit variable. This values is set to the current block number during a deposit, and is checked during a withdrawal. If the system detects a deposit and withdrawal in the same block, the system reverts the transaction.",
   "root_cause": "flash-loan guard is tied to deposit block tracking but self-liquidation provides an alternate same-block path around the protection",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Flash loan protection mechanism can be bypassed via self-liquidations\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: flash-loan guard is tied to deposit block tracking but self-liquidation provides an alternate same-block path around the protection",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

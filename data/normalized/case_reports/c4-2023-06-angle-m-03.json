@@ -21,7 +21,7 @@
   "summary": "The agToken might be minted wrongly as rewards due to the reentrancy attack.",
   "root_cause": "reentrancy-sensitive external interaction in Read-only reentrancy is possible, allowing transient or nested state to affect protocol accounting",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Read-only reentrancy is possible\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: reentrancy-sensitive external interaction in Read-only reentrancy is possible, allowing transient or nested state to affect protocol accounting",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

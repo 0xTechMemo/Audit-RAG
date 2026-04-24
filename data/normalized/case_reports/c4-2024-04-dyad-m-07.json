@@ -23,7 +23,7 @@
   "summary": "VaultManagerV2.sol has a function burnDyad that allows a DNft owner to burn his minted DYAD tokens.",
   "root_cause": "missing validation or protection in VaultManagerV2.sol::burnDyad function is missing an isDNftOwner modifier, allowing a user to burn another user’s minted DYAD, leaving the affected path without the required safety check",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"VaultManagerV2.sol::burnDyad function is missing an isDNftOwner modifier, allowing a user to burn another user’s minted DYAD\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "liquidation and collateral-ratio checks must not be bypassed or distorted by the root cause: missing validation or protection in VaultManagerV2.sol::burnDyad function is missing an isDNftOwner modifier, allowing a user to burn another user’s minted DYAD, leaving the affected path without the required safety check",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

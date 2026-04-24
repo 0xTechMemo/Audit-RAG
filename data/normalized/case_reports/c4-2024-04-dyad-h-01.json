@@ -23,7 +23,7 @@
   "summary": "Due to a design flaw in the protocol’s management of vault licensing and the deploy script, a significant risk exists where collateral can be counted twice in the calculation of the Collateralization Ratio. This occurs because WETH vaults are incorrectly licensed to both the KeroseneManager and VaultLicenser, allowing users to register the same asset and their NFT ID in both Kerosene vaults and normal vaults. This can allow users to exploit this to greatly inflate their CR calculations, misleading the protocol into considering a position more secure than it truly is, which can prevent necessary liquidations and pose significant risk to the protocol.",
   "root_cause": "collateral licensing/accounting split failure allows the same collateral to be counted twice in collateral-ratio and kerosene position calculations",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Design flaw and mismanagement in vault licensing leads to double counting in collateral ratios and positions collateralized entirely with kerosine\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: collateral licensing/accounting split failure allows the same collateral to be counted twice in collateral-ratio and kerosene position calculations",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

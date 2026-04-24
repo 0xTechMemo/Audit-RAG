@@ -21,7 +21,7 @@
   "summary": "If nextWithdrawal > ManagedNFTs.length, the contract won’t be able to withdraw revenue from managed NFTs, because nextWithdrawal can’t reset.",
   "root_cause": "permissionless denial-of-service condition in Withdrawal from NFTs can be temporarily blocked, allowing one actor to block a required user or protocol operation",
   "broken_invariants": [
-    "the withdrawal flow path must not allow the condition described by \"Withdrawal from NFTs can be temporarily blocked\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: permissionless denial-of-service condition in Withdrawal from NFTs can be temporarily blocked, allowing one actor to block a required user or protocol operation",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

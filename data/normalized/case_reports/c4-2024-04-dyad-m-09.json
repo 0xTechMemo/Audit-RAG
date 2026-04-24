@@ -22,7 +22,7 @@
   "summary": "The value of kerosene tokens is calculated according to the following formula:",
   "root_cause": "manipulable pricing/accounting input in Value of kerosene can be manipulated to force liquidate users, allowing an attacker-controlled state to influence protocol decisions",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Value of kerosene can be manipulated to force liquidate users\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: manipulable pricing/accounting input in Value of kerosene can be manipulated to force liquidate users, allowing an attacker-controlled state to influence protocol decisions",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

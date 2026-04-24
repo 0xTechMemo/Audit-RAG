@@ -21,7 +21,7 @@
   "summary": "The AerodromeConnector::stake function allows to stake liquidity tokens to the gauge pool. However, the AerodromeConnector::_getPositionTVL function, which is responsible for calculating the Total Value Locked (TVL), does not take into account the liquidity tokens deposited in the gauge pool. This oversight will result in an incorrect calculation of the TVL, which could negatively impact the overall functionality of the protocol that utilizes the TVL metric.",
   "root_cause": "connector TVL accounting omits or misvalues part of the external protocol position, causing vault share price and position value to be wrong",
   "broken_invariants": [
-    "the connector path must not allow the condition described by \"Incomplete TVL Calculation in AerodromeConnector::_getPositionTVL Function\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "connector valuation must remain correct under the root cause: connector TVL accounting omits or misvalues part of the external protocol position, causing vault share price and position value to be wrong",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

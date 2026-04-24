@@ -21,7 +21,7 @@
   "summary": "User’s withdrawals will be prevented from success and an attacker can keep it up without a cost by using a fake vault and a fake token.",
   "root_cause": "withdrawal path depends on mutable vault/token state that can be cheaply changed by a frontrunner to force user withdrawals to revert",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Attacker can frontrun user’s withdrawals to make them revert without costs\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: withdrawal path depends on mutable vault/token state that can be cheaply changed by a frontrunner to force user withdrawals to revert",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

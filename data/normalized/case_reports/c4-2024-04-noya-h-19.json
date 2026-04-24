@@ -22,7 +22,7 @@
   "summary": "There are numerous issues when calculating the TVL for the MorphoBlue connector",
   "root_cause": "connector TVL accounting omits or misvalues part of the external protocol position, causing vault share price and position value to be wrong",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Numerous errors when calculating the TVL for the MorphoBlue connector\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: connector TVL accounting omits or misvalues part of the external protocol position, causing vault share price and position value to be wrong",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

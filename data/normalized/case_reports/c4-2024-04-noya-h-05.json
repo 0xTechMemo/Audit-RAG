@@ -20,7 +20,7 @@
   "summary": "PendleConnector contracts can lose out on funds when minting LP tokens.",
   "root_cause": "Pendle deposit integration mishandles minted LP/accounting outputs, causing connector funds to be lost during market deposit",
   "broken_invariants": [
-    "the connector path must not allow the condition described by \"Loss of funds in PendleConnector.depositIntoMarket()\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "connector state transitions must remain internally consistent under the root cause: Pendle deposit integration mishandles minted LP/accounting outputs, causing connector funds to be lost during market deposit",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],
   "attack_preconditions": [

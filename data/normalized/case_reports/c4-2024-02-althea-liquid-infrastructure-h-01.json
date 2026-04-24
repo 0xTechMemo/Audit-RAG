@@ -20,7 +20,7 @@
   "summary": "LiquidInfrastructureERC20._beforeTokenTransfer() checks if the to address has a balance of 0, and if so, adds the address to the holders array.",
   "root_cause": "manipulable pricing/accounting input in Holders array can be manipulated by transferring or burning with amount 0, stealing rewards or bricking certain functions, allowing an attacker-controlled state to influence protocol decisions",
   "broken_invariants": [
-    "the reward distribution path must not allow the condition described by \"Holders array can be manipulated by transferring or burning with amount 0, stealing rewards or bricking certain functions\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "reward and distribution accounting must preserve each participant’s accrued value under the root cause: manipulable pricing/accounting input in Holders array can be manipulated by transferring or burning with amount 0, stealing rewards or bricking certain functions, allowing an attacker-controlled state to influence protocol decisions",
     "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

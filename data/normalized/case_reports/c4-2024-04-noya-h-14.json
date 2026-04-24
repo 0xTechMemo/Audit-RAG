@@ -21,7 +21,7 @@
   "summary": "In BalancerConnector::_getPositionTVL, when calculating connector held LP token ratio, IERC20(pool.pool).totalSupply() is called. This is an incorrect implementation.",
   "root_cause": "incorrect accounting or validation logic in BalancerConnector has incorrect implementation of totalSupply, positionTVL and total TVL will be invalid, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the connector path must not allow the condition described by \"BalancerConnector has incorrect implementation of totalSupply, positionTVL and total TVL will be invalid\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "connector valuation must remain correct under the root cause: incorrect accounting or validation logic in BalancerConnector has incorrect implementation of totalSupply, positionTVL and total TVL will be invalid, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

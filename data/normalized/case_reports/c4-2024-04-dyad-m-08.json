@@ -19,7 +19,7 @@
   "summary": "The kerosene manager is the contract responsible for managing kerosene prices. In the current state it has broken functionality due to the design. The KeroseneManager contract contains a list of vaults.",
   "root_cause": "incorrect accounting or validation logic in Incorrect deployment/missing contract will break functionality, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Incorrect deployment/missing contract will break functionality\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: incorrect accounting or validation logic in Incorrect deployment/missing contract will break functionality, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

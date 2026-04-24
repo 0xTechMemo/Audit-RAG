@@ -23,7 +23,7 @@
   "summary": "The vulnerability is present in the VaultManagerV2::liquidate function where it doesn’t have any check for whether the vault has enough exogenous collateral leading to no liquidation even if the non-kerosene value is less than DYAD minted.",
   "root_cause": "missing validation or protection in Missing enough exogenous collateral check in VaultManagerV2::liquidate makes the liquidation revert even if (DYAD Minted > Non Kerosene Value), leaving the affected path without the required safety check",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Missing enough exogenous collateral check in VaultManagerV2::liquidate makes the liquidation revert even if (DYAD Minted > Non Kerosene Value)\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: missing validation or protection in Missing enough exogenous collateral check in VaultManagerV2::liquidate makes the liquidation revert even if (DYAD Minted > Non Kerosene Value), leaving the affected path without the required safety check",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

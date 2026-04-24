@@ -22,7 +22,7 @@
   "summary": "The liquidate() function allows liquidators to burn DYAD on behalf of an DNft id and receive collateral in return.",
   "root_cause": "liquidation design only supports full-position liquidation, allowing oversized unhealthy positions to remain and accrue bad debt",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Inability to perform partial liquidations allows huge positions to accrue bad debt in the system\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: liquidation design only supports full-position liquidation, allowing oversized unhealthy positions to remain and accrue bad debt",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

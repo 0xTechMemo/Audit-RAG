@@ -19,7 +19,7 @@
   "summary": "This issue is an edge case, that uint128 changeAmount could overflow, making the protocol fail for certain amount of swap.",
   "root_cause": "numeric bounds error in uint128 changeAmount might overflow, where casting or arithmetic can exceed the intended value domain",
   "broken_invariants": [
-    "the redemption flow path must not allow the condition described by \"uint128 changeAmount might overflow\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: numeric bounds error in uint128 changeAmount might overflow, where casting or arithmetic can exceed the intended value domain",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes"
   ],

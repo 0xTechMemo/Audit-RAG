@@ -22,7 +22,7 @@
   "summary": "decreasePosition() will falsely remove the market as a holding position, ignoring the staked Pendle market LP tokens at Penpie and thus that stake won’t be counted towards the TVL of the connector and the TVL of the AccountingManager the connector belongs to.",
   "root_cause": "Pendle decrease-position logic removes the holding position even while staked Penpie/Pendle LP exposure remains active",
   "broken_invariants": [
-    "the redemption flow path must not allow the condition described by \"Decreasing a position in PendleConnector will remove it even if there’s still a stake at Penpie\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "redemption flow valuation must remain correct under the root cause: Pendle decrease-position logic removes the holding position even while staked Penpie/Pendle LP exposure remains active",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

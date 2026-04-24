@@ -22,7 +22,7 @@
   "summary": "Burning a Pendle LP will donate the PT tokens to the market instead of withdrawing them to the PendleConnector which leads to a loss of funds for the Connector.",
   "root_cause": "incorrect accounting or validation logic in PendleConnector incorrectly sends the redeemed PT tokens to the market, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the withdrawal flow path must not allow the condition described by \"PendleConnector incorrectly sends the redeemed PT tokens to the market\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: incorrect accounting or validation logic in PendleConnector incorrectly sends the redeemed PT tokens to the market, causing the protocol to compute or enforce the wrong state transition",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

@@ -22,7 +22,7 @@
   "summary": "The Sponsors noted via discord communication:",
   "root_cause": "permissionless denial-of-service condition in Malicious users can prevent holders from claiming their rewards during a reward cycle by skipping it., allowing one actor to block a required user or protocol operation",
   "broken_invariants": [
-    "the reward distribution path must not allow the condition described by \"Malicious users can prevent holders from claiming their rewards during a reward cycle by skipping it.\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: permissionless denial-of-service condition in Malicious users can prevent holders from claiming their rewards during a reward cycle by skipping it., allowing one actor to block a required user or protocol operation",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes"
   ],

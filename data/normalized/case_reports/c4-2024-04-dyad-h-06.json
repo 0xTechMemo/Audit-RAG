@@ -21,7 +21,7 @@
   "summary": "The protocol allows users to deposit both Kerosene and non-Kerosene collateral, to mint Dyad users should have an equal value of non-Kerosene (exogenous) collateral. So users should have 100% non-Kerosene and the rest could be Kerosene collateral.",
   "root_cause": "incorrect accounting or validation logic in User can get their Kerosene stuck because of an invalid check on withdraw, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"User can get their Kerosene stuck because of an invalid check on withdraw\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: incorrect accounting or validation logic in User can get their Kerosene stuck because of an invalid check on withdraw, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

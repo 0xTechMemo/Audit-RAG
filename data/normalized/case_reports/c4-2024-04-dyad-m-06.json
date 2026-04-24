@@ -21,7 +21,7 @@
   "summary": "When removing a vault from a dNFT position, the vault must have no assets for that dNFT.",
   "root_cause": "permissionless denial-of-service condition in Attacker can frontrun to prevent vaults from being removed from the dNFT owner’s position, allowing one actor to block a required user or protocol operation",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Attacker can frontrun to prevent vaults from being removed from the dNFT owner’s position\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "authorization and ownership checks must cover every value-moving path affected by the root cause: permissionless denial-of-service condition in Attacker can frontrun to prevent vaults from being removed from the dNFT owner’s position, allowing one actor to block a required user or protocol operation",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

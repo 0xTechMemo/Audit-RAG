@@ -22,7 +22,7 @@
   "summary": "In Dolomite protocol, transferBetweenAccounts transfers the collateral from 1 account to another under the same owner. So the owner of both accounts still owns these funds regardless of the account they’re deposited in. In DolomiteConnector, when calling transferBetweenAccounts the protocol isn’t updating the holding position of either account.",
   "root_cause": "incorrect accounting or validation logic in Invalid handling of holding positions in DolomiteConnector::transferBetweenAccounts, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Invalid handling of holding positions in DolomiteConnector::transferBetweenAccounts\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: incorrect accounting or validation logic in Invalid handling of holding positions in DolomiteConnector::transferBetweenAccounts, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

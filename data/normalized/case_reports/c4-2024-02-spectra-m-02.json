@@ -21,7 +21,7 @@
   "summary": "The current implementation of the PrincipalToken has a flash lending functionality:",
   "root_cause": "PrincipalToken flash-loan functionality enables a vault deflation attack that drains IBT vault yield through manipulated share accounting",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"All yield generated in the IBT vault can be drained by performing a vault deflation attack using the flash loan functionality of the Principal Token contract\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault state transitions must remain internally consistent under the root cause: PrincipalToken flash-loan functionality enables a vault deflation attack that drains IBT vault yield through manipulated share accounting",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],
   "attack_preconditions": [

@@ -95,13 +95,14 @@ Low / Non-critical / QA 不进入主 case_reports。
 
 ```bash
 source .venv/bin/activate
+python -m audit_rag.cli.main validate-data
 python -m audit_rag.cli.main --help
 pytest -q
 ```
 
-并做数据质量扫描：
+`validate-data` 会同时跑 JSON Schema 和项目自定义质量门槛：
 
-- `root_cause` 不以 `Report-described` 开头
+- `root_cause` 不以 `Report-described`、`protocol invariant violation in` 或 `state/accounting validation gap in` 这类自动生成前缀开头
 - `broken_invariants` 不含模板句
 - `tags` 不含协议名和 severity
 - Low/QA 不污染主 High/Medium 检索流

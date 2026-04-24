@@ -23,7 +23,7 @@
   "summary": "Whenever some of the connectors opens or closes a position, it is updated in the registry.",
   "root_cause": "Dolomite borrow-position update sets removePosition during position creation, so the registry never records the active holding position",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"In Dolomite, when opening a borrow position, the holding position in the Registry will never be updated due to the removePosition flag being set to true\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: Dolomite borrow-position update sets removePosition during position creation, so the registry never records the active holding position",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

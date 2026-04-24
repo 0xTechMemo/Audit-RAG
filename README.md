@@ -66,6 +66,7 @@ source .venv/bin/activate
 pip install -U pip
 pip install -e .[dev]
 python -m audit_rag.cli.main --help
+python -m audit_rag.cli.main validate-data
 pytest -q
 ```
 

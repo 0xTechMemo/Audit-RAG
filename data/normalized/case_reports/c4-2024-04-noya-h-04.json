@@ -20,7 +20,7 @@
   "summary": "Some tokens (e.g. USDC, USDT) have a contract level admin controlled address blocklist. If an address is blocked, then transfers to and from that address are forbidden.",
   "root_cause": "permissionless denial-of-service condition in executeWithdraw may be blocked if any of the users are blacklisted from the baseToken, allowing one actor to block a required user or protocol operation",
   "broken_invariants": [
-    "the withdrawal flow path must not allow the condition described by \"executeWithdraw may be blocked if any of the users are blacklisted from the baseToken\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: permissionless denial-of-service condition in executeWithdraw may be blocked if any of the users are blacklisted from the baseToken, allowing one actor to block a required user or protocol operation",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

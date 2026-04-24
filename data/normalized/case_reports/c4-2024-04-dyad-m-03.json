@@ -20,7 +20,7 @@
   "summary": "The setUnboundedKerosineVault function was never called during deployment, nor was it planned to be called post deployment.",
   "root_cause": "deployment misses required kerosene vault configuration, causing downstream kerosene value queries to revert after the vault is added",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"setUnboundedKerosineVault not called during deployment, causing reverts when querying for Kerosene value after adding it as a Kerosene vault\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: deployment misses required kerosene vault configuration, causing downstream kerosene value queries to revert after the vault is added",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

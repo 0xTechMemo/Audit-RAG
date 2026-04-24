@@ -22,7 +22,7 @@
   "summary": "Pendle connector allows protocol managers to deposit some underlying asset in return for some SY tokens, which can be used to mint PT and YT tokens. PT and YT can be deposited in markets and in return for LP tokens and some claimable rewards. These LP tokens should be considered when calculating the TVL of the position, to do this the protocol is using getLpToAssetRate, which from the docs:",
   "root_cause": "incorrect accounting or validation logic in Invalid calculation of position TVL in Pendle connector, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the reward distribution path must not allow the condition described by \"Invalid calculation of position TVL in Pendle connector\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "reward distribution valuation must remain correct under the root cause: incorrect accounting or validation logic in Invalid calculation of position TVL in Pendle connector, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes"
   ],

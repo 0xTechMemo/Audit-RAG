@@ -24,7 +24,7 @@
   "summary": "_getPositionTVL from SiloConnector calculates wrongly the position’s TVL thus affecting the share price at which shares are minted / redeemed from the protocol.",
   "root_cause": "connector TVL accounting omits or misvalues part of the external protocol position, causing vault share price and position value to be wrong",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"SiloConnector _getPositionTVL miscalculate the TVL position\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: connector TVL accounting omits or misvalues part of the external protocol position, causing vault share price and position value to be wrong",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

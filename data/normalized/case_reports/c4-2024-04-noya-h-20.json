@@ -21,7 +21,7 @@
   "summary": "When _getPositionTVL is called, it queries position information from the pool using the calculated key. However, it assumes that all liquidity within the provided ticks in the positionManager is owned by the connector.",
   "root_cause": "incorrect accounting or validation logic in _getPositionTVL of UNIv3Connector wrongly assumes ownership of all liquidity of the provided ticks inside positionManager, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"_getPositionTVL of UNIv3Connector wrongly assumes ownership of all liquidity of the provided ticks inside positionManager\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: incorrect accounting or validation logic in _getPositionTVL of UNIv3Connector wrongly assumes ownership of all liquidity of the provided ticks inside positionManager, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

@@ -20,7 +20,7 @@
   "summary": "Tokens like USDT, USDC on the BSC chain have 18 decimals while the “Base” blockchain which is being used as the root/base chain uses 6 decimals (see here).",
   "root_cause": "incorrect accounting or validation logic in Base tokens like USDT, USDC having different decimals on different chains can have their TVL updated incorrectly, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Base tokens like USDT, USDC having different decimals on different chains can have their TVL updated incorrectly\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "vault valuation must remain correct under the root cause: incorrect accounting or validation logic in Base tokens like USDT, USDC having different decimals on different chains can have their TVL updated incorrectly, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

@@ -19,9 +19,9 @@
   ],
   "finding_title": "Registry.sol#updateHoldingPosition remove position logic is incorrect: should use ownerConnector instead of calculatorConnector when calculating holdingPositionId",
   "summary": "When removing a holdingPosition that is not at the back of holdingPositions array, the holdingPositionId is incorrectly calculated. This will mess up the position index, and ultimately mess up TVL calculation.",
-  "root_cause": "state/accounting validation gap in Registry.sol#updateHoldingPosition remove position logic is incorrect: should use ownerConnector instead of calculatorConnector when calculating holdingPositionId",
+  "root_cause": "registry position removal uses calculatorConnector instead of ownerConnector, deriving the wrong holdingPositionId and corrupting position tracking",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Registry.sol#updateHoldingPosition remove position logic is incorrect: should use ownerConnector instead of calculatorConnector when calculating holdingPositionId\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "protocol accounting and authorization must remain consistent under the root cause: registry position removal uses calculatorConnector instead of ownerConnector, deriving the wrong holdingPositionId and corrupting position tracking",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
   ],

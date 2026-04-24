@@ -19,7 +19,7 @@
   "summary": "The NoyaValueOracle.getValue is used to convert the price of an asset to baseToken, using token routing when necessary.",
   "root_cause": "incorrect accounting or validation logic in NoyaValueOracle.getValue returns an incorrect price when a multi-token route is used, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the oracle path must not allow the condition described by \"NoyaValueOracle.getValue returns an incorrect price when a multi-token route is used\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle valuation must remain correct under the root cause: incorrect accounting or validation logic in NoyaValueOracle.getValue returns an incorrect price when a multi-token route is used, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

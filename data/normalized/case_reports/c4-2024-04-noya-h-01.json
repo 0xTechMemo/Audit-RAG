@@ -20,7 +20,7 @@
   "summary": "There are tokens that have token/ETH but no token/USD Chainlink oracles currently in which these tokens have the in scope token behaviors described in https://code4rena.com/audits/2024-04-noya and should be supported by this protocol. To support these tokens, the ETH/USD Chainlink oracle can be used as a part of the route set by the following NoyaValueOracle.updatePriceRoute function for converting the token amount to ETH first and then converting the converted ETH amount to USD.",
   "root_cause": "incorrect accounting or validation logic in Value of asset token can be incorrect when usage of ETH/USD Chainlink oracle is needed, causing the protocol to compute or enforce the wrong state transition",
   "broken_invariants": [
-    "the oracle path must not allow the condition described by \"Value of asset token can be incorrect when usage of ETH/USD Chainlink oracle is needed\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle valuation must remain correct under the root cause: incorrect accounting or validation logic in Value of asset token can be incorrect when usage of ETH/USD Chainlink oracle is needed, causing the protocol to compute or enforce the wrong state transition",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],

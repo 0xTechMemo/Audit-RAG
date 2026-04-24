@@ -22,7 +22,7 @@
   "summary": "VaultManagerV2 has one withdraw function responsible for withdrawing both exogenous collateral (weth/wsteth) and endogenous collateral (Kerosene). However, the function expects the vault passed as an argument to have an oracle method. This is the case for Vault contracts, but not the case for the BoundedKerosineVault or UnboundedKerosineVault contracts. This means that whenever a user attempts to withdraw Kerosene deposited into the contract the call will revert, meaning the Kerosene remains stuck in the contract permanently.",
   "root_cause": "missing validation or protection in Unable to withdraw Kerosene from vaultmanagerv2::withdraw as it expects a vault.oracle() method which is missing in Kerosene vaults, leaving the affected path without the required safety check",
   "broken_invariants": [
-    "the oracle path must not allow the condition described by \"Unable to withdraw Kerosene from vaultmanagerv2::withdraw as it expects a vault.oracle() method which is missing in Kerosene vaults\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle valuation must remain correct under the root cause: missing validation or protection in Unable to withdraw Kerosene from vaultmanagerv2::withdraw as it expects a vault.oracle() method which is missing in Kerosene vaults, leaving the affected path without the required safety check",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

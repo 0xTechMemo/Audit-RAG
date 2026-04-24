@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -84,17 +85,18 @@ def _flatten(value: Any) -> str:
     return str(value)
 
 
-def _load_documents(document_type: str) -> list[dict[str, Any]]:
+@lru_cache(maxsize=len(DOCUMENT_SETS))
+def _load_documents(document_type: str) -> tuple[dict[str, Any], ...]:
     directory = DOCUMENT_SETS[document_type]
     if not directory.exists():
-        return []
+        return ()
     documents: list[dict[str, Any]] = []
     for path in sorted(directory.glob("*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         data["_document_type"] = document_type
         data["_path"] = path
         documents.append(data)
-    return documents
+    return tuple(documents)
 
 
 def _field_score(query_terms: set[str], data: dict[str, Any]) -> tuple[float, list[str]]:

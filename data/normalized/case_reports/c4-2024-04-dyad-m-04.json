@@ -21,9 +21,9 @@
   ],
   "finding_title": "Liquidating positions with bounded Kerosen could be unprofitable for liquidators",
   "summary": "Bounded Kerosene is not attractive for liquidation. First of all bounded kerosene has twice the value of unbounded kerosene. For example, if 1 Kerosene is worth 10 usd in the unbounded vault then 0.5 Kerosen will be worth the same amount in a bounded vault.",
-  "root_cause": "state/accounting validation gap in Liquidating positions with bounded Kerosen could be unprofitable for liquidators",
+  "root_cause": "bounded kerosene liquidation incentive mismatch can make liquidators receive less value than the DYAD they burn, leaving unhealthy positions unliquidated",
   "broken_invariants": [
-    "the vault path must not allow the condition described by \"Liquidating positions with bounded Kerosen could be unprofitable for liquidators\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "protocol accounting and authorization must remain consistent under the root cause: bounded kerosene liquidation incentive mismatch can make liquidators receive less value than the DYAD they burn, leaving unhealthy positions unliquidated",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

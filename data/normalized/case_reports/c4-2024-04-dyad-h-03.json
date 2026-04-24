@@ -22,7 +22,7 @@
   "summary": "Function deposit() uses modifier isValidDNft() instead of isDNftOwner(), which allows anyone to call deposit() on behalf of any DNft id.",
   "root_cause": "permissionless denial-of-service condition in Attacker can make 0 value deposit() calls to deny user from redeeming or withdrawing collateral, allowing one actor to block a required user or protocol operation",
   "broken_invariants": [
-    "the collateral management path must not allow the condition described by \"Attacker can make 0 value deposit() calls to deny user from redeeming or withdrawing collateral\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "collateral management valuation must remain correct under the root cause: permissionless denial-of-service condition in Attacker can make 0 value deposit() calls to deny user from redeeming or withdrawing collateral, allowing one actor to block a required user or protocol operation",
     "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
   ],

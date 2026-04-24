@@ -20,7 +20,7 @@
   "summary": "Protocols that try to integrate with Spectra, expecting PrincipalToken to be ERC-5095 compliant, will face an array of issues that may damage Spectra’s brand and limit Spectra’s growth in the market.",
   "root_cause": "PrincipalToken interface behavior deviates from ERC-5095 expectations, breaking integrator assumptions around standard principal-token flows",
   "broken_invariants": [
-    "the withdrawal flow path must not allow the condition described by \"PrincipalToken is not ERC-5095 compliant\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "user exit paths must remain available and value-preserving under the root cause: PrincipalToken interface behavior deviates from ERC-5095 expectations, breaking integrator assumptions around standard principal-token flows",
     "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
     "state changes must remain internally consistent across all affected accounting buckets and external integrations"
   ],
