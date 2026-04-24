@@ -1,0 +1,120 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-14",
+  "component_types": [
+    "connector",
+    "position-accounting",
+    "token"
+  ],
+  "finding_title": "BalancerConnector has incorrect implementation of totalSupply, positionTVL and total TVL will be invalid",
+  "summary": "In BalancerConnector::_getPositionTVL, when calculating connector held LP token ratio, IERC20(pool.pool).totalSupply() is called. This is an incorrect implementation.",
+  "root_cause": "incorrect accounting or validation logic in BalancerConnector has incorrect implementation of totalSupply, positionTVL and total TVL will be invalid, causing the protocol to compute or enforce the wrong state transition",
+  "broken_invariants": [
+    "the connector path must not allow the condition described by \"BalancerConnector has incorrect implementation of totalSupply, positionTVL and total TVL will be invalid\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "In BalancerConnector::_getPositionTVL, when calculating connector held LP token ratio, IERC20(pool.pool).totalSupply() is called. This is an incorrect implementation."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Use IERC20(pool.pool).totalActualSupply() with compatible pools."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/9c79b332eff82011dcfa1e8fd51bad805159d758/contracts/connectors/BalancerConnector.sol#L167",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/9c79b332eff82011dcfa1e8fd51bad805159d758/testFoundry/utils/resources/MainnetAddresses.sol#L150",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1021",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1021#issuecomment-2133829109",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1021#issuecomment-2143832308",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1106",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1204",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1425",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/505",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/652",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/811",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/859",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "tvl-accounting",
+    "connector",
+    "position-accounting",
+    "balancer",
+    "erc20"
+  ]
+}

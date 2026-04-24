@@ -1,0 +1,181 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Spectra Findings and Analysis Report (2024-02)",
+  "source_url": "https://code4rena.com/reports/2024-02-spectra",
+  "protocol_name": "Spectra",
+  "project_repo": "https://github.com/code-423n4/2024-02-spectra",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-02-spectra-m-01",
+  "component_types": [
+    "withdrawal-flow",
+    "redemption-flow"
+  ],
+  "finding_title": "PrincipalToken is not ERC-5095 compliant",
+  "summary": "Protocols that try to integrate with Spectra, expecting PrincipalToken to be ERC-5095 compliant, will face an array of issues that may damage Spectra’s brand and limit Spectra’s growth in the market.",
+  "root_cause": "PrincipalToken interface behavior deviates from ERC-5095 expectations, breaking integrator assumptions around standard principal-token flows",
+  "broken_invariants": [
+    "the withdrawal flow path must not allow the condition described by \"PrincipalToken is not ERC-5095 compliant\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Protocols that try to integrate with Spectra, expecting PrincipalToken to be ERC-5095 compliant, will face an array of issues that may damage Spectra’s brand and limit Spectra’s growth in the market."
+  },
+  "why_not_higher": "final C4 severity is Medium; exploitability, affected value, or preconditions are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "- PrincipalToken::redeem and PrincipalToken::withdraw should be changed to support a flow where msg.sender has EPI-20 approval over the owner’s principal tokens. - PrincipalToken::maxRedeem and PrincipalToken::maxWithdrawshould be changed to return 0 when PrincipalToken is paused."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-spectra/blob/main/src/tokens/PrincipalToken.sol#L229-L237",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-spectra/blob/main/src/tokens/PrincipalToken.sol#L278-L287",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-spectra/blob/main/src/tokens/PrincipalToken.sol#L460-L462",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-spectra/blob/main/src/tokens/PrincipalToken.sol#L483-L485",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/116",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/118",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/128",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/133",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/147",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/149",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/150",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/162",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/168",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/179",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/197",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/210",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/210#issuecomment-1988329596",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/210#issuecomment-1989047717",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/212",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/233",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/235",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/237",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/247",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/263",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-spectra-findings/issues/33",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "withdrawal",
+    "redemption"
+  ]
+}

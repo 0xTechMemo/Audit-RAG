@@ -1,0 +1,111 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Dyad Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-dyad",
+  "protocol_name": "Dyad",
+  "project_repo": "https://github.com/code-423n4/2024-04-dyad",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-dyad-m-01",
+  "component_types": [
+    "collateral-management",
+    "liquidation"
+  ],
+  "finding_title": "Liquidation bonus logic is wrong",
+  "summary": "When a liquidator liquidates a user, he will pay his debt and must receive the debt + 20% bonus in form of collateral (from the user). But now the 20% bonus is based on the user’s (collateral - debt), which removes the entire incentive for liquidation.",
+  "root_cause": "incorrect accounting or validation logic in Liquidation bonus logic is wrong, causing the protocol to compute or enforce the wrong state transition",
+  "broken_invariants": [
+    "the collateral management path must not allow the condition described by \"Liquidation bonus logic is wrong\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "When a liquidator liquidates a user, he will pay his debt and must receive the debt + 20% bonus in form of collateral (from the user). But now the 20% bonus is based on the user’s (collateral - debt), which removes the entire incentive for liquidation."
+  },
+  "why_not_higher": "final C4 severity is Medium; exploitability, affected value, or preconditions are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "The bonus should be based on the burned user debt and then must send the liquidator the percentage of liquidated user collateral equal to the burned debt + 20% bonus. This is an example implementation, which gives the desired 20% bonus from the right amount, but need to be tested for further issues. function liquidate( uint id, uint to ) external isValidDNft(id) isValidDNft(to) { uint cr = collatRatio(id); + uint userCollateral = getTotalUsdValue(id); if (cr >= MIN_COLLATERIZATION_RATIO) revert CrTooHigh(); dyad.burn(id, msg.sender, dyad.mintedDyad(address(this), id)); - uint cappedCr = cr < 1e18 ? 1e18 : cr; + uint liquidationEquityShare = 0; + uint liquidationAssetShare = 1e18; + if (cr >= 1.2e18) { + liquidationEquityShare = (dyad.mintedDyad(address(this), id)).mulWadDown(LIQUIDATION_REWARD); + liquidationAssetShare = (dyad.mintedDyad(address(this), id) + liquidationEquityShare).divWadDown(userCollateral); + } - uint liquidationEquityShare = (cappedCr - 1e18).mulWadDown(LIQUIDATION_REWARD); - uint liquidationAssetShare = (liquidationEquityShare + 1e18).divWadDown(cappedCr); uint numberOfVaults = vaults[id].length(); for (uint i = 0; i < numberOfVaults; i++) { Vault vault = Vault"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1099",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1122",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1159",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1164",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/309",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/407",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/530",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/75",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/75#issuecomment-2089235817",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/982",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/982#issuecomment-2108555782",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "collateral",
+    "liquidation"
+  ]
+}

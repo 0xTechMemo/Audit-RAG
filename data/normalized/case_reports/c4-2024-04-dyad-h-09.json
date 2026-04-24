@@ -1,0 +1,186 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Dyad Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-dyad",
+  "protocol_name": "Dyad",
+  "project_repo": "https://github.com/code-423n4/2024-04-dyad",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-dyad-h-09",
+  "component_types": [
+    "vault",
+    "collateral-management",
+    "liquidation",
+    "position-accounting"
+  ],
+  "finding_title": "Kerosene collateral is not being moved on liquidation, exposing liquidators to loss",
+  "summary": "When a position’s collateral ratio drops below 150%, it is subject to liquidation. Upon liquidation, the liquidator burns a quantity of DYAD equal to the target Note’s DYAD minted balance, and in return receives an equivalent value plus a 20% bonus of the liquidated position’s collateral. If the collateral ratio is <100%, all the position’s collateral should be moved to the liquidator, this logic is done in VaultManagerV2::liquidate.",
+  "root_cause": "liquidation transfers debt accounting without moving kerosene collateral, leaving liquidators under-collateralized or exposed to loss",
+  "broken_invariants": [
+    "the vault path must not allow the condition described by \"Kerosene collateral is not being moved on liquidation, exposing liquidators to loss\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "When a position’s collateral ratio drops below 150%, it is subject to liquidation. Upon liquidation, the liquidator burns a quantity of DYAD equal to the target Note’s DYAD minted balance, and in return receives an equivalent value plus a 20% bonus of the liquidated position’s collateral. If the collateral ratio is <100%, all the position’s collateral should be moved to the liquidator, this logic is done in VaultManagerV2::liquidate."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Add the following to VaultManagerV2::liquidate: uint256 numberOfKeroseneVaults = vaultsKerosene[id].length(); for (uint256 i = 0; i < numberOfKeroseneVaults; i++) { Vault vault = Vault(vaultsKerosene[id].at(i)); uint256 collateral = vault.id2asset(id).mulWadUp(liquidationAssetShare); vault.move(id, to, collateral); }"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1006",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1009",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1028",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1038",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1055",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/116",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1163",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1219",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1242",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1255",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1275",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/128",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/128#event-12659920799",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/131",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/151",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/213",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/280",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/295",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/342",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/405",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/414",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/435",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/486",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/507",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/558",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "collateral",
+    "liquidation",
+    "vault",
+    "kerosene",
+    "position-accounting"
+  ]
+}

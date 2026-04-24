@@ -1,0 +1,184 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Althea Liquid Infrastructure Findings and Analysis Report (2024-02)",
+  "source_url": "https://code4rena.com/reports/2024-02-althea-liquid-infrastructure",
+  "protocol_name": "Althea Liquid Infrastructure",
+  "project_repo": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-02-althea-liquid-infrastructure-m-04",
+  "component_types": [
+    "withdrawal-flow",
+    "token",
+    "nft"
+  ],
+  "finding_title": "Withdrawal from NFTs can be temporarily blocked",
+  "summary": "If nextWithdrawal > ManagedNFTs.length, the contract won’t be able to withdraw revenue from managed NFTs, because nextWithdrawal can’t reset.",
+  "root_cause": "permissionless denial-of-service condition in Withdrawal from NFTs can be temporarily blocked, allowing one actor to block a required user or protocol operation",
+  "broken_invariants": [
+    "the withdrawal flow path must not allow the condition described by \"Withdrawal from NFTs can be temporarily blocked\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "If nextWithdrawal > ManagedNFTs.length, the contract won’t be able to withdraw revenue from managed NFTs, because nextWithdrawal can’t reset."
+  },
+  "why_not_higher": "final C4 severity is Medium; exploitability, affected value, or preconditions are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Consider modifying the check here to: + if (nextWithdrawal >= ManagedNFTs.length) { nextWithdrawal = 0; emit WithdrawalFinished(); }"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L184C1-L189C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L199",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L224",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L266",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L291",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L359C1-L386C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L359C14-L359C37",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L377",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L394C1-L403C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L413C1-L434C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L413C2-L434C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L431",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L441C1-L445C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L473",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L4C1-L12C1",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L50C1-L54C41",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/bd6ee47162368e1999a0a5b8b17b701347cf9a7d/liquid-infrastructure/contracts/LiquidInfrastructureNFT.sol#L108C1-L125C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L184C4-L189C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L200C1-L206C10",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L214C1-L231C10",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L257C5-L262C38",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L318C4-L323C6",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L382",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L418",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L431",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "withdrawal",
+    "erc20",
+    "front-running",
+    "denial-of-service"
+  ]
+}

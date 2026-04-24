@@ -1,0 +1,188 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Dyad Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-dyad",
+  "protocol_name": "Dyad",
+  "project_repo": "https://github.com/code-423n4/2024-04-dyad",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-dyad-m-09",
+  "component_types": [
+    "vault",
+    "collateral-management",
+    "liquidation",
+    "position-accounting"
+  ],
+  "finding_title": "Value of kerosene can be manipulated to force liquidate users",
+  "summary": "The value of kerosene tokens is calculated according to the following formula:",
+  "root_cause": "manipulable pricing/accounting input in Value of kerosene can be manipulated to force liquidate users, allowing an attacker-controlled state to influence protocol decisions",
+  "broken_invariants": [
+    "the vault path must not allow the condition described by \"Value of kerosene can be manipulated to force liquidate users\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The value of kerosene tokens is calculated according to the following formula:"
+  },
+  "why_not_higher": "final C4 severity is Medium; exploitability, affected value, or preconditions are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Add a TWAP mechanism to calculate the price of kerosene. The price of kerosene being manipulatable instantaneously is a huge risk. By using a TWAP mechanism, the price of kerosene will be more stable, and users will have more time to react to changes in the price of kerosene."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/README.md#L155",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/script/deploy/Deploy.V2.s.sol#L55-L61",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/script/deploy/Deploy.V2.s.sol#L69-L70",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.kerosine.bounded.sol#L43-L49",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.kerosine.bounded.sol#L44-L50",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.kerosine.unbounded.sol#L50-L68",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.kerosine.unbounded.sol#L65-L67",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.sol#L42-L52",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.sol#L53-L64",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/Vault.sol#L79-L104",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/VaultManagerV2.sol#L122-L134",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/VaultManagerV2.sol#L137-L158",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/VaultManagerV2.sol#L138-L163",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/VaultManagerV2.sol#L214-L239",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/VaultManagerV2.sol#L214-L240",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/core/VaultManagerV2.sol#L49-L51",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-dyad/blob/4a987e536576139793a1c04690336d06c93fca90/src/staking/KerosineDenominator.sol#L17-L23",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol#L39",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1011",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1014",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1015",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1050",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1066",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1068",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1094",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "pricing",
+    "tvl-accounting",
+    "collateral",
+    "liquidation",
+    "vault",
+    "kerosene",
+    "position-accounting"
+  ]
+}

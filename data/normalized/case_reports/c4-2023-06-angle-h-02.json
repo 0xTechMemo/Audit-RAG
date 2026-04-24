@@ -1,0 +1,118 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Angle Findings and Analysis Report (2023-06)",
+  "source_url": "https://code4rena.com/reports/2023-06-angle",
+  "protocol_name": "Angle",
+  "project_repo": "https://github.com/code-423n4/2023-06-angle",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-06-angle-h-02",
+  "component_types": [
+    "token"
+  ],
+  "finding_title": "The first disputer might lose funds although his dispute is valid",
+  "summary": "Users can dispute the current tree using disputeTree() and the governor refunds the dispute funds if the dispute is valid in resolveDispute().",
+  "root_cause": "dispute refund accounting does not guarantee reimbursement to the first valid disputer, allowing valid dispute collateral to be lost",
+  "broken_invariants": [
+    "the token path must not allow the condition described by \"The first disputer might lose funds although his dispute is valid\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "Users can dispute the current tree using disputeTree() and the governor refunds the dispute funds if the dispute is valid in resolveDispute()."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "disputeTree() shouldn’t allow another dispute when there is an active dispute already."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/AngleProtocol/merkl-contracts/blob/1825925daef8b22d9d6c0a2bc7aab3309342e786/contracts/Distributor.sol#L279",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/11",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/23",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/23#issuecomment-1627817695",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/23#issuecomment-1628643525",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/23#issuecomment-1629243692",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/23#issuecomment-1629345550",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/44",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/14",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/23",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/7",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/AngleProtocol/merkl-contracts/commit/7402ee6b84789391479c5876b27be23fd579f7b2",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation/blob/main/README.md#mitigations-to-be-reviewed",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "erc20"
+  ]
+}

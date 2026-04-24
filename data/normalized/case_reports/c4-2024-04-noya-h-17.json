@@ -1,0 +1,77 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-17",
+  "component_types": [
+    "collateral-management",
+    "liquidation",
+    "connector",
+    "position-accounting",
+    "borrowing"
+  ],
+  "finding_title": "PrismaConnector can mint a position below the desired health factor",
+  "summary": "The PrismaConnector contract is responsible for minting ULTRA and managing the collateral backing it. When a trove is opened, collateral is put up and ULTRA minted to the PrismaConnector. The contract also allows to manage how much of the stablecoin is minted or repay some of it, to improve the collateral ratio (CR). Since collateral can be liquidated an additional check is made to ensure adjustment operations don’t leave the trove insolvent:",
+  "root_cause": "Prisma mint path checks the wrong health-factor condition or timing, allowing positions below the requested safety threshold",
+  "broken_invariants": [
+    "the collateral management path must not allow the condition described by \"PrismaConnector can mint a position below the desired health factor\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "The PrismaConnector contract is responsible for minting ULTRA and managing the collateral backing it. When a trove is opened, collateral is put up and ULTRA minted to the PrismaConnector. The contract also allows to manage how much of the stablecoin is minted or repay some of it, to improve the collateral ratio (CR). Since collateral can be liquidated an additional check is made to ensure adjustment operations don’t leave the trove insolvent:"
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Check the price for one unit of the collateral token using valueOracle. Then, call troveManager.getCurrentICR(address(this), collateralPrice) to get the actual CR and compare it to the minimum. function adjustTrove( IStakeNTroveZap zapContract, address tm, uint256 mFee, uint256 wAmount, uint256 bAmount, bool isBorrowing ) public onlyManager nonReentrant { bytes32 positionId = registry.calculatePositionId(address(this), PRISMA_POSITION_ID, abi.encode(zapContract, tm)); if (registry.getHoldingPositionIndex(vaultId, positionId, address(this), \"\") == 0) { revert IConnector_InvalidPosition(positionId); } IBorrowerOperations borrowerOps = zapContract.borrowerOps(); if (bAmount > 0 && !isBorrowing) { _approveOperations(ITroveManager(tm).debtToken(), address(borrowerOps), bAmount); } borrowerOps.adjustTrove(tm, address(this), mFee, 0, wAmount, bAmount, isBorrowing, address(this), address(this)); _updateTokenInRegistry(ITroveManager(tm).debtToken()); // get health factor - uint256 healthFactor = ITroveManager(tm).getNominalICR(address(this)); + uint256 collateralPrice = _getValue(ITroveManager(tm).collateralToken(), ChainlinkOracleConnector.USD(), 1); + uint256 healthFactor = ITroveManager("
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/georgiIvanov/noya-audit/blob/9c79b332eff82011dcfa1e8fd51bad805159d758/contracts/connectors/PrismaConnector.sol#L117-L120",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/925",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/925#event-12910185745",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "collateral",
+    "liquidation",
+    "connector",
+    "position-accounting",
+    "borrowing"
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Angle Findings and Analysis Report (2023-06)",
+  "source_url": "https://code4rena.com/reports/2023-06-angle",
+  "protocol_name": "Angle",
+  "project_repo": "https://github.com/code-423n4/2023-06-angle",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-06-angle-m-04",
+  "component_types": [
+    "collateral-management"
+  ],
+  "finding_title": "estimatedAPR() might return the wrong APR",
+  "summary": "estimatedAPR() might return the wrong APR and it will make users confused.",
+  "root_cause": "incorrect accounting or validation logic in estimatedAPR() might return the wrong APR, causing the protocol to compute or enforce the wrong state transition",
+  "broken_invariants": [
+    "the collateral management path must not allow the condition described by \"estimatedAPR() might return the wrong APR\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "estimatedAPR() might return the wrong APR and it will make users confused."
+  },
+  "why_not_higher": "final C4 severity is Medium; exploitability, affected value, or preconditions are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "estimatedAPR() should return 0 when lockedProfit() == 0. function estimatedAPR() external view returns (uint256 apr) { if (lockedProfit() == 0) return 0; //check locked profit first uint256 currentlyVestingProfit = vestingProfit; uint256 weightedAssets = vestingPeriod * totalAssets(); if (currentlyVestingProfit != 0 && weightedAssets != 0) apr = (currentlyVestingProfit * 3600 * 24 * 365 * BASE_18) / weightedAssets; }"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/AngleProtocol/angle-transmuter/blob/9707ee4ed3d221e02dcfcd2ebaa4b4d38d280936/contracts/savings/SavingsVest.sol#L110",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/28",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/28#issuecomment-1628642869",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/28#issuecomment-1628803223",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/19",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/28",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/AngleProtocol/angle-transmuter/commit/337c65d005bbd8ed6dfa76929d2cae475066756a",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation/blob/main/README.md#mitigations-to-be-reviewed",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "collateral"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-21",
+  "component_types": [
+    "redemption-flow",
+    "connector",
+    "position-accounting",
+    "token"
+  ],
+  "finding_title": "Decreasing a position in PendleConnector will remove it even if there’s still a stake at Penpie",
+  "summary": "decreasePosition() will falsely remove the market as a holding position, ignoring the staked Pendle market LP tokens at Penpie and thus that stake won’t be counted towards the TVL of the connector and the TVL of the AccountingManager the connector belongs to.",
+  "root_cause": "Pendle decrease-position logic removes the holding position even while staked Penpie/Pendle LP exposure remains active",
+  "broken_invariants": [
+    "the redemption flow path must not allow the condition described by \"Decreasing a position in PendleConnector will remove it even if there’s still a stake at Penpie\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "decreasePosition() will falsely remove the market as a holding position, ignoring the staked Pendle market LP tokens at Penpie and thus that stake won’t be counted towards the TVL of the connector and the TVL of the AccountingManager the connector belongs to."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "In the isMarketOpen() function check for the connector’s balance in the Penpie staking pool for this market. diff --git a/contracts/connectors/PendleConnector.sol b/contracts/connectors/PendleConnector.sol index 17607ee..e1b1208 100644 --- a/contracts/connectors/PendleConnector.sol +++ b/contracts/connectors/PendleConnector.sol @@ -304,7 +304,7 @@ contract PendleConnector is BaseConnector { (IPStandardizedYield _SY, IPPrincipalToken _PT, IPYieldToken _YT) = IPMarket(market).readTokens(); return ( _SY.balanceOf(address(this)) == 0 && _PT.balanceOf(address(this)) == 0 && _YT.balanceOf(address(this)) == 0 - && market.balanceOf(address(this)) == 0 + && market.balanceOf(address(this)) == 0 && pendleMarketDepositHelper.balance(market, address(this)) == 0 ); }"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/main/contracts/connectors/PendleConnector.sol#L223-L231",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/main/contracts/connectors/PendleConnector.sol#L303-L309",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/677",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/677#event-12910805143",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/677#issuecomment-2156655837",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "tvl-accounting",
+    "redemption",
+    "connector",
+    "position-accounting",
+    "pendle",
+    "erc20"
+  ]
+}

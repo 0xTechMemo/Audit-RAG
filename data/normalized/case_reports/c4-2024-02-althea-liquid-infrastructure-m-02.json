@@ -1,0 +1,111 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Althea Liquid Infrastructure Findings and Analysis Report (2024-02)",
+  "source_url": "https://code4rena.com/reports/2024-02-althea-liquid-infrastructure",
+  "protocol_name": "Althea Liquid Infrastructure",
+  "project_repo": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-02-althea-liquid-infrastructure-m-02",
+  "component_types": [
+    "reward-distribution",
+    "withdrawal-flow",
+    "token",
+    "nft"
+  ],
+  "finding_title": "Malicious users can prevent holders from claiming their rewards during a reward cycle by skipping it.",
+  "summary": "The Sponsors noted via discord communication:",
+  "root_cause": "permissionless denial-of-service condition in Malicious users can prevent holders from claiming their rewards during a reward cycle by skipping it., allowing one actor to block a required user or protocol operation",
+  "broken_invariants": [
+    "the reward distribution path must not allow the condition described by \"Malicious users can prevent holders from claiming their rewards during a reward cycle by skipping it.\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
+    "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The Sponsors noted via discord communication:"
+  },
+  "why_not_higher": "final C4 severity is Medium; exploitability, affected value, or preconditions are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Do not start a distribution cycle if there are no rewards that can be paid out to the approved holders and keep track of the rewards currently held in the liquidNFT. Only start reward cycles when this amount that is held in the liquidNFT is sent to the liquidERC20. This prevents malicious users from sending 1 wei of rewardTokens to the liquidERC20 to maliciously start a distribution cycle."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/84d65bad60cbc87c73dd43906a6fb46b1ba3830b/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L201-L204",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/119",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/119#issuecomment-1985816209",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/119#issuecomment-1986192939",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/119#issuecomment-1986830696",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/218",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/227",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/594",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/594#issuecomment-1974261475",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/594#issuecomment-1976438581",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "withdrawal",
+    "reward-accounting",
+    "distribution",
+    "erc20",
+    "front-running"
+  ]
+}

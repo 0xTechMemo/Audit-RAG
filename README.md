@@ -29,11 +29,12 @@
 - skill-aware triage 骨架
 
 当前状态：
-- `case_reports`: 19 条，主召回流只放 Medium/High 和少量手写高质量样本
-- `false_positive_cases`: 20 条，用于降级、误报和 QA-like caution 通道
+- `case_reports`: 97 条，主召回流只放 Medium/High 和少量手写高质量样本
+- `false_positive_cases`: 21 条，用于降级、误报和 QA-like caution 通道
 - `vulnerability_patterns`: 1 条
 - `component_checklists`: 1 条
 - `validation_recipes`: 1 条
+- `contest_notes`: 3 条，用于保存 audit page / mitigation review 上下文
 - `hybrid_search.py`: 已有最小 lexical-first 实现；向量检索尚未接入
 - `data/eval/retrieval_queries.jsonl`: 第一批手工 recall 查询样本
 

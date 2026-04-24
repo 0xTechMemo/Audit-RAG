@@ -1,0 +1,85 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-08",
+  "component_types": [
+    "vault",
+    "connector"
+  ],
+  "finding_title": "A Vault can steal all funds from another Vault through the Registry’s flash loan contract due to insufficient access control in Connector.sendTokensToTrustedAddress()",
+  "summary": "The keeper of a Vault can steal all funds from another Vault.",
+  "root_cause": "state/accounting validation gap in A Vault can steal all funds from another Vault through the Registry’s flash loan contract due to insufficient access control in Connector.sendTokensToTrustedAddress()",
+  "broken_invariants": [
+    "the vault path must not allow the condition described by \"A Vault can steal all funds from another Vault through the Registry’s flash loan contract due to insufficient access control in Connector.sendTokensToTrustedAddress()\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "The keeper of a Vault can steal all funds from another Vault."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Function BaseConnector.sendTokensToTrustedAddress() should be able to check that the caller of BalancerFlashLoan.makeFlashLoan() is authorized to perform calls into the Connector."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/9c79b332eff82011dcfa1e8fd51bad805159d758/contracts/connectors/BalancerFlashLoan.sol#L37-L44",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/9c79b332eff82011dcfa1e8fd51bad805159d758/contracts/helpers/BaseConnector.sol#L98-L99",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1327",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1327#issuecomment-2147881870",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues?q=is%3Aissue+label%3Aduplicate-1327+is%3Aclosed+-label%3Aunsatisfactory",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "vault",
+    "flash-loan",
+    "access-control",
+    "connector",
+    "balancer",
+    "theft"
+  ]
+}

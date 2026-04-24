@@ -1,0 +1,99 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-01",
+  "component_types": [
+    "oracle",
+    "connector"
+  ],
+  "finding_title": "Value of asset token can be incorrect when usage of ETH/USD Chainlink oracle is needed",
+  "summary": "There are tokens that have token/ETH but no token/USD Chainlink oracles currently in which these tokens have the in scope token behaviors described in https://code4rena.com/audits/2024-04-noya and should be supported by this protocol. To support these tokens, the ETH/USD Chainlink oracle can be used as a part of the route set by the following NoyaValueOracle.updatePriceRoute function for converting the token amount to ETH first and then converting the converted ETH amount to USD.",
+  "root_cause": "incorrect accounting or validation logic in Value of asset token can be incorrect when usage of ETH/USD Chainlink oracle is needed, causing the protocol to compute or enforce the wrong state transition",
+  "broken_invariants": [
+    "the oracle path must not allow the condition described by \"Value of asset token can be incorrect when usage of ETH/USD Chainlink oracle is needed\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "There are tokens that have token/ETH but no token/USD Chainlink oracles currently in which these tokens have the in scope token behaviors described in https://code4rena.com/audits/2024-04-noya and should be supported by this protocol. To support these tokens, the ETH/USD Chainlink oracle can be used as a part of the route set by the following NoyaValueOracle.updatePriceRoute function for converting the token amount to ETH first and then converting the converted ETH amount to USD."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "getValueFromChainlinkFeed(AggregatorV3Interface(primarySource), amount, getTokenDecimals(decimalsSource), isPrimaryInverse) returned by the ChainlinkOracleConnector.getValue function can be further divided by 10 ** 10 when asset is ETH, baseToken is USD, and isPrimaryInverse is false. This makes such return value be in USD’s decimals that is 8."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/cc3854f634a72bd4a8b597021887088ca2d6d29f/contracts/helpers/valueOracle/NoyaValueOracle.sol#L61-L64",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/cc3854f634a72bd4a8b597021887088ca2d6d29f/contracts/helpers/valueOracle/oracles/ChainlinkOracleConnector.sol#L115-L135",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/cc3854f634a72bd4a8b597021887088ca2d6d29f/contracts/helpers/valueOracle/oracles/ChainlinkOracleConnector.sol#L138-L141",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/cc3854f634a72bd4a8b597021887088ca2d6d29f/contracts/helpers/valueOracle/oracles/ChainlinkOracleConnector.sol#L89-L103",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1509",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1509#event-13323232610",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1509#issuecomment-2189853100",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/511",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "oracle",
+    "pricing",
+    "decimal-scaling",
+    "chainlink",
+    "connector"
+  ]
+}

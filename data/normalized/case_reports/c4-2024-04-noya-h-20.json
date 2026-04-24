@@ -1,0 +1,91 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-20",
+  "component_types": [
+    "vault",
+    "connector",
+    "position-accounting"
+  ],
+  "finding_title": "_getPositionTVL of UNIv3Connector wrongly assumes ownership of all liquidity of the provided ticks inside positionManager",
+  "summary": "When _getPositionTVL is called, it queries position information from the pool using the calculated key. However, it assumes that all liquidity within the provided ticks in the positionManager is owned by the connector.",
+  "root_cause": "incorrect accounting or validation logic in _getPositionTVL of UNIv3Connector wrongly assumes ownership of all liquidity of the provided ticks inside positionManager, causing the protocol to compute or enforce the wrong state transition",
+  "broken_invariants": [
+    "the vault path must not allow the condition described by \"_getPositionTVL of UNIv3Connector wrongly assumes ownership of all liquidity of the provided ticks inside positionManager\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "When _getPositionTVL is called, it queries position information from the pool using the calculated key. However, it assumes that all liquidity within the provided ticks in the positionManager is owned by the connector."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "User positionsManager positions getter instead to provide accurate liquidity owner by connector."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/main/contracts/connectors/UNIv3Connector.sol#L136-L138",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1030",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/708",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/708#issuecomment-2133838093",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/790",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/907",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "tvl-accounting",
+    "vault",
+    "owner-check",
+    "connector",
+    "position-accounting",
+    "uniswap-v3"
+  ]
+}

@@ -1,0 +1,182 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Althea Liquid Infrastructure Findings and Analysis Report (2024-02)",
+  "source_url": "https://code4rena.com/reports/2024-02-althea-liquid-infrastructure",
+  "protocol_name": "Althea Liquid Infrastructure",
+  "project_repo": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-02-althea-liquid-infrastructure-h-01",
+  "component_types": [
+    "reward-distribution",
+    "token"
+  ],
+  "finding_title": "Holders array can be manipulated by transferring or burning with amount 0, stealing rewards or bricking certain functions",
+  "summary": "LiquidInfrastructureERC20._beforeTokenTransfer() checks if the to address has a balance of 0, and if so, adds the address to the holders array.",
+  "root_cause": "manipulable pricing/accounting input in Holders array can be manipulated by transferring or burning with amount 0, stealing rewards or bricking certain functions, allowing an attacker-controlled state to influence protocol decisions",
+  "broken_invariants": [
+    "the reward distribution path must not allow the condition described by \"Holders array can be manipulated by transferring or burning with amount 0, stealing rewards or bricking certain functions\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "LiquidInfrastructureERC20._beforeTokenTransfer() checks if the to address has a balance of 0, and if so, adds the address to the holders array."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Adjust the logic in _beforeTokenTransfer to ignore burns, transfers where the amount is 0, and transfers where the recipient already has a positive balance. function _beforeTokenTransfer( address from, address to, uint256 amount ) internal virtual override { require(!LockedForDistribution, \"distribution in progress\"); if (!(to == address(0))) { require( isApprovedHolder(to), \"receiver not approved to hold the token\" ); } if (from == address(0) || to == address(0)) { _beforeMintOrBurn(); } - bool exists = (this.balanceOf(to) != 0); - if (!exists) { + if (to != address(0) && balanceOf(to) == 0 && amount > 0) holders.push(to); } }"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L142-L145",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure/blob/main/liquid-infrastructure/contracts/LiquidInfrastructureERC20.sol#L214-L231",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/101",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/102",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/122",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/129",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/134",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/141",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/146",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/153",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/160",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/162",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/17",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/171",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/175",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/180",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/186",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/191",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/193",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/194",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/225",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/239",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/240",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/243",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-althea-liquid-infrastructure-findings/issues/247",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "reward-accounting",
+    "erc20",
+    "theft"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-05",
+  "component_types": [
+    "connector",
+    "token"
+  ],
+  "finding_title": "Loss of funds in PendleConnector.depositIntoMarket()",
+  "summary": "PendleConnector contracts can lose out on funds when minting LP tokens.",
+  "root_cause": "Pendle deposit integration mishandles minted LP/accounting outputs, causing connector funds to be lost during market deposit",
+  "broken_invariants": [
+    "the connector path must not allow the condition described by \"Loss of funds in PendleConnector.depositIntoMarket()\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "PendleConnector contracts can lose out on funds when minting LP tokens."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Remove the call to market.skim() and integrate with MarketMathCore.addLiquidity() to pre-calculate the used SY and PT amounts which then can be supplied to market.mint(). This will ensure no tokens are lost."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/pendle-finance/pendle-core-v2-public/blob/e48767be54fd668c4ea693ac56d13186f2517e3d/contracts/core/Market/v3/PendleMarketV3.sol#L223-L229",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1363",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1363#issuecomment-2126553627",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1363#issuecomment-2143605258",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/473",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "connector",
+    "pendle",
+    "erc20"
+  ]
+}

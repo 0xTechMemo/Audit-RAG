@@ -1,0 +1,84 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-11",
+  "component_types": [
+    "collateral-management",
+    "connector",
+    "position-accounting"
+  ],
+  "finding_title": "SNXConnector.sol TVL calculation is incorrect",
+  "summary": "SNXConnector allows depositing collateral and minting SUSD.",
+  "root_cause": "incorrect accounting or validation logic in SNXConnector.sol TVL calculation is incorrect, causing the protocol to compute or enforce the wrong state transition",
+  "broken_invariants": [
+    "the collateral management path must not allow the condition described by \"SNXConnector.sol TVL calculation is incorrect\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "oracle, TVL, and collateral valuation must use correctly scaled, fresh, and manipulation-resistant inputs",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "SNXConnector allows depositing collateral and minting SUSD."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "The collateral calculation can just use totalDeposited. However the debt calculation is a bit tricky. The closest API for fetching debt is using updateAccountDebt https://github.com/Synthetixio/synthetix-v3/blob/main/protocol/synthetix/contracts/storage/Pool.sol#L366-L373, but it is not a view function. Not really sure what the best solution here is."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/Synthetixio/synthetix-v3/blob/main/protocol/synthetix/contracts/storage/Account.sol#L101-L116",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/Synthetixio/synthetix-v3/blob/main/protocol/synthetix/contracts/storage/Pool.sol#L366-L373",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1120",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1120#event-13146834833",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues?q=is%3Aissue+label%3Aduplicate-1120+is%3Aclosed+-label%3Aunsatisfactory",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "tvl-accounting",
+    "collateral",
+    "connector",
+    "position-accounting"
+  ]
+}

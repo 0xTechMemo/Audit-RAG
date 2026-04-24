@@ -1,0 +1,145 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Dyad Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-dyad",
+  "protocol_name": "Dyad",
+  "project_repo": "https://github.com/code-423n4/2024-04-dyad",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-dyad-h-04",
+  "component_types": [
+    "vault",
+    "withdrawal-flow",
+    "nft"
+  ],
+  "finding_title": "Attacker can frontrun user’s withdrawals to make them revert without costs",
+  "summary": "User’s withdrawals will be prevented from success and an attacker can keep it up without a cost by using a fake vault and a fake token.",
+  "root_cause": "withdrawal path depends on mutable vault/token state that can be cheaply changed by a frontrunner to force user withdrawals to revert",
+  "broken_invariants": [
+    "the vault path must not allow the condition described by \"Attacker can frontrun user’s withdrawals to make them revert without costs\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
+    "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "User’s withdrawals will be prevented from success and an attacker can keep it up without a cost by using a fake vault and a fake token."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Consider limiting anyone with any token vaults to update idToBlockOfLastDeposit. One of these mitigations can be used: - Prevent anyone to deposit to unowned dNft token. - Allow to only depositing using licensed vaults, so if the attacker try to front-runs he will lose some real tokens. - Since this used to protect against flash loans, no need to use it with all token vaults. This should be used only with vaults that can be used to mint DYAD. So, we can check if the deposit included in the vaultLicenser and keroseneManager licenser, we need to update the idToBlockOfLastDeposit. Here is a git diff for this fix: diff --git a/src/core/VaultManagerV2.sol b/src/core/VaultManagerV2.sol index fc574a8..73dbb6b 100644 --- a/src/core/VaultManagerV2.sol +++ b/src/core/VaultManagerV2.sol @@ -124,7 +124,8 @@ contract VaultManagerV2 is IVaultManager, Initializable { external isValidDNft(id) { - idToBlockOfLastDeposit[id] = block.number; + if (vaultLicenser.isLicensed(vault) || keroseneManager.isLicensed(vault)) + idToBlockOfLastDeposit[id] = block.number; Vault _vault = Vault(vault); _vault.asset().safeTransferFrom(msg.sender, address(vault), amount); _vault.deposit(id, amount);"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1084",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1089",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1162",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1262",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/1266",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/365",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/384",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/465",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/543",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/584",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/590",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/896",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/908",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/930",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/930#event-13192013792",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/930#issuecomment-2100864197",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-dyad-findings/issues/963",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "vault",
+    "withdrawal",
+    "flash-loan",
+    "owner-check",
+    "front-running"
+  ]
+}

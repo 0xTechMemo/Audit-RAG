@@ -1,0 +1,94 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Noya Findings and Analysis Report (2024-04)",
+  "source_url": "https://code4rena.com/reports/2024-04-noya",
+  "protocol_name": "Noya",
+  "project_repo": "https://github.com/code-423n4/2024-04-noya",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-04-noya-h-04",
+  "component_types": [
+    "withdrawal-flow",
+    "token"
+  ],
+  "finding_title": "executeWithdraw may be blocked if any of the users are blacklisted from the baseToken",
+  "summary": "Some tokens (e.g. USDC, USDT) have a contract level admin controlled address blocklist. If an address is blocked, then transfers to and from that address are forbidden.",
+  "root_cause": "permissionless denial-of-service condition in executeWithdraw may be blocked if any of the users are blacklisted from the baseToken, allowing one actor to block a required user or protocol operation",
+  "broken_invariants": [
+    "the withdrawal flow path must not allow the condition described by \"executeWithdraw may be blocked if any of the users are blacklisted from the baseToken\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "users must retain a reliable exit path unless an explicitly designed and validated pause or restriction is active",
+    "privileged, owner, and license checks must be enforced on every value-moving path, not only on the nominal entry point"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "Some tokens (e.g. USDC, USDT) have a contract level admin controlled address blocklist. If an address is blocked, then transfers to and from that address are forbidden."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "Validate that the receiver is not blacklisted before making the ERC20::safeTransfer call, whenever the baseToken has a contract level admin controlled address blocklist (e.g. USDC, USDT). function executeWithdraw(uint256 maxIterations) public onlyManager nonReentrant whenNotPaused { ... while ( currentWithdrawGroup.lastId > firstTemp && withdrawQueue.queue[firstTemp].calculationTime + withdrawWaitingTime <= block.timestamp // @audit-info use withdrawRequest time && i < maxIterations ) { i += 1; WithdrawRequest memory data = withdrawQueue.queue[firstTemp]; uint256 shares = data.shares; // calculate the base token amount that the user will receive based on the total available amount uint256 baseTokenAmount = data.amount * currentWithdrawGroup.totalABAmount / currentWithdrawGroup.totalCBAmountFullfilled; withdrawRequestsByAddress[data.owner] -= shares; _burn(data.owner, shares); processedBaseTokenAmount += data.amount; { uint256 feeAmount = baseTokenAmount * withdrawFee / FEE_PRECISION; withdrawFeeAmount += feeAmount; baseTokenAmount = baseTokenAmount - feeAmount; } + if (baseToken.isBlacklisted(data.receiver)) { + continue; + } baseToken.safeTransfer(data.receiver, baseTokenAmount); "
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-04-noya/blob/main/contracts/accountingManager/AccountingManager.sol#L428",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1426",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1426#event-12904835039",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues/1426#issuecomment-2143851561",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya-findings/issues?q=is%3Aissue+label%3Aduplicate-1426+is%3Aclosed+-label%3Aunsatisfactory",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-04-noya/tree/9c79b332eff82011dcfa1e8fd51bad805159d758/testFoundry",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/d-xo/weird-erc20#tokens-with-blocklists",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "withdrawal",
+    "blacklist",
+    "owner-check",
+    "erc20",
+    "denial-of-service"
+  ]
+}

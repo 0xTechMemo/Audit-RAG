@@ -1,0 +1,110 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Angle Findings and Analysis Report (2023-06)",
+  "source_url": "https://code4rena.com/reports/2023-06-angle",
+  "protocol_name": "Angle",
+  "project_repo": "https://github.com/code-423n4/2023-06-angle",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-06-angle-h-03",
+  "component_types": [
+    "reward-distribution"
+  ],
+  "finding_title": "Poor detection of disputed trees allows claiming tokens from a disputed tree",
+  "summary": "Users can claim rewards from a Merkle tree that’s being disputed. This can potentially lead to loss of funds since a malicious trusted EOA can claim funds from a malicious tree while it’s being disputed.",
+  "root_cause": "Merkle claim logic does not block claims from a currently disputed tree, allowing funds to be claimed before dispute resolution",
+  "broken_invariants": [
+    "the reward distribution path must not allow the condition described by \"Poor detection of disputed trees allows claiming tokens from a disputed tree\" to change user balances, collateralization, or protocol availability unexpectedly",
+    "reward and distribution accounting must preserve each participant’s accrued value across claims, transfers, and configuration changes",
+    "state changes must remain internally consistent across all affected accounting buckets and external integrations"
+  ],
+  "attack_preconditions": [
+    "the affected component is deployed or configured in the way described by the final report",
+    "the report-described user, keeper, vault, connector, oracle, or liquidation flow is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, keeper, liquidator, vault participant, or protocol-integrated actor able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described function sequence or state transition",
+    "observe mispricing, accounting drift, value loss, fund lock, or denial of service"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "Users can claim rewards from a Merkle tree that’s being disputed. This can potentially lead to loss of funds since a malicious trusted EOA can claim funds from a malicious tree while it’s being disputed."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with public report evidence and affected code/finding references",
+  "common_false_positive_angles": [
+    "verify the same component and configuration are in scope",
+    "check whether the issue is reachable by an untrusted or economically motivated actor",
+    "confirm the impact is more than a view-only mismatch, dust loss, or privileged-only misconfiguration"
+  ],
+  "mitigations": [
+    "When the disputer address is set (after a call to disputeTree), consider treating the current tree as disputed, no matter whether the dispute period has passed or not. E.g. consider these changes: diff --git a/contracts/Distributor.sol b/contracts/Distributor.sol index bc4e49f..8fb6a4c 100644 --- a/contracts/Distributor.sol +++ b/contracts/Distributor.sol @@ -197,7 +197,7 @@ contract Distributor is UUPSHelper { /// @notice Returns the MerkleRoot that is currently live for the contract function getMerkleRoot() public view returns (bytes32) { - if (block.timestamp >= endOfDisputePeriod) return tree.merkleRoot; + if (block.timestamp >= endOfDisputePeriod && disputer == address(0)) return tree.merkleRoot; else return lastTree.merkleRoot; }"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/AngleProtocol/merkl-contracts/blob/1825925daef8b22d9d6c0a2bc7aab3309342e786/contracts/Distributor.sol#L199",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/AngleProtocol/merkl-contracts/blob/1825925daef8b22d9d6c0a2bc7aab3309342e786/contracts/Distributor.sol#L200",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/AngleProtocol/merkl-contracts/blob/1825925daef8b22d9d6c0a2bc7aab3309342e786/contracts/Distributor.sol#L237",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/10",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/10#issuecomment-1627826653",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-06-angle-findings/issues/25",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/15",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/24",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation-findings/issues/8",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/AngleProtocol/merkl-contracts/commit/82d8c0ff37b4a9ad8277cac4aef85f3ca0ad5c7c",
+      "note": "GitHub link from final Code4rena report"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-07-angle-mitigation/blob/main/README.md#mitigations-to-be-reviewed",
+      "note": "GitHub link from final Code4rena report"
+    }
+  ],
+  "tags": [
+    "reward-accounting",
+    "distribution"
+  ]
+}
