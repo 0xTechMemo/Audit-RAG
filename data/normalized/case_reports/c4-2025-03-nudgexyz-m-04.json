@@ -1,0 +1,77 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03)",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz",
+  "protocol_name": "Nudge.xyz",
+  "project_repo": "https://github.com/code-423n4/2025-03-nudgexyz",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "poc-or-scenario-reproduction"
+  ],
+  "id": "c4-2025-03-nudgexyz-m-04",
+  "component_types": [
+    "campaign",
+    "dex-integration",
+    "flash-loan",
+    "reward-accounting",
+    "identity-validation"
+  ],
+  "finding_title": "Missing initiator-to-participant verification lets attacker allocate campaign rewards to a Uniswap V2 pool via flash swap",
+  "summary": "handleReallocation accepts a userAddress supplied through Li.Fi Executor calldata and does not verify that the transaction initiator is the actual campaign participant. An attacker can flash-borrow target tokens from a Uniswap V2 pool, route them through Executor into handleReallocation, and set userAddress to the pool address. NudgeCampaign sends the target tokens back to the pool in the same transaction, satisfying the flash swap, while registering a participation for the pool address. Because the pool continues to hold enough target tokens, off-chain balance monitoring may not invalidate it, allowing the attacker to consume or lock campaign reward allocation at only the flash-swap fee cost.",
+  "root_cause": "campaign participation identity is based on an arbitrary calldata userAddress rather than a verified transaction initiator or recipient with economic ownership of the swapped tokens",
+  "broken_invariants": [
+    "campaign rewards should be allocated only to the real user who initiated and funded the reallocation",
+    "a DEX pool receiving returned flash-liquidity should not count as a legitimate campaign participant",
+    "off-chain balance monitoring should not be the only defense against arbitrary participant assignment"
+  ],
+  "attack_preconditions": [
+    "target token has a Uniswap V2-style pool with sufficient liquidity",
+    "Li.Fi Executor can call handleReallocation with attacker-controlled userAddress",
+    "handleReallocation does not require tx initiator or swap sender to equal userAddress",
+    "campaign has unallocated rewards and monitoring treats pool token balance as valid participation"
+  ],
+  "attacker_capability": "permissionless user/contract able to perform a flash swap and call Executor.swapAndExecute with crafted handleReallocation calldata",
+  "trigger_actions": [
+    "flash-swap target tokens from Uniswap V2 pool",
+    "call Executor.swapAndExecute to forward tokens to NudgeCampaign",
+    "set handleReallocation userAddress to the pool address",
+    "let NudgeCampaign transfer tokens back to the pool and record participation"
+  ],
+  "impact": {
+    "type": "reward-lock-and-campaign-denial-of-service",
+    "description": "attacker can allocate large reward amounts to a pool address, block legitimate campaign participation, and leave rewards locked unless protocol manually invalidates the participation"
+  },
+  "why_not_higher": "funds can potentially be recovered by manual invalidation and the attacker pays pool fee; the report classifies severity as Medium",
+  "why_not_lower": "the exploit is permissionless, low-cost relative to affected rewards, and can consume full campaign allocation or cause a campaign DoS",
+  "common_false_positive_angles": [
+    "if userAddress is cryptographically bound to the real swap initiator, the pool-address assignment fails",
+    "if pool addresses are blacklisted or monitoring invalidates pool participations, the exploit may be contained",
+    "if the swap integration never forwards arbitrary userAddress calldata, the issue is mitigated"
+  ],
+  "mitigations": [
+    "require the transaction initiator or verified swap sender to match the campaign participant",
+    "bind userAddress with signed intent or trusted integration metadata",
+    "blacklist DEX pool addresses as participants only as defense-in-depth",
+    "make monitoring aware of pool-address and flash-liquidity patterns"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "NudgeCampaign.sol#L164-L233 handleReallocation",
+      "note": "report link used commit 382a59c315b8a421f2acae5fd856bb9ca48a7a10"
+    }
+  ],
+  "tags": [
+    "identity-validation",
+    "flash-swap",
+    "uniswap-v2",
+    "executor-trust-boundary",
+    "reward-lock",
+    "campaign-dos",
+    "lifi",
+    "medium"
+  ]
+}

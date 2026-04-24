@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LowNonCriticalCase",
+  "type": "object",
+  "required": [
+    "id",
+    "source_type",
+    "protocol_name",
+    "issue_title",
+    "classification",
+    "summary",
+    "why_not_medium_or_high",
+    "tags"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "source_report_section": {
+      "type": "string"
+    },
+    "protocol_name": {
+      "type": "string"
+    },
+    "project_repo": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "component_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "issue_title": {
+      "type": "string"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "low",
+        "non-critical",
+        "qa"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "root_cause": {
+      "type": "string"
+    },
+    "why_not_medium_or_high": {
+      "type": "string"
+    },
+    "operational_risk": {
+      "type": "string"
+    },
+    "affected_functions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_mitigation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "when_it_could_escalate": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "retrieval_channel": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": true
+}

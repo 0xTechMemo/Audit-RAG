@@ -1,0 +1,82 @@
+# audit-rag
+
+一个面向竞赛型智能合约审计的本地 RAG 工作台。
+
+## 项目定位
+
+这个项目不是通用聊天机器人，也不是自动报洞器。
+
+它的目标是服务 Code4rena、Sherlock 这类比赛型审计流程，帮助你：
+- 更快召回相关漏洞模式
+- 更快拿到组件级审计 checklist
+- 更快判断候选问题值不值得继续追
+- 更少浪费时间在误报、弱问题、QA-only 方向上
+- 更快形成验证思路与证据补强路径
+
+## 首版范围
+
+当前版本采用：
+- Python-first
+- local-first
+- CLI-first
+- 结构化知识库优先
+
+首版重点：
+- 本地结构化数据
+- 混合检索：关键词 + 语义 + 元数据过滤
+- 候选问题 triage
+- false positive 抑制
+- skill-aware triage 骨架
+
+当前架构默认采用：
+- skill 定义阶段、质量门槛、默认输入输出契约
+- RAG 提供 pattern / case / false-positive / validation 证据
+- AI 在阶段上下文和检索证据约束下组织结论
+
+一句话：
+skill 管流程，RAG 管知识，AI 管推理。
+
+## 目录说明
+
+- `configs/`：项目配置
+- `data/`：原始数据、结构化数据、chunk、索引、评测集
+- `docs/`：PRD、schema、标签体系、检索设计、阶段架构、术语表、周计划
+- `src/audit_rag/orchestration/`：skill-aware 工作流运行时与阶段配置
+- `src/audit_rag/contracts/`：阶段输入输出契约模型
+- `schemas/`：核心知识对象的 JSON Schema
+- `src/audit_rag/`：Python 源码
+- `tests/`：测试目录
+
+## 快速开始
+
+```bash
+cd /Users/qwe/Audit/audit-rag
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -e .[dev]
+python -m audit_rag.cli.main --help
+pytest -q
+```
+
+## 建议先读的文档
+
+1. `docs/prd.md`
+2. `docs/data-schema.md`
+3. `docs/tag-taxonomy.md`
+4. `docs/retrieval-design.md`
+5. `docs/skill-aware-architecture.md`
+6. `docs/triage-interface.md`
+7. `docs/glossary-zh.md`
+8. `docs/smart-contract-audit-glossary-zh.md`
+9. `docs/week-1-plan.md`
+10. `docs/local-setup.md`
+
+## 设计原则
+
+1. 所有输出都要可追溯到来源。
+2. 相似模式不等于漏洞已成立。
+3. 严重性判断默认保守。
+4. false-positive 抑制是核心能力，不是附属功能。
+5. 优先优化真实审计流程里的可用性，而不是做演示型功能。
+6. skill 管流程，RAG 管知识，AI 管推理。

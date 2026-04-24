@@ -1,0 +1,19 @@
+project:
+  name: audit-rag
+  mode: local
+  language_focus: solidity
+  competition_focus:
+    - code4rena
+    - sherlock
+
+paths:
+  raw_data: data/raw
+  normalized_data: data/normalized
+  chunks: data/chunks
+  indexes: data/indexes
+  eval: data/eval
+
+defaults:
+  output_format: json
+  severity_posture: conservative
+  include_false_positive_checks: true

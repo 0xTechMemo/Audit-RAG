@@ -1,0 +1,84 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Kinetiq Findings and Analysis Report (2025-04)",
+  "source_url": "https://code4rena.com/reports/2025-04-kinetiq#m-05",
+  "protocol_name": "Kinetiq",
+  "project_repo": "https://github.com/code-423n4/2025-04-kinetiq",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "disputed-by-sponsor-but-included-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2025-04-kinetiq-m-05",
+  "component_types": [
+    "staking-manager",
+    "khype-token",
+    "validator-management",
+    "withdrawal-flow",
+    "deposit-flow",
+    "l1-operations"
+  ],
+  "finding_title": "Attacker can partially DoS L1 operations in StakingManager by making huge number of deposits",
+  "summary": "When a user stakes in StakingManager, initially the funds go towards hypeBuffer and when it is filled, every deposit is placed in a L1 operation queue.",
+  "root_cause": "The whole pending deposit queue is deleted at once without the possibility of doing it partially.",
+  "broken_invariants": [
+    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
+    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
+    "The validator-management accounting/control flow should preserve user funds and protocol solvency."
+  ],
+  "attack_preconditions": [
+    "Protocol state reaches the report-described edge case or queue configuration",
+    "Relevant manager/operator/user flow is executed as described in the public finding"
+  ],
+  "attacker_capability": "external user or operational actor able to trigger the affected protocol path",
+  "trigger_actions": [
+    "execute the affected function sequence described in the report",
+    "observe accounting/state transition divergence or operation failure"
+  ],
+  "impact": {
+    "type": "protocol-disruption-or-loss-of-expected-functionality",
+    "description": "When a user stakes in StakingManager, initially the funds go towards hypeBuffer and when it is filled, every deposit is placed in a L1 operation queue."
+  },
+  "why_not_higher": "the report classified this as Medium rather than High; impact is bounded to disruption, bypass, or indirect value loss rather than unconditional total protocol loss",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and exploit/impact narrative",
+  "common_false_positive_angles": [
+    "check whether the affected function is actually reachable under current roles/pauses/configuration",
+    "check whether sponsor mitigations or operational assumptions fully eliminate the stated state transition",
+    "check whether the code version and line links match the audited commit"
+  ],
+  "mitigations": [
+    "Allow deleting _pendingDeposits in multiple transactions. On each call, make sure to check that all elements have been processed."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L601-L620",
+      "note": "GitHub permalink from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L708-L711",
+      "note": "GitHub permalink from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L750-L754",
+      "note": "GitHub permalink from final report"
+    }
+  ],
+  "tags": [
+    "kinetiq",
+    "staking",
+    "withdrawal",
+    "buffer-accounting",
+    "delegation",
+    "l1-integration",
+    "queue-processing",
+    "denial-of-service",
+    "gas-dos",
+    "validator-management",
+    "medium"
+  ]
+}

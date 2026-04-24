@@ -1,0 +1,32 @@
+{
+  "id": "recipe-reward-debt-desync-01",
+  "pattern_id": "pattern-reward-debt-desync",
+  "test_style": "unit-test",
+  "goal": "Show that a user can claim more rewards than fairly accrued because reward baseline is synchronized too late.",
+  "setup_requirements": [
+    "mock reward token",
+    "at least two users for fairness comparison",
+    "reward index or per-share accumulator"
+  ],
+  "minimal_state": [
+    "seed reward emissions",
+    "user A deposits",
+    "advance reward index",
+    "user A partially withdraws before reward debt sync",
+    "user A claims rewards"
+  ],
+  "attacker_actions": [
+    "trigger the balance mutation path before reward baseline update",
+    "claim rewards after stale state is preserved long enough to affect payout"
+  ],
+  "assertions": [
+    "attacker claimed reward exceeds expected fair share",
+    "post-claim reward accounting no longer reconciles cleanly against expected distribution"
+  ],
+  "common_failures": [
+    "claim path performs a full synchronization before payout",
+    "withdraw path settles pending rewards before mutating balance",
+    "the suspected path is unreachable due to earlier guard logic"
+  ],
+  "notes": "When possible, compare attacker reward against a reference implementation or a manually computed fair-share baseline."
+}

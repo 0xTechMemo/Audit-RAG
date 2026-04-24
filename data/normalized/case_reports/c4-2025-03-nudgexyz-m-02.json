@@ -1,0 +1,74 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03)",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz",
+  "protocol_name": "Nudge.xyz",
+  "project_repo": "https://github.com/code-423n4/2025-03-nudgexyz",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "poc-or-scenario-reproduction"
+  ],
+  "id": "c4-2025-03-nudgexyz-m-02",
+  "component_types": [
+    "campaign",
+    "factory",
+    "access-control",
+    "cross-protocol-integration"
+  ],
+  "finding_title": "Permissionless Li.Fi Executor can repeatedly renounce its SWAP_CALLER_ROLE and DoS handleReallocation",
+  "summary": "The protocol grants SWAP_CALLER_ROLE to Li.Fi Executor so Executor can call handleReallocation after swaps. Because Executor.swapAndExecute is permissionless and can be instructed to call arbitrary target calldata, any user can make Executor call renounceRole on NudgeCampaignFactory for its own SWAP_CALLER_ROLE. This removes the authorized caller needed for subsequent reallocations. Admins can grant the role again, but the attacker can repeat the renounce flow, creating a persistent operational DoS.",
+  "root_cause": "a permissionless integration contract that can execute arbitrary calls is assigned a revocable AccessControl role and is allowed to renounce that role through attacker-supplied calldata",
+  "broken_invariants": [
+    "the configured swap executor should remain authorized unless changed by governance/admin",
+    "permissionless users should not be able to disable protocol swap/reallocation flow",
+    "role lifecycle for integration addresses should not be controllable by the integration contract via arbitrary external calldata"
+  ],
+  "attack_preconditions": [
+    "Li.Fi Executor is granted SWAP_CALLER_ROLE",
+    "Executor can be called permissionlessly via swapAndExecute",
+    "Executor can be directed to call NudgeCampaignFactory.renounceRole for SWAP_CALLER_ROLE",
+    "handleReallocation depends on that role for authorization"
+  ],
+  "attacker_capability": "permissionless user able to submit calldata through Executor.swapAndExecute",
+  "trigger_actions": [
+    "call Executor.swapAndExecute",
+    "target NudgeCampaignFactory.renounceRole(SWAP_CALLER_ROLE, executor)",
+    "repeat after admin re-grants role"
+  ],
+  "impact": {
+    "type": "denial-of-service",
+    "description": "future handleReallocation calls from the intended executor fail until admin restores the role; attacker can repeat the action and keep the campaign flow unavailable"
+  },
+  "why_not_higher": "the attack disables participation flow but does not directly steal assets or permanently seize protocol control",
+  "why_not_lower": "the action is permissionless, repeatable, and blocks a core campaign function until admin intervention",
+  "common_false_positive_angles": [
+    "if the executor cannot call arbitrary destinations, the renounceRole route may be unavailable",
+    "if the protocol stores executor as an immutable address check instead of AccessControl role membership, renounceRole cannot remove authorization",
+    "if renounceRole is disabled for integration roles, this specific DoS is mitigated"
+  ],
+  "mitigations": [
+    "do not rely on a renounceable AccessControl role for a permissionless arbitrary-call executor",
+    "store and compare the executor address directly where appropriate",
+    "override or guard renounceRole for critical integration roles",
+    "restrict executor-mediated calls to expected campaign functions and calldata"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "NudgeCampaign.sol#L164-L233; NudgePointsCampaigns.sol#L126-L178; NudgeCampaignFactory.sol role setup",
+      "note": "Executor has SWAP_CALLER_ROLE and can be induced to renounce it"
+    }
+  ],
+  "tags": [
+    "access-control",
+    "role-renounce-dos",
+    "executor-trust-boundary",
+    "lifi",
+    "campaign-factory",
+    "denial-of-service",
+    "medium"
+  ]
+}

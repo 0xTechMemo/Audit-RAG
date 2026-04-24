@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContestNote",
+  "type": "object",
+  "required": [
+    "id",
+    "contest_name",
+    "repo_url"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "contest_name": {
+      "type": "string"
+    },
+    "repo_url": {
+      "type": "string"
+    },
+    "commit": {
+      "type": "string"
+    },
+    "scope_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trusted_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "known_issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "architecture_summary": {
+      "type": "string"
+    },
+    "hotspot_modules": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "candidate_leads": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "dead_ends": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": true
+}

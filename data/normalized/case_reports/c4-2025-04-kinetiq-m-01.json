@@ -1,0 +1,69 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Kinetiq Findings and Analysis Report (2025-04)",
+  "source_url": "https://code4rena.com/reports/2025-04-kinetiq#m-01",
+  "protocol_name": "Kinetiq",
+  "project_repo": "https://github.com/code-423n4/2025-04-kinetiq",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2025-04-kinetiq-m-01",
+  "component_types": [
+    "staking-manager",
+    "validator-management",
+    "deposit-flow"
+  ],
+  "finding_title": "Incorrect Balance Check in Validator Redelegation Process May Block Legitimate Rebalancing Operations",
+  "summary": "The processValidatorRedelegation function in the StakingManager contract contains an incorrect balance check that could prevent legitimate rebalancing operations from being executed. The function checks the HyperEVM balance of the StakingManager contract, but the funds being redelegated exist on HyperCore, not on the HyperEVM.",
+  "root_cause": "Report-described logic/accounting flaw: The processValidatorRedelegation function in the StakingManager contract contains an incorrect balance check that could prevent legitimate rebalancing operations from being executed. The function checks the HyperEVM balance of the StakingManager contract, but the funds being redelegated exist on HyperCore, not on the HyperEVM.",
+  "broken_invariants": [
+    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
+    "The validator-management accounting/control flow should preserve user funds and protocol solvency.",
+    "The deposit-flow accounting/control flow should preserve user funds and protocol solvency."
+  ],
+  "attack_preconditions": [
+    "Protocol state reaches the report-described edge case or queue configuration",
+    "Relevant manager/operator/user flow is executed as described in the public finding"
+  ],
+  "attacker_capability": "external user or operational actor able to trigger the affected protocol path",
+  "trigger_actions": [
+    "execute the affected function sequence described in the report",
+    "observe accounting/state transition divergence or operation failure"
+  ],
+  "impact": {
+    "type": "protocol-disruption-or-loss-of-expected-functionality",
+    "description": "The processValidatorRedelegation function in the StakingManager contract contains an incorrect balance check that could prevent legitimate rebalancing operations from being executed. The function checks the HyperEVM balance of the StakingManager contract, but the funds being redelegated exist on HyperCore, not on the HyperEVM."
+  },
+  "why_not_higher": "the report classified this as Medium rather than High; impact is bounded to disruption, bypass, or indirect value loss rather than unconditional total protocol loss",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and exploit/impact narrative",
+  "common_false_positive_angles": [
+    "check whether the affected function is actually reachable under current roles/pauses/configuration",
+    "check whether sponsor mitigations or operational assumptions fully eliminate the stated state transition",
+    "check whether the code version and line links match the audited commit"
+  ],
+  "mitigations": [
+    "Remove the incorrect balance check from the processValidatorRedelegation function: function processValidatorRedelegation(uint256 amount) external nonReentrant whenNotPaused { require(msg.sender == address(validatorManager), \"Only ValidatorManager\"); require(amount > 0, \"Invalid amount\"); - require(address(this).balance >= amount, \"Insufficient balance\"); _distributeStake(amount, OperationType.RebalanceDeposit); }"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L365",
+      "note": "GitHub permalink from final report"
+    }
+  ],
+  "tags": [
+    "kinetiq",
+    "staking",
+    "pause-control",
+    "delegation",
+    "redelegation",
+    "event-emission",
+    "validator-management",
+    "access-control",
+    "medium"
+  ]
+}

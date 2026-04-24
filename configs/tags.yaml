@@ -1,0 +1,49 @@
+root_causes:
+  - auth-bypass
+  - state-desync
+  - rounding
+  - stale-data
+  - replay
+  - missing-validation
+  - unsafe-external-call
+  - token-assumption-mismatch
+  - init-bug
+  - storage-collision
+
+components:
+  - vault
+  - erc4626-vault
+  - staking
+  - reward-distribution
+  - lending
+  - router
+  - oracle
+  - bridge
+  - messaging
+  - governance
+  - auction
+  - upgradeability
+
+impact:
+  - direct-theft
+  - value-leakage
+  - unfair-allocation
+  - accounting-corruption
+  - insolvency
+  - dos
+  - stuck-funds
+
+severity_context:
+  - permissionless
+  - privileged-only
+  - misconfiguration-only
+  - user-mistake-dependent
+  - repeatable
+  - integration-only
+  - requires-special-token
+
+validation_status:
+  - public-validated
+  - locally-validated
+  - theory-only
+  - disputed

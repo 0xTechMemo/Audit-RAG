@@ -1,0 +1,94 @@
+{
+  // id：清单唯一标识。
+  "id": "checklist-reward-distribution",
+
+  // component_type：对应的组件类型。
+  // reward-distribution = 奖励分发模块。
+  "component_type": "reward-distribution",
+
+  // description：这份 checklist 是给什么用的。
+  // 中文翻译：用于检查奖励累计、检查点同步和 claim 正确性的审计清单。
+  "description": "Checklist for reward accrual, checkpoint synchronization, and claim correctness review.",
+
+  // core_invariants：这个组件最核心的不变量。
+  "core_invariants": [
+    "users should not receive more rewards than their effective accrual share",
+    "reward baseline updates must stay aligned with balance checkpoints",
+    "global emitted rewards and user-distributed rewards should remain reconcilable"
+  ],
+
+  // core_invariants 中文翻译：
+  // 1. 用户不应拿到超过其有效累计份额的奖励。
+  // 2. 奖励基线更新必须和余额检查点保持一致。
+  // 3. 全局发出的奖励与用户实际分配出去的奖励应能对账。
+
+  // trust_boundaries：这个组件的主要信任边界。
+  "trust_boundaries": [
+    "reward token semantics",
+    "reward distributor admin",
+    "staking or vault balance source"
+  ],
+
+  // trust_boundaries 中文翻译：
+  // 1. 奖励代币自身的语义/行为
+  // 2. 奖励分发管理员
+  // 3. 质押或 vault 提供的余额来源
+
+  // common_bug_classes：常见 bug 类型。
+  "common_bug_classes": [
+    "state-desync",
+    "rounding",
+    "double-claim",
+    "stale-checkpoint",
+    "unsafe-external-call"
+  ],
+
+  // common_bug_classes 中文翻译：
+  // 1. 状态不同步
+  // 2. 舍入误差
+  // 3. 重复领取
+  // 4. 过期检查点
+  // 5. 不安全的外部调用
+
+  // check_items：真正审代码时应逐条检查的事项。
+  "check_items": [
+    "check whether reward debt is synchronized before balance mutation",
+    "compare deposit, withdraw, and claim paths for ordering differences",
+    "verify whether zero-amount or partial-withdraw paths skip checkpoint updates",
+    "check whether reward token transfer happens before internal accounting finalization",
+    "verify that emergency or admin paths do not bypass accrual synchronization"
+  ],
+
+  // check_items 中文翻译：
+  // 1. 检查 reward debt 是否在余额变动前同步。
+  // 2. 对比 deposit / withdraw / claim 的执行顺序差异。
+  // 3. 检查零值或部分提取路径是否跳过检查点更新。
+  // 4. 检查奖励代币转账是否发生在内部记账完成之前。
+  // 5. 检查紧急或管理员路径是否绕过累计同步。
+
+  // test_ideas：可以直接转成测试用例的思路。
+  "test_ideas": [
+    "user deposits then partially withdraws before claim",
+    "two users stake at different times and compare fair reward distribution",
+    "zero-amount claim or withdraw edge case",
+    "reward token with callback-like behavior or failing transfer path"
+  ],
+
+  // test_ideas 中文翻译：
+  // 1. 用户存入后，在 claim 前做部分 withdraw。
+  // 2. 两个用户在不同时间质押，对比奖励是否公平。
+  // 3. 零金额 claim 或 withdraw 的边界情况。
+  // 4. 奖励代币存在类似回调行为或转账失败路径。
+
+  // related_pattern_ids：相关漏洞模式 ID。
+  "related_pattern_ids": [
+    "pattern-reward-debt-desync"
+  ],
+
+  // tags：标签。
+  "tags": [
+    "reward-distribution",
+    "accounting-corruption",
+    "value-leakage"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "fp-admin-bad-slippage-config-01",
+  "issue_claim": "Admin can set unsafe slippage and cause poor swap execution",
+  "why_it_looked_bad": "Excessive slippage can obviously harm execution quality and may appear to expose user funds to avoidable loss.",
+  "why_not_valid": "The issue depends primarily on trusted admin misconfiguration rather than a permissionless exploit path. In the ordinary trust model this is an operational risk, not a submission-ready HM finding.",
+  "classification": "qa",
+  "downgrade_reason": "privileged misconfiguration",
+  "trust_assumption": "the admin role is trusted to configure swap parameters safely",
+  "when_it_could_be_real": [
+    "if an untrusted role can change slippage configuration",
+    "if user funds are forcibly routed through admin-controlled execution without user-set protection",
+    "if config updates can be front-run into user execution paths"
+  ],
+  "source_url": "local://samples/fp-admin-bad-slippage-config-01",
+  "tags": [
+    "misconfiguration-only",
+    "privileged-only",
+    "router"
+  ]
+}

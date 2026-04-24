@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ComponentChecklist",
+  "type": "object",
+  "required": [
+    "id",
+    "component_type",
+    "core_invariants",
+    "check_items",
+    "tags"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "component_type": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "core_invariants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trust_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "common_bug_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "check_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "test_ideas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "related_pattern_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": true
+}

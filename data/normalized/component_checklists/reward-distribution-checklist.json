@@ -1,0 +1,43 @@
+{
+  "id": "checklist-reward-distribution",
+  "component_type": "reward-distribution",
+  "description": "Checklist for reward accrual, checkpoint synchronization, and claim correctness review.",
+  "core_invariants": [
+    "users should not receive more rewards than their effective accrual share",
+    "reward baseline updates must stay aligned with balance checkpoints",
+    "global emitted rewards and user-distributed rewards should remain reconcilable"
+  ],
+  "trust_boundaries": [
+    "reward token semantics",
+    "reward distributor admin",
+    "staking or vault balance source"
+  ],
+  "common_bug_classes": [
+    "state-desync",
+    "rounding",
+    "double-claim",
+    "stale-checkpoint",
+    "unsafe-external-call"
+  ],
+  "check_items": [
+    "check whether reward debt is synchronized before balance mutation",
+    "compare deposit, withdraw, and claim paths for ordering differences",
+    "verify whether zero-amount or partial-withdraw paths skip checkpoint updates",
+    "check whether reward token transfer happens before internal accounting finalization",
+    "verify that emergency or admin paths do not bypass accrual synchronization"
+  ],
+  "test_ideas": [
+    "user deposits then partially withdraws before claim",
+    "two users stake at different times and compare fair reward distribution",
+    "zero-amount claim or withdraw edge case",
+    "reward token with callback-like behavior or failing transfer path"
+  ],
+  "related_pattern_ids": [
+    "pattern-reward-debt-desync"
+  ],
+  "tags": [
+    "reward-distribution",
+    "accounting-corruption",
+    "value-leakage"
+  ]
+}

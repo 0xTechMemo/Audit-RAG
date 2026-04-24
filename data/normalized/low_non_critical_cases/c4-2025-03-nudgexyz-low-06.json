@@ -1,0 +1,41 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz#low-risk-and-non-critical-issues",
+  "source_report_section": "Low Risk and Non-Critical Issues",
+  "protocol_name": "Nudge.xyz",
+  "project_repo": "https://github.com/code-423n4/2025-03-nudgexyz",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2025-03-nudgexyz-low-06",
+  "component_types": [
+    "points-campaign",
+    "campaign-existence",
+    "input-validation"
+  ],
+  "issue_title": "Missing campaign existence check in NudgePointsCampaigns.handleReallocation",
+  "classification": "low",
+  "summary": "NudgePointsCampaigns.handleReallocation loads a Campaign struct by ID but does not first verify that the campaign exists. A non-existent ID resolves to a default empty struct with zero values, allowing the function to proceed until a silent or confusing failure occurs.",
+  "root_cause": "missing existence check before operating on campaign storage loaded by ID",
+  "why_not_medium_or_high": "the described impact is silent failure or unexpected behavior rather than a demonstrated permissionless value extraction or durable DoS against valid campaigns",
+  "operational_risk": "callers and integrations may see confusing failures, wasted gas, or ambiguous behavior when invalid campaign IDs are used",
+  "affected_functions": [
+    "NudgePointsCampaigns.handleReallocation"
+  ],
+  "recommended_mitigation": [
+    "check that campaign.targetToken is non-zero or maintain an explicit exists flag",
+    "revert with a clear CampaignDoesNotExist error before token transfer or accounting logic"
+  ],
+  "when_it_could_escalate": [
+    "if invalid campaign IDs can alter shared accounting state",
+    "if integrations retry or mis-handle silent failures",
+    "if default zero values interact with native token or token transfer assumptions"
+  ],
+  "tags": [
+    "low",
+    "campaign-existence",
+    "input-validation",
+    "points-campaign",
+    "silent-failure"
+  ]
+}

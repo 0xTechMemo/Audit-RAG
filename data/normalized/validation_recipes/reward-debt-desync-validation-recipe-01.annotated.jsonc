@@ -1,0 +1,79 @@
+{
+  // id：验证方案的唯一标识。
+  "id": "recipe-reward-debt-desync-01",
+
+  // pattern_id：它服务于哪个漏洞模式。
+  "pattern_id": "pattern-reward-debt-desync",
+
+  // test_style：测试类型。
+  // unit-test = 单元测试。
+  "test_style": "unit-test",
+
+  // goal：这份验证方案要证明什么。
+  // 中文翻译：证明由于奖励基线同步过晚，用户可以领取超过公平应得的奖励。
+  "goal": "Show that a user can claim more rewards than fairly accrued because reward baseline is synchronized too late.",
+
+  // setup_requirements：测试前需要准备什么。
+  "setup_requirements": [
+    "mock reward token",
+    "at least two users for fairness comparison",
+    "reward index or per-share accumulator"
+  ],
+
+  // setup_requirements 中文翻译：
+  // 1. 一个 mock 奖励代币
+  // 2. 至少两个用户，用于做公平性对比
+  // 3. 奖励指数或 per-share 累计器
+
+  // minimal_state：最小复现状态。
+  "minimal_state": [
+    "seed reward emissions",
+    "user A deposits",
+    "advance reward index",
+    "user A partially withdraws before reward debt sync",
+    "user A claims rewards"
+  ],
+
+  // minimal_state 中文翻译：
+  // 1. 先注入奖励发放
+  // 2. 用户 A 存入
+  // 3. 推进奖励指数
+  // 4. 用户 A 在 reward debt 同步前做部分 withdraw
+  // 5. 用户 A 领取奖励
+
+  // attacker_actions：攻击者动作。
+  "attacker_actions": [
+    "trigger the balance mutation path before reward baseline update",
+    "claim rewards after stale state is preserved long enough to affect payout"
+  ],
+
+  // attacker_actions 中文翻译：
+  // 1. 先触发余额变动路径，再让奖励基线延后更新。
+  // 2. 在过时状态仍会影响 payout 时执行 claim。
+
+  // assertions：关键断言。你要在测试里证明什么结果。
+  "assertions": [
+    "attacker claimed reward exceeds expected fair share",
+    "post-claim reward accounting no longer reconciles cleanly against expected distribution"
+  ],
+
+  // assertions 中文翻译：
+  // 1. 攻击者实际领取的奖励超过公平应得份额。
+  // 2. claim 后的奖励记账无法与预期分配结果干净对账。
+
+  // common_failures：为什么这个验证可能失败。
+  "common_failures": [
+    "claim path performs a full synchronization before payout",
+    "withdraw path settles pending rewards before mutating balance",
+    "the suspected path is unreachable due to earlier guard logic"
+  ],
+
+  // common_failures 中文翻译：
+  // 1. claim 路径会在支付前完整同步状态。
+  // 2. withdraw 路径会在修改余额前先结算待发奖励。
+  // 3. 你怀疑的路径实际上被更早的 guard 阻断了。
+
+  // notes：补充说明。
+  // 中文翻译：如果可以，最好把攻击者领取结果和参考实现或手工计算的公平份额做比较。
+  "notes": "When possible, compare attacker reward against a reference implementation or a manually computed fair-share baseline."
+}

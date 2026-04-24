@@ -1,0 +1,79 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Kinetiq Findings and Analysis Report (2025-04)",
+  "source_url": "https://code4rena.com/reports/2025-04-kinetiq#h-03",
+  "protocol_name": "Kinetiq",
+  "project_repo": "https://github.com/code-423n4/2025-04-kinetiq",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2025-04-kinetiq-h-03",
+  "component_types": [
+    "staking-manager",
+    "khype-token",
+    "oracle-manager",
+    "validator-management",
+    "pauser-registry",
+    "withdrawal-flow",
+    "deposit-flow",
+    "l1-operations"
+  ],
+  "finding_title": "Mishandling of receiving HYPE in the StakingManager, user can’t confirm withdrawal and inflate the exchange ratio",
+  "summary": "Mishandling of receiving HYPE in the StakingManager , user can’t confirm withdrawal and inflate the exchange ratio.",
+  "root_cause": "Report-described logic/accounting flaw: Mishandling of receiving HYPE in the StakingManager , user can’t confirm withdrawal and inflate the exchange ratio.",
+  "broken_invariants": [
+    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
+    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
+    "The oracle-manager accounting/control flow should preserve user funds and protocol solvency."
+  ],
+  "attack_preconditions": [
+    "Protocol state reaches the report-described edge case or queue configuration",
+    "Relevant manager/operator/user flow is executed as described in the public finding"
+  ],
+  "attacker_capability": "external user or protocol participant able to interact with the affected staking/withdrawal/deposit flow",
+  "trigger_actions": [
+    "execute the affected function sequence described in the report",
+    "observe accounting/state transition divergence or operation failure"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "Mishandling of receiving HYPE in the StakingManager , user can’t confirm withdrawal and inflate the exchange ratio."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and exploit/impact narrative",
+  "common_false_positive_angles": [
+    "check whether the affected function is actually reachable under current roles/pauses/configuration",
+    "check whether sponsor mitigations or operational assumptions fully eliminate the stated state transition",
+    "check whether the code version and line links match the audited commit"
+  ],
+  "mitigations": [
+    "Modify the receive() function receive() external payable { // Simply call the stake function if (msg.sender != systemAddress) { stake(); } } ### Proof of Concept The schema for the test : 1. Will use targetBuffer = 0 for simplicity 2. User stake 1 HYPE 3. Operator execute L1 deposit operations 4. User queue withdrawal, 1 KHYPE 5. Operator execute L1 withdrawal operations 6. System address (Core) call / transfer HYPE to staking manager and auto staked 7. User can't confirm withdrawal because lack of HYPE balance on the staking manager Add test to StakingManager.t.sol and run forge test --match-test test_misshandlingOfReceivingHYPE -vvv function test_misshandlingOfReceivingHYPE() public { // Set actor address systemAddressForHYPE = makeAddr(\"systemAddressForHYPE\"); // Set staking amount uint256 stakeAmount = 1 ether; // fund the system for mocking withdrawal process and the user vm.deal(systemAddressForHYPE, 1 ether); vm.deal(user, 1 ether); // Set up delegation first vm.startPrank(manager); validatorManager.activateValidator(validator); validatorManager.setDelegation(address(stakingManager), validator); vm.stopPrank(); console.log(\"\"); console.log(\" START TEST ... \"); console.log(\"\"); // check stakingManager balance uint256 initialStakingManagerBalance = address(stakingManager).balance; console.log(\"Staking Manager Initial HYPE Balance:\", initialStakingManagerBalance); console.log(\"\"); console.log(\" USER STAKE ... \"); console.log(\"\"); // User stake vm.prank(user); stakingManager.stake{value: stakeAmount}(); uint256 stakingManagerBalanceAfterUserDeposit = address(stakingManager).balance; console.log(\"\\\\ This value will be zero because HYPE will directly send to system address on core\"); console.log(\"Staking Manager HYPE Balance After User Deposit:\", stakingManagerBalanceAfterUserDeposit); console.log(\"\"); console.log(\" OPERATOR EXECUTE L1 DEPOSIT OPERATION ... \"); console.log(\"\"); // operator execute L1 operations : delegate HYPE to validator vm.prank(operator); stakingManager.processL1Operations(0); console.log(\" USER QUEUE WITHDRAWAL ... \"); console.log(\"\"); // User withdraw vm.startPrank(user); kHYPE.approve(address(stakingManager), stakeAmount); stakingManager.queueWithdrawal(stakeAmount); vm.stopPrank(); console.log(\" OPERATOR EXECUTE L1 WITHDRAWAL OPERATION ... \"); console.log(\"\"); // operator execute L1 operations : undelegated HYPE from validator vm.prank(operator); stakingManager.processL1Operations(0); console.log(\" WITHDRAWAL HYPE FROM CORE SEND TO STAKINGMANAGER ... \"); console.log(\"\"); // systemAddress send back undelegated HYPE from validator to stakingManager vm.prank(systemAddressForHYPE); address(stakingManager).call{value : stakeAmount}(\"\"); uint256 stakingManagerBalanceAfterHYPESentFromCore = address(stakingManager).balance; console.log(\"\\\\ This value will be zero, HYPE will directly stacked again because receive() initiate stake() function\"); console.log(\"Staking Manager HYPE Balance After HYPE Sent From Core :\", stakingManagerBalanceAfterHYPESentFromCore); // warp 7 days vm.warp(block.timestamp + 7 days); // User want to confirm withdrawal failed because lack of HYPE on stakingManager vm.prank(user); vm.expectRevert(); stakingManager.confirmWithdrawal(0); } Result: [PASS] test_misshandlingOfReceivingHYPE() (gas: 897229) Logs: Starting setUp Minimal implementation deployed at: 0x2e234DAe75C793f67A35089C9d99245E1C58470b Deploying proxies... PauserRegistry proxy deployed at: 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a PauserRegistry admin at: 0x4f81992FCe2E1846dD528eC0102e6eE1f61ed3e2 StakingManager proxy deployed at: 0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9 StakingManager admin at: 0x5B0091f49210e7B2A57B03dfE1AB9D08289d9294 KHYPE proxy deployed at: 0xc7183455a4C133Ae270771860664b6B7ec320bB1 KHYPE admin at: 0xa38D17ef017A314cCD72b8F199C0e108EF7Ca04c ValidatorManager proxy deployed at: 0xa0Cb889707d426A7A386870A03bc70d1b0697598 ValidatorManager admin at: 0x83B4EEa426B7328eB3bE89cDb558F18BAF6A2Bf7 OracleManager proxy deployed at: 0x1d1499e622D69689cdf9004d05Ec547d650Ff211 OracleManager admin at: 0x45C92C2Cd0dF7B2d705EF12CfF77Cb0Bc557Ed22 StakingAccountant proxy deployed at: 0xA4AD4f68d0b91CFD19687c881e50f3A00242828c StakingAccountant admin at: 0xeafCcCE3F73a1ac8690F49acF56C4142183619dd Started admin prank Creating pausable contracts array Setup completed START TEST ... Staking Manager Initial HYPE Balance: 0 USER STAKE ... \\ This value will be zero because HYPE will directly send to system address on core Staking Manager HYPE Balance After User Deposit: 0 OPERATOR EXECUTE L1 DEPOSIT OPERATION ... USER QUEUE WITHDRAWAL ... OPERATOR EXECUTE L1 WITHDRAWAL OPERATION ... WITHDRAWAL HYPE FROM CORE SEND TO STAKINGMANAGER ... \\ This value will be zero, HYPE will directly stacked again because receive() initiate stake() function Staking Manager HYPE Balance After HYPE Sent From Core : 0 Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 8.41ms (1.93ms CPU time)"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L208-L211",
+      "note": "GitHub permalink from final report"
+    }
+  ],
+  "tags": [
+    "kinetiq",
+    "staking",
+    "withdrawal",
+    "buffer-accounting",
+    "exchange-rate",
+    "oracle",
+    "pause-control",
+    "delegation",
+    "l1-integration",
+    "queue-processing",
+    "gas-dos",
+    "validator-management",
+    "minting",
+    "high"
+  ]
+}

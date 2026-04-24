@@ -1,0 +1,41 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz#low-risk-and-non-critical-issues",
+  "source_report_section": "Low Risk and Non-Critical Issues",
+  "protocol_name": "Nudge.xyz",
+  "project_repo": "https://github.com/code-423n4/2025-03-nudgexyz",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2025-03-nudgexyz-low-04",
+  "component_types": [
+    "campaign-factory",
+    "funding-flow",
+    "input-validation"
+  ],
+  "issue_title": "Initial reward amount not validated in deployAndFundCampaign",
+  "classification": "low",
+  "summary": "NudgeCampaignFactory.deployAndFundCampaign can be called with initialRewardAmount equal to zero. Although the function name implies deployment plus funding, it can create an unfunded campaign, which is inconsistent and can confuse campaign administrators or users.",
+  "root_cause": "missing positive-amount validation for a funding-specific deployment function",
+  "why_not_medium_or_high": "zero initial funding is mainly a configuration and UX correctness issue; it does not create a permissionless theft path or direct loss by itself",
+  "operational_risk": "administrators may believe a campaign was funded when it was not, and participants may interact with campaigns unable to distribute rewards until separately funded",
+  "affected_functions": [
+    "NudgeCampaignFactory.deployAndFundCampaign"
+  ],
+  "recommended_mitigation": [
+    "require initialRewardAmount > 0 in deployAndFundCampaign",
+    "use a separate deploy-only function for unfunded campaign creation"
+  ],
+  "when_it_could_escalate": [
+    "if external systems automatically promote deployAndFundCampaign campaigns as funded",
+    "if unfunded campaigns cause user gas waste or failed reward expectations",
+    "if a malicious operator can create misleading campaigns"
+  ],
+  "tags": [
+    "low",
+    "input-validation",
+    "zero-amount",
+    "funding-flow",
+    "campaign-factory"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03)",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz",
+  "protocol_name": "Nudge.xyz",
+  "project_repo": "https://github.com/code-423n4/2025-03-nudgexyz",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "poc-or-scenario-reproduction"
+  ],
+  "id": "c4-2025-03-nudgexyz-m-03",
+  "component_types": [
+    "cross-chain",
+    "account-abstraction",
+    "campaign",
+    "reward-claiming",
+    "token-transfer"
+  ],
+  "finding_title": "Cross-chain reallocations to account-abstraction wallets can send target tokens and rewards to unusable addresses",
+  "summary": "For cross-chain reallocations, handleReallocation uses a userAddress parameter sourced from the origin-chain account and transfers destination-chain toToken to that same address. Account-abstraction wallets such as Safe may have different addresses across chains. If a user initiates on one chain and receives on another, the destination transfer can go to an address the user does not control on the destination chain. The participation also stores the origin address, so claimRewards on the destination chain rejects the user whose msg.sender differs from participation.userAddress, leaving rewards locked.",
+  "root_cause": "cross-chain flow assumes the origin-chain user address is also the correct destination-chain recipient and reward claimant, which is false for some account-abstraction wallets",
+  "broken_invariants": [
+    "cross-chain destination assets must be sent to an address controlled by the user on the destination chain",
+    "reward claimant identity must match the user account that can sign on the destination chain",
+    "cross-chain campaign participation should not lock rewards because of chain-specific wallet address differences"
+  ],
+  "attack_preconditions": [
+    "user uses an account-abstraction wallet with different addresses across source and destination chains",
+    "cross-chain reallocation populates userAddress with the source-chain address",
+    "destination transfer and reward participation use that same address",
+    "claimRewards requires msg.sender to equal participation.userAddress"
+  ],
+  "attacker_capability": "not primarily attacker-driven; any affected user following the intended cross-chain flow can lose funds/rewards",
+  "trigger_actions": [
+    "initiate cross-chain reallocation from an account-abstraction wallet",
+    "Li.Fi completes destination-chain swap and calls handleReallocation with source-chain userAddress",
+    "attempt to receive target tokens or claim rewards on destination chain"
+  ],
+  "impact": {
+    "type": "user-fund-loss-and-reward-lock",
+    "description": "destination-chain target tokens may be transferred to an address the user does not control, and reward claims can become impossible, locking campaign rewards"
+  },
+  "why_not_higher": "the issue affects a class of cross-chain/AA users rather than every campaign participant and is classified by C4 as Medium",
+  "why_not_lower": "the loss can include the full reallocated destination asset amount and associated rewards for affected users following intended UI/docs flow",
+  "common_false_positive_angles": [
+    "if the wallet has the same address and control on both chains, this specific address-mismatch impact does not occur",
+    "if the UI/protocol lets users specify and verify a destination recipient address, the transfer-loss impact is mitigated",
+    "if reward claiming supports a separate destination claimant or signature proof, reward lock is mitigated"
+  ],
+  "mitigations": [
+    "allow users to specify an explicit destination-chain recipient and reward claimant",
+    "warn account-abstraction wallet users about cross-chain address differences",
+    "bind participation to a verified destination-chain address rather than blindly reusing source-chain address",
+    "support signature-based or delegated reward claims for cross-chain flows"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "NudgeCampaign.sol#L206 transfer to userAddress; NudgeCampaign.sol#L271-L274 claimRewards sender check; NudgePointsCampaigns.sol#L160",
+      "note": "report used commit 88797c79ac706ed164cc1b30a8556b6073511929 for affected links"
+    }
+  ],
+  "tags": [
+    "cross-chain",
+    "account-abstraction",
+    "address-mismatch",
+    "fund-loss",
+    "reward-lock",
+    "safe-wallet",
+    "medium"
+  ]
+}

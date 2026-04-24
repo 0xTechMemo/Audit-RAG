@@ -1,0 +1,171 @@
+{
+  // id：这条样本的唯一标识。后续做检索、引用、评测时都靠它。
+  "id": "case-reward-debt-desync-01",
+
+  // source_type：数据来源类型。
+  // 这里写 handwritten-sample，表示这是你手工写的教学/参考样本，不是从真实报告自动抽取的。
+  "source_type": "handwritten-sample",
+
+  // source_name：来源名称。这里是本地手写样本。
+  "source_name": "local-sample",
+
+  // source_url：来源地址。这里不是公网链接，而是本地占位 URI。
+  // 中文理解：本地参考样本位置。
+  "source_url": "local://samples/case-reward-debt-desync-01",
+
+  // protocol_name：协议名。
+  // 中文：示例奖励协议。
+  "protocol_name": "Sample Reward Protocol",
+
+  // project_repo：仓库地址。
+  // 这里同样是本地占位，不是真实 GitHub 仓库。
+  "project_repo": "local://sample-repos/sample-reward-protocol",
+
+  // language：目标语言。
+  // 中文：Solidity。
+  "language": "solidity",
+
+  // component_types：这条问题主要落在哪些协议组件上。
+  // reward-distribution = 奖励分发
+  // staking = 质押
+  "component_types": [
+    "reward-distribution",
+    "staking"
+  ],
+
+  // finding_title：问题标题。
+  // 中文翻译：reward debt 在余额变动后才更新，导致用户可超额领取奖励。
+  "finding_title": "Reward debt is updated after balance mutation, enabling excess reward claims",
+
+  // summary：一句话到两句话说明“在什么条件下，因为何种根因，导致什么影响”。
+  // 中文翻译：当用户在 reward debt 同步之前先执行 withdraw 时，协议可能基于过时的奖励基线计算 pending rewards，导致用户领取超过其公平应得的奖励。
+  "summary": "When a user withdraws before reward debt is synchronized, the protocol can calculate pending rewards from an outdated baseline and allow the user to receive more rewards than fairly accrued.",
+
+  // root_cause：根因。这里必须写“为什么出问题”，而不是写“造成了什么结果”。
+  // 中文翻译：余额变动后，奖励记账状态发生了不同步。
+  "root_cause": "state desynchronization in reward accounting after balance mutation",
+
+  // broken_invariants：被破坏的不变量/关键约束。
+  // 中文理解：系统本来应该一直成立的性质。
+  "broken_invariants": [
+    "user rewards must remain proportional to effective stake over time",
+    "reward debt must stay aligned with user balance checkpoints"
+  ],
+
+  // broken_invariants 中文翻译：
+  // 1. 用户获得的奖励必须始终与其有效质押占比相匹配。
+  // 2. reward debt 必须与用户余额检查点保持同步。
+
+  // attack_preconditions：攻击前置条件。
+  // 中文：这个问题要成立，至少要满足哪些前提。
+  "attack_preconditions": [
+    "the protocol uses cumulative reward accounting",
+    "withdraw mutates user balance before reward debt sync",
+    "claim path pays out based on stale accounting state"
+  ],
+
+  // attack_preconditions 中文翻译：
+  // 1. 协议使用累计式奖励记账。
+  // 2. withdraw 会在 reward debt 同步前先修改用户余额。
+  // 3. claim 路径会基于过时的记账状态进行支付。
+
+  // attacker_capability：攻击者能力假设。
+  // permissionless user = 无需特殊权限的普通用户。
+  "attacker_capability": "permissionless user",
+
+  // trigger_actions：会触发或参与漏洞路径的动作。
+  // 中文：存入、提取、领取奖励。
+  "trigger_actions": [
+    "deposit",
+    "withdraw",
+    "claim"
+  ],
+
+  // impact：影响对象。通常包含 type + description。
+  "impact": {
+    // type：影响类型。
+    // value-leakage = 价值泄漏 / 多发奖励 / 协议价值流失。
+    "type": "value-leakage",
+
+    // description：影响说明。
+    // 中文翻译：攻击者能领取超过奖励模型本应发放的奖励代币。
+    "description": "an attacker can claim more reward tokens than intended by the accounting model"
+  },
+
+  // severity：严重性。
+  // 这里写 medium，表示这个样本假设它更接近中危。
+  "severity": "medium",
+
+  // why_not_higher：为什么不应该定得更高。
+  // 中文翻译：这个问题泄漏的是奖励价值，但在当前简化场景里不直接危及本金资产。
+  "why_not_higher": "the issue leaks reward value but does not directly compromise principal assets in this simplified scenario",
+
+  // why_not_lower：为什么不应该定得更低。
+  // 中文翻译：该利用路径是无权限的、可重复的，并且会造成可测量的奖励超发。
+  "why_not_lower": "the exploit path is permissionless, repeatable, and can create measurable reward overpayment",
+
+  // validation_status：验证状态。
+  // theory-only = 目前只是理论成立，还没做本地 PoC 验证。
+  "validation_status": "theory-only",
+
+  // validation_style：建议/已有的验证方式。
+  // unit-test = 单元测试
+  // scenario-reproduction = 场景复现
+  "validation_style": [
+    "unit-test",
+    "scenario-reproduction"
+  ],
+
+  // common_false_positive_angles：常见误判角度。
+  // 中文：为什么这个问题“看起来像成立”，但也可能不成立。
+  "common_false_positive_angles": [
+    "the protocol may intentionally defer settlement and compensate later in the same execution path",
+    "claim path may force a safe synchronization before transfer"
+  ],
+
+  // common_false_positive_angles 中文翻译：
+  // 1. 协议可能是故意延后结算，并在同一路径后续步骤里补偿同步。
+  // 2. claim 路径可能会在转账前强制做一次安全同步。
+
+  // mitigations：修复建议。
+  "mitigations": [
+    "synchronize reward debt before mutating user balance",
+    "assert reward baseline consistency before payout"
+  ],
+
+  // mitigations 中文翻译：
+  // 1. 在修改用户余额之前先同步 reward debt。
+  // 2. 在支付奖励前断言奖励基线一致性。
+
+  // snippets：可选代码片段，用于解释 bug site。
+  "snippets": [
+    {
+      // role：片段角色。
+      "role": "core-bug-site",
+
+      // code：代表性伪代码/代码片段。
+      "code": "user.amount = user.amount - withdrawAmount;\nuser.rewardDebt = accRewardPerShare * user.amount / PRECISION;",
+
+      // note：这段代码为什么重要。
+      // 中文翻译：余额先变了，奖励基线后补，说明同步顺序可疑。
+      "note": "balance is mutated before reward baseline is safely settled"
+    }
+  ],
+
+  // tags：标签，用于检索、过滤、重排。
+  // 中文：
+  // state-desync = 状态不同步
+  // reward-distribution = 奖励分发
+  // value-leakage = 价值泄漏
+  // permissionless = 无权限即可触发
+  // repeatable = 可重复利用
+  // theory-only = 仅理论成立
+  "tags": [
+    "state-desync",
+    "reward-distribution",
+    "value-leakage",
+    "permissionless",
+    "repeatable",
+    "theory-only"
+  ]
+}

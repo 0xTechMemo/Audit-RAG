@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FalsePositiveCase",
+  "type": "object",
+  "required": [
+    "id",
+    "issue_claim",
+    "why_not_valid",
+    "classification",
+    "tags"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "issue_claim": {
+      "type": "string"
+    },
+    "why_it_looked_bad": {
+      "type": "string"
+    },
+    "why_not_valid": {
+      "type": "string"
+    },
+    "classification": {
+      "type": "string"
+    },
+    "downgrade_reason": {
+      "type": "string"
+    },
+    "trust_assumption": {
+      "type": "string"
+    },
+    "when_it_could_be_real": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": true
+}

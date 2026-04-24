@@ -1,0 +1,72 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Kinetiq Findings and Analysis Report (2025-04)",
+  "source_url": "https://code4rena.com/reports/2025-04-kinetiq#m-04",
+  "protocol_name": "Kinetiq",
+  "project_repo": "https://github.com/code-423n4/2025-04-kinetiq",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "disputed-by-sponsor-but-included-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2025-04-kinetiq-m-04",
+  "component_types": [
+    "staking-manager",
+    "khype-token",
+    "validator-management",
+    "withdrawal-flow",
+    "deposit-flow",
+    "l1-operations"
+  ],
+  "finding_title": "Processing all withdrawals before all deposits can cause some deposit to not be delegated in processL1Operations",
+  "summary": "The way withdrawals and deposits are processed in processL1Operations (all withdrawals requests first, then all deposits) can lead in some cases, to balance not being delegated, which ultimately reduce earned rewards from validator, making the vault less profitable than expected.",
+  "root_cause": "Report-described logic/accounting flaw: The way withdrawals and deposits are processed in processL1Operations (all withdrawals requests first, then all deposits) can lead in some cases, to balance not being delegated, which ultimately reduce earned rewards from validator, making the vault less profitable than expected.",
+  "broken_invariants": [
+    "The staking-manager accounting/control flow should preserve user funds and protocol solvency.",
+    "The khype-token accounting/control flow should preserve user funds and protocol solvency.",
+    "The validator-management accounting/control flow should preserve user funds and protocol solvency."
+  ],
+  "attack_preconditions": [
+    "Protocol state reaches the report-described edge case or queue configuration",
+    "Relevant manager/operator/user flow is executed as described in the public finding"
+  ],
+  "attacker_capability": "external user or operational actor able to trigger the affected protocol path",
+  "trigger_actions": [
+    "execute the affected function sequence described in the report",
+    "observe accounting/state transition divergence or operation failure"
+  ],
+  "impact": {
+    "type": "protocol-disruption-or-loss-of-expected-functionality",
+    "description": "The way withdrawals and deposits are processed in processL1Operations (all withdrawals requests first, then all deposits) can lead in some cases, to balance not being delegated, which ultimately reduce earned rewards from validator, making the vault less profitable than expected."
+  },
+  "why_not_higher": "the report classified this as Medium rather than High; impact is bounded to disruption, bypass, or indirect value loss rather than unconditional total protocol loss",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and exploit/impact narrative",
+  "common_false_positive_angles": [
+    "check whether the affected function is actually reachable under current roles/pauses/configuration",
+    "check whether sponsor mitigations or operational assumptions fully eliminate the stated state transition",
+    "check whether the code version and line links match the audited commit"
+  ],
+  "mitigations": [
+    "Care must be taken for the implementation of a fix here, as the below “solution” only works for operationType related to user deposits and withdrawals, and specific processes might be necessary for other operationType. In a loop, adds up all withdrawal and deposit request amount to be processed, and only processes the needed amount. E.g, int256 amountToDelegate = deposit.amounts - withdrawal.amounts to finally check the sign of amount and act accordingly: withdraw to spot the withdrawal amount, and delegate the remaining. This will also have the potential to reduce the gas consumption, as this will lower the number of external calls made to the L1Write contract."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-04-kinetiq/blob/main/src/StakingManager.sol#L627-L666",
+      "note": "GitHub permalink from final report"
+    }
+  ],
+  "tags": [
+    "kinetiq",
+    "staking",
+    "withdrawal",
+    "delegation",
+    "l1-integration",
+    "queue-processing",
+    "gas-dos",
+    "validator-management",
+    "medium"
+  ]
+}

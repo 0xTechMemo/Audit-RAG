@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CaseReport",
+  "type": "object",
+  "required": [
+    "id",
+    "source_type",
+    "protocol_name",
+    "finding_title",
+    "summary",
+    "root_cause",
+    "severity",
+    "tags"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "protocol_name": {
+      "type": "string"
+    },
+    "project_repo": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "component_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "finding_title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "root_cause": {
+      "type": "string"
+    },
+    "broken_invariants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attack_preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attacker_capability": {
+      "type": "string"
+    },
+    "trigger_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "impact": {
+      "type": "object"
+    },
+    "severity": {
+      "type": "string"
+    },
+    "why_not_higher": {
+      "type": "string"
+    },
+    "why_not_lower": {
+      "type": "string"
+    },
+    "validation_status": {
+      "type": "string"
+    },
+    "validation_style": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "common_false_positive_angles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mitigations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "snippets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": true
+}

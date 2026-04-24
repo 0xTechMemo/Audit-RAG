@@ -1,0 +1,16 @@
+retrieval:
+  top_k_lexical: 10
+  top_k_semantic: 10
+  top_k_final: 8
+
+scoring:
+  semantic_similarity: 0.30
+  lexical_match: 0.25
+  component_match: 0.15
+  root_cause_match: 0.10
+  severity_relevance: 0.10
+  validation_weight: 0.10
+
+filters:
+  require_source_trace: true
+  separate_false_positive_channel: true

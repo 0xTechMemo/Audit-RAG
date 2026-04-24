@@ -1,0 +1,66 @@
+{
+  "id": "case-reward-debt-desync-01",
+  "source_type": "handwritten-sample",
+  "source_name": "local-sample",
+  "source_url": "local://samples/case-reward-debt-desync-01",
+  "protocol_name": "Sample Reward Protocol",
+  "project_repo": "local://sample-repos/sample-reward-protocol",
+  "language": "solidity",
+  "component_types": [
+    "reward-distribution",
+    "staking"
+  ],
+  "finding_title": "Reward debt is updated after balance mutation, enabling excess reward claims",
+  "summary": "When a user withdraws before reward debt is synchronized, the protocol can calculate pending rewards from an outdated baseline and allow the user to receive more rewards than fairly accrued.",
+  "root_cause": "state desynchronization in reward accounting after balance mutation",
+  "broken_invariants": [
+    "user rewards must remain proportional to effective stake over time",
+    "reward debt must stay aligned with user balance checkpoints"
+  ],
+  "attack_preconditions": [
+    "the protocol uses cumulative reward accounting",
+    "withdraw mutates user balance before reward debt sync",
+    "claim path pays out based on stale accounting state"
+  ],
+  "attacker_capability": "permissionless user",
+  "trigger_actions": [
+    "deposit",
+    "withdraw",
+    "claim"
+  ],
+  "impact": {
+    "type": "value-leakage",
+    "description": "an attacker can claim more reward tokens than intended by the accounting model"
+  },
+  "severity": "medium",
+  "why_not_higher": "the issue leaks reward value but does not directly compromise principal assets in this simplified scenario",
+  "why_not_lower": "the exploit path is permissionless, repeatable, and can create measurable reward overpayment",
+  "validation_status": "theory-only",
+  "validation_style": [
+    "unit-test",
+    "scenario-reproduction"
+  ],
+  "common_false_positive_angles": [
+    "the protocol may intentionally defer settlement and compensate later in the same execution path",
+    "claim path may force a safe synchronization before transfer"
+  ],
+  "mitigations": [
+    "synchronize reward debt before mutating user balance",
+    "assert reward baseline consistency before payout"
+  ],
+  "snippets": [
+    {
+      "role": "core-bug-site",
+      "code": "user.amount = user.amount - withdrawAmount;\nuser.rewardDebt = accRewardPerShare * user.amount / PRECISION;",
+      "note": "balance is mutated before reward baseline is safely settled"
+    }
+  ],
+  "tags": [
+    "state-desync",
+    "reward-distribution",
+    "value-leakage",
+    "permissionless",
+    "repeatable",
+    "theory-only"
+  ]
+}

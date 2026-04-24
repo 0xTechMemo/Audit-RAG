@@ -1,0 +1,53 @@
+{
+  // id：误报/降级样本的唯一标识。
+  "id": "fp-admin-bad-slippage-config-01",
+
+  // issue_claim：看起来像漏洞的说法。
+  // 中文翻译：管理员可以设置不安全的滑点，导致 swap 执行效果很差。
+  "issue_claim": "Admin can set unsafe slippage and cause poor swap execution",
+
+  // why_it_looked_bad：为什么它第一眼看起来像个严重问题。
+  // 中文翻译：过大的滑点会让执行质量明显变差，也可能让用户资金在交易时遭受不必要损失。
+  "why_it_looked_bad": "Excessive slippage can obviously harm execution quality and may appear to expose user funds to avoidable loss.",
+
+  // why_not_valid：为什么它通常不是 submission-ready 的强 finding。
+  // 中文翻译：它主要依赖受信任管理员配置错误，而不是无权限攻击者可利用路径。因此通常更像操作风险或 QA，而不是 HM。
+  "why_not_valid": "The issue depends primarily on trusted admin misconfiguration rather than a permissionless exploit path. In the ordinary trust model this is an operational risk, not a submission-ready HM finding.",
+
+  // classification：通常归类到什么级别。
+  // 这里写 qa。
+  "classification": "qa",
+
+  // downgrade_reason：降级原因。
+  // privileged misconfiguration = 特权角色错误配置。
+  "downgrade_reason": "privileged misconfiguration",
+
+  // trust_assumption：依赖的信任前提。
+  // 中文翻译：默认管理员会安全配置交换参数。
+  "trust_assumption": "the admin role is trusted to configure swap parameters safely",
+
+  // when_it_could_be_real：在什么情况下它可能变成更强的问题。
+  "when_it_could_be_real": [
+    "if an untrusted role can change slippage configuration",
+    "if user funds are forcibly routed through admin-controlled execution without user-set protection",
+    "if config updates can be front-run into user execution paths"
+  ],
+
+  // when_it_could_be_real 中文翻译：
+  // 1. 如果不受信任角色也能改滑点配置。
+  // 2. 如果用户资金会被强制走管理员控制的路径，且用户自己不能设置保护。
+  // 3. 如果配置更新能被抢跑并插入用户执行路径。
+
+  // source_url：本地样本来源地址。
+  "source_url": "local://samples/fp-admin-bad-slippage-config-01",
+
+  // tags：标签。
+  // misconfiguration-only = 仅错误配置时成立
+  // privileged-only = 只有特权角色才能触发
+  // router = 路由器组件
+  "tags": [
+    "misconfiguration-only",
+    "privileged-only",
+    "router"
+  ]
+}

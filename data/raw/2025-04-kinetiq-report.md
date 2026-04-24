@@ -1,0 +1,1480 @@
+# Kinetiq
+Findings & Analysis Report
+
+#### 2025-07-07
+
+## Table of contents
+
+-
+Overview
+
+- About C4
+
+- Summary
+
+- Scope
+
+- Severity Criteria
+
+-
+High Risk Findings (3)
+
+- [H-01] Buffer Silently Locks Staked HYPE in Contract Without Using Them For Withdrawals Or Providing A Way To Be Pulled Out Or Moved To L1
+
+- [H-02] Users Who Queue Withdrawal Before A Slashing Event Disadvantage Users Who Queue After And Eventually Leads To Loss Of Funds For Them
+
+- [H-03] Mishandling of receiving HYPE in the StakingManager, user can’t confirm withdrawal and inflate the exchange ratio
+
+-
+Medium Risk Findings (5)
+
+- [M-01] Incorrect Balance Check in Validator Redelegation Process May Block Legitimate Rebalancing Operations
+
+- [M-02] Missing withdrawal pause check in `confirmWithdrawal` allows bypassing withdrawal restrictions
+
+- [M-03] Inconsistent State Restoration in `cancelWithdrawal` Function
+
+- [M-04] Processing all withdrawals before all deposits can cause some deposit to not be delegated in `processL1Operations`
+
+- [M-05] Attacker can partially DoS L1 operations in StakingManager by making huge number of deposits
+
+-
+Low Risk and Non-Critical Issues
+
+- 01 Missing `whenNotPaused` Modifier in `mint` Function
+
+- 02 Silent Skipping of Inactive Oracles
+
+- 03 Unbounded Oracle Iteration
+
+- 04 Handling of Zero Timestamps
+
+- 05 Use of Average Instead of Median
+
+- 06 Incomplete Reporting of Rewards and Slashes
+
+- 07 Inconsistent Error Message in `unpauseContract`
+
+- 08 Inefficient Event Emission in `emergencyPauseAll`
+
+- 09 Missing Method to Remove Stale Validators
+
+- 10 Lack of Sanity Checks for Reward and Slashing Amounts
+
+- 11 Immutable `defaultOracle` Creates Single Point of Failure
+
+- 12 `supportsInterface` Implementation Non-Compliant with ERC-165
+
+- 13 Absence of Slippage Protection in Token Conversion
+
+- 14 Lack of Rate Limiting on Withdrawal Queueing
+
+- 15 Inaccurate Event Emission for Delegated Amounts
+
+- 16 Silent Precision Loss in Decimal Conversion
+
+- 17 Missing Event Emission for Rebalance Withdrawals
+
+- Disclosures
+
+# Overview
+
+## About C4
+
+Code4rena (C4) is a competitive audit platform where security researchers, referred to as Wardens, review, audit, and analyze codebases for security vulnerabilities in exchange for bounties provided by sponsoring projects.
+
+A C4 audit is an event in which community participants, referred to as Wardens, review, audit, or analyze smart contract logic in exchange for a bounty provided by sponsoring projects.
+
+During the audit outlined in this document, C4 conducted an analysis of the Kinetiq smart contract system. The audit took place from April 07 to April 16, 2025.
+
+Final report assembled by Code4rena.
+
+# Summary
+
+The C4 analysis yielded an aggregated total of 8 unique vulnerabilities. Of these vulnerabilities, 3 received a risk rating in the category of HIGH severity and 5 received a risk rating in the category of MEDIUM severity.
+
+Additionally, C4 analysis included 19 reports detailing issues with a risk rating of LOW severity or non-critical.
+
+All of the issues presented here are linked back to their original finding, which may include relevant context from the judge and Kinetiq team.
+
+# Scope
+
+The code under review can be found within the C4 Kinetiq repository, and is composed of 8 smart contracts written in the Solidity programming language and includes 1,332 lines of Solidity code.
+
+# Severity Criteria
+
+C4 assesses the severity of disclosed vulnerabilities based on three primary risk categories: high, medium, and low/non-critical.
+
+High-level considerations for vulnerabilities span the following key areas when conducting assessments:
+
+- Malicious Input Handling
+
+- Escalation of privileges
+
+- Arithmetic
+
+- Gas use
+
+For more information regarding the severity criteria referenced throughout the submission review process, please refer to the documentation provided on the C4 website, specifically our section on Severity Categorization.
+
+# High Risk Findings (3)
+
+## [H-01] Buffer Silently Locks Staked HYPE in Contract Without Using Them For Withdrawals Or Providing A Way To Be Pulled Out Or Moved To L1
+
+Submitted by franfran20, also found by 0xDeoGratias, 0xG0P1, 0xgremlincat, 0xpiken, 0xsagetony, dobrevaleri, gesha17, hals, Infect3d, ka14ar, KupiaSec, marchev, Ragnarok, rama_tavanam, Riceee, roccomania, rouhsamad, zhanmingjing, and zhaojohnson
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L946-L957
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L919-L941
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L519-L533
+
+### Finding description and impact
+
+When users stake into the Staking Manager and get their KHYPE tokens, after earning some rewards they might want to queue a withdrawal to get their HYPE tokens back. While the queued withdrawal delay is on, the user can decide to `cancelWithdrawal` and get their KHYPE tokens back. The way the buffer is handled in this flow leads to locking of HYPE in the staking manager contract.
+
+Take for example a target buffer of `30 HYPE` with only `20 HYPE` left in the buffer, the user has initially staked some HYPE and gotten some KHYPE.
+
+The user wishes to cash in that KHYPE worth `15 HYPE`, now the buffer can satisfy this amount of HYPE, so they’ll need to withdraw from the validator on L1. You can see this in the `_withdrawFromValidator` function UserWithdrawal operation type below.
+
+` if (operationType == OperationType.UserWithdrawal) {
+// Buffer handling uses 18 decimal precision
+uint256 currentBuffer = hypeBuffer;
+uint256 amountFromBuffer = Math.min(amount, currentBuffer);
+
+if (amountFromBuffer > 0) {
+hypeBuffer = currentBuffer - amountFromBuffer;
+amount -= amountFromBuffer;
+emit BufferDecreased(amountFromBuffer, hypeBuffer);
+}
+
+// If fully fulfilled from buffer, return
+if (amount == 0) {
+return;
+}
+}`
+
+So the buffer reduces to `5 HYPE`(even though the contract still has the remaining `15 HYPE` because the transfer hasn’t occurred yet) and the withdrawal amount is fully satisfied, with the withdrawal request being created. Ideally, the user now has to wait the withdrawal delay and confirm their withdrawal but if at some point during the withdrawal delay, the user decides to cancel their withdrawal and keep their KHYPE tokens. We can observe the function below.
+
+` function cancelWithdrawal(address user, uint256 withdrawalId) external onlyRole(MANAGER_ROLE) whenNotPaused {
+WithdrawalRequest storage request = _withdrawalRequests[user][withdrawalId];
+require(request.hypeAmount > 0, "No such withdrawal request");
+
+uint256 hypeAmount = request.hypeAmount;
+uint256 kHYPEAmount = request.kHYPEAmount;
+uint256 kHYPEFee = request.kHYPEFee;
+
+// Check kHYPE balances
+require(kHYPE.balanceOf(address(this)) >= kHYPEAmount + kHYPEFee, "Insufficient kHYPE balance");
+
+// Clear the withdrawal request
+delete _withdrawalRequests[user][withdrawalId];
+totalQueuedWithdrawals -= hypeAmount;
+
+// Return kHYPE tokens to user (including fees)
+kHYPE.transfer(user, kHYPEAmount + kHYPEFee);
+
+// Track cancelled amount for future redelegation
+_cancelledWithdrawalAmount += hypeAmount;
+
+emit WithdrawalCancelled(user, withdrawalId, hypeAmount, _cancelledWithdrawalAmount);
+}`
+
+There is no update to increment the buffer back after the withdrawal has been canceled, so the `15 HYPE` tokens are stored in the balance and are tracked in the `_cancelledWithdrawalAmount` which eventually can be moved via the `redelegateWithdrawnHYPE` function below.
+
+` function redelegateWithdrawnHYPE() external onlyRole(MANAGER_ROLE) whenNotPaused {
+require(_cancelledWithdrawalAmount > 0, "No cancelled withdrawals");
+require(address(this).balance >= _cancelledWithdrawalAmount, "Insufficient HYPE balance");
+
+uint256 amount = _cancelledWithdrawalAmount;
+_cancelledWithdrawalAmount = 0;
+
+// Delegate to current validator using the SpotDeposit operation type
+_distributeStake(amount, OperationType.SpotDeposit);
+
+emit WithdrawalRedelegated(amount);
+}`
+
+Now we can see that the function calls the distributeStake internal function with a spot deposit operation type and it resets the `_cancelledWithdrawableAmount` to 0, meaning the `15 HYPE` that was initially taken from the buffer and canceled is no longer accounted for because it’s going to be redelegated to the validators.
+
+` else if (operationType == OperationType.SpotDeposit) {
+// For spot deposits, first move from spot balance to staking balance
+uint256 truncatedAmount = _convertTo8Decimals(amount, false);
+require(truncatedAmount <= type(uint64).max, "Amount exceeds uint64 max");
+
+// 1. First move from spot balance to staking balance using cDeposit
+l1Write.sendCDeposit(uint64(truncatedAmount));
+
+// 2. Queue the delegation operation (8 decimals)
+_queueL1Operation(validator, truncatedAmount, OperationType.RebalanceDeposit);
+}`
+
+This basically converts the amount to 8 decimals and moves it from the spot balance in L1 to the staking balance. Now the issue arises from the fact that the withdrawn funds were taken from the buffer and the withdrawal amount never got to L1. My understanding of the connection between the HYPER core and EVM is that the funds need to be moved first to L1 as with the user deposit operation with the logic below before being moved from spot to staking balance on L1.
+
+` (bool success,) = payable(L1_HYPE_CONTRACT).call{value: amount}("");
+require(success, "Failed to send HYPE to L1");`
+
+Hence the `15 HYPE` gets lost in the process and it can be repeated over and over again.
+
+### Recommended Mitigation Steps
+
+Ensure that when the the canceled withdrawn amount is taken from the buffer, the buffer is either re-bumped or the assets are first moved to L1 to avoid being locked in the staking manager contract.
+
+Kinetiq disputed and commented:
+
+We can reduce the target buffer to zero to clear it as withdrawal liquidity.
+
+Alternatively we are able to redelegate those cancelled withdrawals back to protocol by using `redelegateWithdrawnHYPE`.
+
+## [H-02] Users Who Queue Withdrawal Before A Slashing Event Disadvantage Users Who Queue After And Eventually Leads To Loss Of Funds For Them
+
+Submitted by franfran20, also found by 0xG0P1, 0xLeveler, 0xpiken, adamIdarrha, Afriauditor, ak1, Atharv, Audinarey, btk, d3e4, falconhoof, gesha17, givn, harry, holydevoti0n, IzuMan, ke1caM, knight18695, komronkh, KupiaSec, marchev, mrudenko, MrValioBg, octeezy, oxelmiguel12, peanuts, phoenixV110, rouhsamad, ThanatOS, trachev, typicalHuman, vangrim, zhaojohnson, and zzebra83
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingAccountant.sol#L214-L216
+
+### Finding description and impact
+
+Lets take the scenario where the HYPE to KHYPE exchange is `1 KHYPE = 1.5 KHYPE`.
+
+At this point, let’s assume that there are in total `50 KHYPE` tokens queued for withdrawals, that is `75 HYPE` queued for withdrawals while the remaining `20 KHYPE` are still held by their respective holders worth `30 HYPE` in all.
+
+This means that the locked in amount in the queued Withdrawals for each user across all queued withdrawals is `75 HYPE`.
+
+We know this because of the logic in the queueWithdrawal function in the StakingManager below:
+
+` uint256 hypeAmount = stakingAccountant.kHYPEToHYPE(postFeeKHYPE);
+
+// Lock kHYPE tokens
+kHYPE.transferFrom(msg.sender, address(this), kHYPEAmount);
+
+// Create withdrawal request
+_withdrawalRequests[msg.sender][withdrawalId] = WithdrawalRequest({
+hypeAmount: hypeAmount,
+kHYPEAmount: postFeeKHYPE,
+kHYPEFee: kHYPEFee,
+timestamp: block.timestamp
+});`
+
+That gives us a total of `70 KHYPE` to `105 HYPE` across the board when calulating the exchange ratio (including rewards).
+
+Now let’s assume for some reason there’s a slashing event and the amount of HYPE in total reduces from `105 KHYPE` to `75 KHYPE`.
+
+Now it leaves us with an exchange ratio of `70 KHYPE` to `75 HYPE` i.e `1 KHYPE = 1.071 HYPE`.
+
+Since the guys who withdrew earlier already have their withdrawal delay processing first locked in with the ratio that was used before the slash, they all successfully confirm their withdrawal first and take the whole `75 HYPE` available, leaving 0 HYPE left for all the remaining `20 KHYPE` holders.
+
+You can see the `confirmWithdrawal` function uses the withdrawalRequest amount `hypeAmount` stored which uses the previous ratio.
+
+` function confirmWithdrawal(uint256 withdrawalId) external nonReentrant whenNotPaused {
+// @note - the process confirmation basically makes sure the khype amount to be withdrawn is in the contracts
+// ... it burns it, transfers the fee and makes sure the withdrawal delay has been exceeded, deletes the withdrawal request, updates the totalclaimed and totalqueuedwithdrawals
+// ... it then returns the hype amount to be received by the user
+uint256 amount = _processConfirmation(msg.sender, withdrawalId);
+require(amount > 0, "No valid withdrawal request");
+
+// @note - makes sure that the contract has the specified amount required to satisfy the withdrawals
+// @note - this is where the issue lies I guess, maybe not here, but if there was a slashing occurence before this confirmation of withdrawal, there could be an issue???
+require(address(this).balance >= amount, "Insufficient contract balance");
+
+// @note - updates the totalClaimed hype across all SM
+stakingAccountant.recordClaim(amount);
+
+// Process withdrawal using call instead of transfer
+(bool success,) = payable(msg.sender).call{value: amount}("");
+require(success, "Transfer failed");
+}`
+
+This leads to loss of stake for the remaining KHYPE holders even though there was enough to go 1:1.
+
+### Recommended Mitigation Steps
+
+A possible mitigation would be when confirming withdrawals, not to use the hypeAmount stored in the withdrawal request but to recalculate with the new ratio.
+
+Kinetiq disputed and commented:
+
+Exchange rate adjusts only during rewards or slashing. When users queue withdrawals, their assets exit the validator, earning no profits, so the exchange rate remains fixed as when queued, until confirmation. The rate fluctuates slightly upon claiming due to total supply changes, but this is acceptable and not an issue for us.
+
+## [H-03] Mishandling of receiving HYPE in the StakingManager, user can’t confirm withdrawal and inflate the exchange ratio
+
+Submitted by 0xDemon, also found by 0xG0P1, chibi, Falendar, FalseGenius, IzuMan, jkk812812, LSHFGJ, oxelmiguel12, Riceee, roccomania, and won
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L208-L211
+
+### Finding description and impact
+
+Mishandling of receiving `HYPE` in the `StakingManager` , user can’t confirm withdrawal and inflate the exchange ratio.
+
+Based on the Hyperliquid docs :
+
+HYPE is a special case as the native gas token on the HyperEVM. HYPE is received on the EVM side of a transfer as the native gas token instead of an ERC20 token
+
+The problem arises when `HYPE` withdrawn from a validator on Hypercore is sent to the `StakingManager` (e.g. use call / transfer). It will immediately trigger the `stake()` function to be called and cause the `HYPE` that should have been sent to the user who made the withdrawal to be staked back and inflate the exchange ratio. This happened because of the implementation of `receive()` on the `StakingManager`:
+
+`receive() external payable {
+// Simply call the stake function
+stake();
+}`
+
+The first impact can occur if `targetBuffer = 0`, but there is another impact if `targetBuffer != 0` and fully fulfill.
+
+If the buffer is applied, the user who initiated the withdrawal can still confirm the withdrawal but there is another effect that arises, the `HYPE` resulting from the withdrawal is still staked and inflates the exchange ratio for `HYPE` and `KHYPE` because `KHYPE` will be minted to the system address (Core) and the `totalSupply` will increase. The amount of `KHYPE` minted to system address will be locked forever.
+
+Note: This issue could also happen if reward from delegating to validator is sent directly to `StakingManager`.
+
+### Recommended Mitigation Steps
+
+Modify the `receive()` function
+
+`receive() external payable {
+// Simply call the stake function
+if (msg.sender != systemAddress) {
+stake();
+}
+}`
+
+### Proof of Concept
+
+`The schema for the test :
+1. Will use targetBuffer = 0 for simplicity
+2. User stake 1 HYPE
+3. Operator execute L1 deposit operations
+4. User queue withdrawal, 1 KHYPE
+5. Operator execute L1 withdrawal operations
+6. System address (Core) call / transfer HYPE to staking manager and auto staked
+7. User can't confirm withdrawal because lack of HYPE balance on the staking manager`
+
+Add test to `StakingManager.t.sol` and run `forge test --match-test test_misshandlingOfReceivingHYPE -vvv`
+
+` function test_misshandlingOfReceivingHYPE() public {
+
+// Set actor
+address systemAddressForHYPE = makeAddr("systemAddressForHYPE");
+
+// Set staking amount
+uint256 stakeAmount = 1 ether;
+
+// fund the system for mocking withdrawal process and the user
+vm.deal(systemAddressForHYPE, 1 ether);
+vm.deal(user, 1 ether);
+
+// Set up delegation first
+vm.startPrank(manager);
+validatorManager.activateValidator(validator);
+validatorManager.setDelegation(address(stakingManager), validator);
+vm.stopPrank();
+
+console.log("");
+console.log(" START TEST ... ");
+console.log("");
+
+// check stakingManager balance
+uint256 initialStakingManagerBalance = address(stakingManager).balance;
+console.log("Staking Manager Initial HYPE Balance:", initialStakingManagerBalance);
+
+console.log("");
+console.log(" USER STAKE ... ");
+console.log("");
+
+// User stake
+vm.prank(user);
+stakingManager.stake{value: stakeAmount}();
+
+uint256 stakingManagerBalanceAfterUserDeposit = address(stakingManager).balance;
+console.log("\\ This value will be zero because HYPE will directly send to system address on core");
+console.log("Staking Manager HYPE Balance After User Deposit:", stakingManagerBalanceAfterUserDeposit);
+
+console.log("");
+console.log(" OPERATOR EXECUTE L1 DEPOSIT OPERATION ... ");
+console.log("");
+
+// operator execute L1 operations : delegate HYPE to validator
+vm.prank(operator);
+stakingManager.processL1Operations(0);
+
+console.log(" USER QUEUE WITHDRAWAL ... ");
+console.log("");
+
+// User withdraw
+vm.startPrank(user);
+kHYPE.approve(address(stakingManager), stakeAmount);
+stakingManager.queueWithdrawal(stakeAmount);
+vm.stopPrank();
+
+console.log(" OPERATOR EXECUTE L1 WITHDRAWAL OPERATION ... ");
+console.log("");
+
+// operator execute L1 operations : undelegated HYPE from validator
+vm.prank(operator);
+stakingManager.processL1Operations(0);
+
+console.log(" WITHDRAWAL HYPE FROM CORE SEND TO STAKINGMANAGER ... ");
+console.log("");
+
+// systemAddress send back undelegated HYPE from validator to stakingManager
+vm.prank(systemAddressForHYPE);
+address(stakingManager).call{value : stakeAmount}("");
+
+uint256 stakingManagerBalanceAfterHYPESentFromCore = address(stakingManager).balance;
+console.log("\\ This value will be zero, HYPE will directly stacked again because receive() initiate stake() function");
+console.log("Staking Manager HYPE Balance After HYPE Sent From Core :", stakingManagerBalanceAfterHYPESentFromCore);
+
+// warp 7 days
+vm.warp(block.timestamp + 7 days);
+
+// User want to confirm withdrawal failed because lack of HYPE on stakingManager
+vm.prank(user);
+vm.expectRevert();
+stakingManager.confirmWithdrawal(0);
+}`
+
+Result:
+
+`[PASS] test_misshandlingOfReceivingHYPE() (gas: 897229)
+Logs:
+Starting setUp
+Minimal implementation deployed at: 0x2e234DAe75C793f67A35089C9d99245E1C58470b
+Deploying proxies...
+PauserRegistry proxy deployed at: 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a
+PauserRegistry admin at: 0x4f81992FCe2E1846dD528eC0102e6eE1f61ed3e2
+StakingManager proxy deployed at: 0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9
+StakingManager admin at: 0x5B0091f49210e7B2A57B03dfE1AB9D08289d9294
+KHYPE proxy deployed at: 0xc7183455a4C133Ae270771860664b6B7ec320bB1
+KHYPE admin at: 0xa38D17ef017A314cCD72b8F199C0e108EF7Ca04c
+ValidatorManager proxy deployed at: 0xa0Cb889707d426A7A386870A03bc70d1b0697598
+ValidatorManager admin at: 0x83B4EEa426B7328eB3bE89cDb558F18BAF6A2Bf7
+OracleManager proxy deployed at: 0x1d1499e622D69689cdf9004d05Ec547d650Ff211
+OracleManager admin at: 0x45C92C2Cd0dF7B2d705EF12CfF77Cb0Bc557Ed22
+StakingAccountant proxy deployed at: 0xA4AD4f68d0b91CFD19687c881e50f3A00242828c
+StakingAccountant admin at: 0xeafCcCE3F73a1ac8690F49acF56C4142183619dd
+Started admin prank
+Creating pausable contracts array
+Setup completed
+
+START TEST ...
+
+Staking Manager Initial HYPE Balance: 0
+
+USER STAKE ...
+
+\ This value will be zero because HYPE will directly send to system address on core
+Staking Manager HYPE Balance After User Deposit: 0
+
+OPERATOR EXECUTE L1 DEPOSIT OPERATION ...
+
+USER QUEUE WITHDRAWAL ...
+
+OPERATOR EXECUTE L1 WITHDRAWAL OPERATION ...
+
+WITHDRAWAL HYPE FROM CORE SEND TO STAKINGMANAGER ...
+
+\ This value will be zero, HYPE will directly stacked again because receive() initiate stake() function
+Staking Manager HYPE Balance After HYPE Sent From Core : 0
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 8.41ms (1.93ms CPU time)`
+
+Kinetiq acknowledged
+
+# Medium Risk Findings (5)
+
+## [M-01] Incorrect Balance Check in Validator Redelegation Process May Block Legitimate Rebalancing Operations
+
+Submitted by yaioxy, also found by 0xG0P1, 0xpiken, adamIdarrha, Atharv, DemoreX, dobrevaleri, falconhoof, FalseGenius, givn, holydevoti0n, Infect3d, komronkh, KupiaSec, LSHFGJ, marchev, Ragnarok, rouhsamad, VAD37, vangrim, zhaojohnson, and zzebra83
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L365
+
+### Finding description and impact
+
+The `processValidatorRedelegation` function in the StakingManager contract contains an incorrect balance check that could prevent legitimate rebalancing operations from being executed. The function checks the HyperEVM balance of the StakingManager contract, but the funds being redelegated exist on HyperCore, not on the HyperEVM.
+
+According to the documentation, HYPE staking on Hyperliquid happens within HyperCore. The rebalancing process is designed to delegate/undelegate funds between validators and staking balance on HyperCore without those funds ever leaving the HyperCore environment. However, the current implementation incorrectly checks the StakingManager balance that is on HyperEVM.
+
+When the ValidatorManager’s `closeRebalanceRequests` function is called, it calculates the total amount to be redelegated and then calls `processValidatorRedelegation` on the StakingManager:
+
+`function closeRebalanceRequests(
+address stakingManager,
+address[] calldata validators
+) external whenNotPaused nonReentrant onlyRole(MANAGER_ROLE) {
+// ...
+uint256 totalAmount = 0;
+for (uint256 i = 0; i < validators.length; ) {
+// ...
+totalAmount += request.amount;
+// ...
+}
+// Trigger redelegation through StakingManager if there's an amount to delegate
+if (totalAmount > 0) {
+IStakingManager(stakingManager).processValidatorRedelegation(totalAmount);
+}
+}`
+
+In the StakingManager’s `processValidatorRedelegation` function, there’s an incorrect balance check:
+
+`function processValidatorRedelegation(uint256 amount) external nonReentrant whenNotPaused {
+require(msg.sender == address(validatorManager), "Only ValidatorManager");
+require(amount > 0, "Invalid amount");
+@> require(address(this).balance >= amount, "Insufficient balance");
+
+_distributeStake(amount, OperationType.RebalanceDeposit);
+}`
+
+This incorrect balance check could cause legitimate rebalancing operations to fail if the StakingManager doesn’t have sufficient HYPE balance, even though the HyperCore balance is adequate for the redelegation. This would prevent the protocol from properly rebalancing funds between validators, which could lead to operational disruptions and reduced protocol performance.
+
+### Recommended Mitigation Steps
+
+Remove the incorrect balance check from the `processValidatorRedelegation` function:
+
+`function processValidatorRedelegation(uint256 amount) external nonReentrant whenNotPaused {
+require(msg.sender == address(validatorManager), "Only ValidatorManager");
+require(amount > 0, "Invalid amount");
+- require(address(this).balance >= amount, "Insufficient balance");
+
+_distributeStake(amount, OperationType.RebalanceDeposit);
+}`
+
+Kinetiq confirmed
+
+## [M-02] Missing withdrawal pause check in `confirmWithdrawal` allows bypassing withdrawal restrictions
+
+Submitted by dobrevaleri, also found by 0xd4ps, anchabadze, Falendar, knight18695, marchev, siddu023, Silverwind, th3_hybrid, and Vibhakar
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L302-L312
+
+### Vulnerability Details
+
+The StakingManager::confirmWithdrawal() function does not include the whenWithdrawalNotPaused modifier, despite being a withdrawal operation. According to the natspec docs of pauseWithdrawal(), it should pause all withdrawal operations:
+
+`/**
+* @notice Pause withdrawal operations
+*/
+function pauseWithdrawal() external onlyRole(MANAGER_ROLE) {
+withdrawalPaused = true;
+emit WithdrawalPaused(msg.sender);
+}
+
+function confirmWithdrawal(uint256 withdrawalId) external nonReentrant whenNotPaused {
+uint256 amount = _processConfirmation(msg.sender, withdrawalId);
+require(amount > 0, "No valid withdrawal request");
+// ...
+}`
+
+This inconsistency allows users to complete their withdrawal process by calling `confirmWithdrawal()` even when withdrawals are paused by the protocol. This defeats the purpose of the withdrawal pause functionality which is meant to halt all withdrawal-related operations during critical protocol conditions.
+
+### Impact
+
+Users can bypass withdrawal restrictions by confirming existing withdrawal requests during pause
+
+### Proof of Concept
+
+- Protocol identifies suspicious activity and calls `pauseWithdrawal()`
+
+- User with pending withdrawal request calls `confirmWithdrawal()`
+
+- The withdrawal succeeds despite protocol pause, since missing modifier allows execution
+
+### Recommended Mitigation Steps
+
+Add withdrawal pause modifier
+
+`- function confirmWithdrawal(uint256 withdrawalId) external nonReentrant whenNotPaused {
++ function confirmWithdrawal(uint256 withdrawalId) external nonReentrant whenNotPaused whenWithdrawalNotPaused {
+uint256 amount = _processConfirmation(msg.sender, withdrawalId);
+// ...
+}`
+
+Kinetiq acknowledged
+
+## [M-03] Inconsistent State Restoration in `cancelWithdrawal` Function
+
+Submitted by mahdifa, also found by 056Security, 0xgremlincat, cerweb10, Daniel526, DanielTan_MetaTrust, givn, gmh5225, harry_cryptodev, holydevoti0n, IzuMan, Lamsy, maze, MrValioBg, NexusAudits, Olami978355, peanuts, Pocas, Ragnarok, Riceee, roccomania, trachev, willycode20, zhaojohnson, and zzebra83
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L919
+
+### Finding Description and Impact
+
+Root Cause
+
+The cancelWithdrawal function in `StakingManager.sol` does not properly restore the contract’s internal state when a withdrawal request is canceled. Specifically, during a withdrawal initiated via `queueWithdrawal`, the `_withdrawFromValidator` function may:
+
+- Deduct from the `hypeBuffer` state variable if sufficient liquidity is available.
+
+- Append a `PendingOperation` to the `_pendingWithdrawals` array for any remaining amount to be processed on L1 if `hypeBuffer` is insufficient.
+
+When a manager calls `cancelWithdrawal` to cancel a user’s withdrawal request, the function:
+
+- Refunds the user’s kHYPE (including fees).
+
+- Deducts the withdrawal amount from `totalQueuedWithdrawals`.
+
+- Deletes the withdrawal request from `_withdrawalRequests`.
+
+However, it fails to:
+
+- Restore the `hypeBuffer` to its pre-withdrawal value.
+
+- Remove or invalidate the corresponding `PendingOperation` (if any) from `_pendingWithdrawals`.
+
+This leads to inconsistent accounting of the protocol’s liquidity and pending operations.
+
+Impact
+
+The failure to restore `hypeBuffer` and `_pendingWithdrawals` has the following consequences:
+
+-
+Underreported Liquidity in `hypeBuffer`:
+
+- The `hypeBuffer` remains lower than its actual value after cancellation, falsely indicating reduced on-chain liquidity.
+
+- This can force subsequent withdrawal requests to queue L1 operations unnecessarily, increasing delays for users and degrading user experience.
+
+-
+Invalid Operations in `_pendingWithdrawals`:
+
+- Any `PendingOperation` added to `_pendingWithdrawals` for a canceled withdrawal remains in the array and may be executed later via `executeL1Operations`.
+
+- This results in unnecessary withdrawals from L1 validators, which can:
+
+- Disrupt staking balances, potentially reducing staking rewards.
+
+- Increase gas costs for L1 interactions.
+
+- Incorrectly inflate `hypeBuffer` when L1 withdrawals are completed, leading to further accounting discrepancies.
+
+-
+Accounting Inconsistency:
+
+- The protocol’s internal state becomes misaligned, which may lead to suboptimal operational decisions, such as limiting withdrawals due to perceived low liquidity.
+
+- Over time, repeated cancellations without state restoration could accumulate errors, exacerbating liquidity mismanagement.
+
+While this issue does not directly result in asset loss, it impairs protocol efficiency, increases operational costs, and may indirectly affect staking performance if L1 balances are disrupted.
+
+### Recommended Mitigation Steps
+
+To address this issue, the `cancelWithdrawal` function should be modified to fully revert the state changes made during `queueWithdrawal`. The following steps are recommended:
+
+-
+Track Buffer Usage in `WithdrawalRequest`:
+
+-
+Add a `bufferUsed` field to the `WithdrawalRequest` struct to record the amount deducted from `hypeBuffer`:
+
+`struct WithdrawalRequest {
+uint256 hypeAmount;
+uint256 kHYPEAmount;
+uint256 kHYPEFee;
+uint256 bufferUsed; // Amount deducted from hypeBuffer
+uint256 timestamp;
+}`
+
+-
+In `_withdrawFromValidator`, update the `bufferUsed` field:
+
+`function _withdrawFromValidator(address validator, uint256 amount, OperationType operationType) internal {
+if (amount == 0) {
+return;
+}
+if (hypeBuffer >= amount) {
+hypeBuffer -= amount;
+_withdrawalRequests[msg.sender][nextWithdrawalId[msg.sender] - 1].bufferUsed = amount;
+return;
+}
+uint256 amountFromBuffer = hypeBuffer;
+_withdrawalRequests[msg.sender][nextWithdrawalId[msg.sender] - 1].bufferUsed = amountFromBuffer;
+uint256 remainingAmount = amount - amountFromBuffer;
+hypeBuffer = 0;
+if (remainingAmount > 0) {
+_pendingWithdrawals.push(PendingOperation({
+validator: validator,
+amount: remainingAmount,
+operationType: operationType
+}));
+}
+emit WithdrawalFromValidator(address(this), validator, amount, operationType);
+}`
+
+-
+Restore `hypeBuffer` in `cancelWithdrawal`:
+
+-
+Modify `cancelWithdrawal` to restore `hypeBuffer` using the `bufferUsed` value:
+
+`function cancelWithdrawal(address user, uint256 withdrawalId) external onlyRole(MANAGER_ROLE) {
+WithdrawalRequest storage request = _withdrawalRequests[user][withdrawalId];
+require(request.hypeAmount > 0, "Invalid withdrawal request");
+
+uint256 refundAmount = request.kHYPEAmount + request.kHYPEFee;
+
+// Restore hypeBuffer
+hypeBuffer += request.bufferUsed;
+
+totalQueuedWithdrawals -= request.hypeAmount;
+delete _withdrawalRequests[user][withdrawalId];
+
+kHYPE.transfer(user, refundAmount);
+
+emit WithdrawalCancelled(address(this), user, withdrawalId);
+}`
+
+-
+Handle `_pendingWithdrawals`:
+
+-
+Tracking and removing specific operations from `_pendingWithdrawals` is complex due to its array structure. A simpler approach is to add a `withdrawalId` and `user` to `PendingOperation` to associate operations with withdrawal requests:
+
+`struct PendingOperation {
+address validator;
+uint256 amount;
+OperationType operationType;
+address user;
+uint256 withdrawalId;
+}`
+
+-
+Update `_withdrawFromValidator` to include these fields:
+
+`if (remainingAmount > 0) {
+_pendingWithdrawals.push(PendingOperation({
+validator: validator,
+amount: remainingAmount,
+operationType: operationType,
+user: msg.sender,
+withdrawalId: nextWithdrawalId[msg.sender] - 1
+}));
+}`
+
+-
+In `cancelWithdrawal`, mark or remove the operation:
+
+`function cancelWithdrawal(address user, uint256 withdrawalId) external onlyRole(MANAGER_ROLE) {
+WithdrawalRequest storage request = _withdrawalRequests[user][withdrawalId];
+require(request.hypeAmount > 0, "Invalid withdrawal request");
+
+uint256 refundAmount = request.kHYPEAmount + request.kHYPEFee;
+
+// Restore hypeBuffer
+hypeBuffer += request.bufferUsed;
+
+// Remove associated pending withdrawal
+for (uint256 i = 0; i < _pendingWithdrawals.length; i++) {
+if (_pendingWithdrawals[i].user == user && _pendingWithdrawals[i].withdrawalId == withdrawalId) {
+_pendingWithdrawals[i] = _pendingWithdrawals[_pendingWithdrawals.length - 1];
+_pendingWithdrawals.pop();
+break;
+}
+}
+
+totalQueuedWithdrawals -= request.hypeAmount;
+delete _withdrawalRequests[user][withdrawalId];
+
+kHYPE.transfer(user, refundAmount);
+
+emit WithdrawalCancelled(address(this), user, withdrawalId);
+}`
+
+- Alternatively, add a `cancelled` flag to `PendingOperation` and skip cancelled operations in `executeL1Operations`.
+
+### Proof of Concept
+
+`// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "forge-std/Test.sol";
+import "../src/StakingManager.sol";
+import "../src/KHYPE.sol";
+
+contract StakingManagerTest is Test {
+StakingManager stakingManager;
+KHYPE kHYPE;
+address user = address(0x123);
+address manager = address(0x456);
+address validator = address(0x789);
+uint256 constant HYPE_AMOUNT = 100 * 1e8; // 100 HYPE in 8 decimals
+uint256 constant BUFFER_INITIAL = 50 * 1e8; // 50 HYPE in 8 decimals
+
+function setUp() public {
+// Deploy contracts
+kHYPE = new KHYPE();
+stakingManager = new StakingManager();
+
+// Initialize contracts (simplified)
+kHYPE.initialize("Kinetiq HYPE", "kHYPE", manager, address(stakingManager), address(stakingManager), address(0x1));
+stakingManager.initialize(address(kHYPE), address(0x2), address(0x3), address(0x4), 10); // unstakeFeeRate = 10 basis points
+
+// Grant roles
+vm.prank(manager);
+stakingManager.grantRole(stakingManager.MANAGER_ROLE(), manager);
+
+// Setup initial state
+vm.deal(address(stakingManager), BUFFER_INITIAL);
+vm.store(address(stakingManager), bytes32(uint256(keccak256("hypeBuffer"))), bytes32(BUFFER_INITIAL));
+vm.prank(address(0x2)); // Mock ValidatorManager
+stakingManager.setDelegation(address(stakingManager), validator);
+
+// Mint kHYPE to user
+vm.prank(address(stakingManager));
+kHYPE.mint(user, HYPE_AMOUNT);
+}
+
+function testCancelWithdrawalStateInconsistency() public {
+// Step 1: User requests withdrawal
+vm.prank(user);
+stakingManager.queueWithdrawal(HYPE_AMOUNT);
+
+// Verify state after withdrawal request
+uint256 hypeBufferAfter = uint256(vm.load(address(stakingManager), bytes32(uint256(keccak256("hypeBuffer")))));
+assertEq(hypeBufferAfter, 0, "hypeBuffer should be 0 after withdrawal");
+// Note: Foundry doesn't directly support array length checks easily, assume _pendingWithdrawals has 1 entry
+
+// Step 2: Manager cancels withdrawal
+vm.prank(manager);
+stakingManager.cancelWithdrawal(user, 0);
+
+// Verify state after cancellation
+hypeBufferAfter = uint256(vm.load(address(stakingManager), bytes32(uint256(keccak256("hypeBuffer")))));
+assertEq(hypeBufferAfter, 0, "hypeBuffer incorrectly remains 0");
+// Expected: hypeBuffer should be 50 * 1e8
+// _pendingWithdrawals still contains an operation for 49.9 * 1e8
+
+// Step 3: Simulate impact
+// Another withdrawal would unnecessarily queue to L1 due to zero hypeBuffer
+vm.prank(user);
+kHYPE.mint(user, HYPE_AMOUNT); // Simulate user getting kHYPE again
+vm.prank(user);
+stakingManager.queueWithdrawal(HYPE_AMOUNT);
+
+// Check that a new pending withdrawal is queued
+// Note: Requires additional logic to verify _pendingWithdrawals length
+}
+}`
+
+Notes on PoC
+
+- The test demonstrates that `hypeBuffer` remains zero after cancellation, when it should be restored to `50 * 1e8`.
+
+- Checking `_pendingWithdrawals` in Foundry is trickier due to array access limitations; additional helper functions or events may be needed to verify its state.
+
+- The test assumes a simplified setup; real-world testing should include mocks for `ValidatorManager`, `StakingAccountant`, and L1 interactions.
+
+Kinetiq acknowledged
+
+## [M-04] Processing all withdrawals before all deposits can cause some deposit to not be delegated in `processL1Operations`
+
+Submitted by Infect3d, also found by DemoreX, KupiaSec, and VAD37
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/main/src/StakingManager.sol#L627-L666
+
+The way withdrawals and deposits are processed in `processL1Operations` (all withdrawals requests first, then all deposits) can lead in some cases, to balance not being delegated, which ultimately reduce earned rewards from validator, making the vault less profitable than expected.
+
+Kinetiq allow users to deposit HYPE (native currency of Hyperliquid) into the `StakingManager`, and receive kHYPE (a share of the vault) in exchange. The HYPE tokens are then sent to the L1 by the `StakingManager` in order to delegate the tokens to a validator and earn rewards, redistributed to depositor through it shares.
+
+Before diving into the flow of the issue, two mechanisms are important to understand.
+
+First, the different balances that exists in Hyperliquid:
+
+- EVM balance: this is the balance of the asset on the HyperEVM, if its the native token it can be read with `address(...).balance` as we would do on EVM for ETH.
+
+- L1 Spot balance: this balance lives outside of the HyperEVM, on the HyperCore, and is transferred that way
+
+- L1 Staking balance: it is an intermediary balance, from where assets can then be delegated to validators. Users can move tokens from “spot” to “staking” (or the opposite direction) using the `L1Write` contract
+
+- L1 Delegated balance: this balance is a subset of the staking balance, only “staking” balance can be delegated. Undelegating assets will move then from “delegated” back to “staking”.
+
+Second, we must understand which functions are taking part in the process, and how these different balances are affected (in the following part, the `StakingManager` contract will be referred as `SM`):
+
+-
+`stake()`– called by user to deposit HYPE
+
+- `user` deposits HYPE to `SM`
+
+- `SM` move HYPE from EVM to “spot” (code)
+
+- `SM` move balance from “spot” to “staking” (code)
+
+- `SM` create a `_pendingDeposit` entry (code)
+
+-
+`queueWithdrawal()`– called by user to request a withdrawal from validators
+
+- `SM` create a `_pendingWithdrawal` entry (code)
+
+- `processL1Operations()`– called by operator to process withdrawals and deposits.
+
+-
+`_processL1Withdrawals()` – called by `processL1Operations`
+
+- `SM` undelegate “staking” (subject to 1 day delegate delay) (code)
+
+- `SM` move “staking” to “spot” (subject to 7 days delay) (code)
+
+-
+`_processDeposits()`– called by `processL1Operations`
+
+- `SM` delegate “staking” (every time the function is called, undelegate cannot be called for 1 day) (code)
+
+Now, we can start to describe the following scenario (we’ll set an exchange rate of 1:1 for HYPE/KHYPE, and 10% withdrawal fees for simplicity):
+
+- Alice stake 10 HYPE (and receive 10 kHYPE)
+
+- Bob stake 1 HYPE (and receive 1 kHYPE)
+
+- Carol stake 1 HYPE (and receive 1 kHYPE)
+
+- Alice queue withdrawal for 10 kHYPE (which result in 9 HYPE to be withdrawn after fees)
+
+- Bob queue withdrawal for 1 kHYPE (which result in 0.9 HYPE to be withdrawn)
+
+After these operations, the `processL1Operation` will be called by an operator in order to update the balances and ensure assets are delegated and earning rewards.
+
+Throughout the call, elements will be processed in the order they were added in their respective array, and withdrawals first, then deposits.
+
+The processing happens in `processL1Operations` which itself calls `_processL1Withdrawals` and `_processL1Deposits`.
+
+The delegation to operator happens in deposits, while the un-delegation from operator, and withdrawal from “staking” to “spot” balance happens in withdrawal.
+
+This means that in the above example, things will happen that way:
+
+- Alice’s withdrawal is processed first: undelegation fails (as nothing has been delegated yet), withdrawal 9 HYPE from “staking” to “spot” succeed (reduce the staking balance available to delegate)
+
+- Bob’s withdrawal is processed second: undelegation fails (same reason), withdrawal of 0.9 HYPE from “staking” to “spot” succeed, now equal to 9.9 HYPE being unstaked.
+
+- Alice’s deposit is processed, which tries to delegate 9 HYPE, but as they are already in the withdrawal process, this fails as there isn’t enough “staking” balance to delegate.
+
+- Bob’s deposit is processed for 1 HYPE and successfully pass, making the delegated balance equal to 1 HYPE.
+
+- Carol’s deposit is processed for 1 HYPE and successfully pass, making the delegated balance equal to 2 HYPE.
+
+So, at the end of the whole process we will have this state:
+
+- L1 Spot: `0 HYPE` (still in unstaking queue for 7 days)
+
+- L1 “Unstaking Queue”: `9.9 HYPE`
+
+- L1 Staking: `0.1 HYPE`
+
+- L1 Delegated: `2 HYPE`
+
+But now, let’s see what should have been the balance if everything went correctly.
+
+- Alice deposited 10 and withdrawn 9, so 1 HYPE should be delegated
+
+- Bob deposited 1 and withdrawn 0.9, so a total of 1.1 HYPE should be delegated
+
+- Carol deposited 1, so a total of 2.1 HYPE should be delegated
+
+We now see that 0.1 HYPE are missing in delegation.
+
+This discrepancy in delegated balance will reduce the vault profitability as it will earn less rewards than expected.
+
+### Impact
+
+Discrepancy in L1 balances management, causing some amount to not be delegated, thus reducing profitability of the vault from what is expected.
+
+### Recommended Mitigation Steps
+
+Care must be taken for the implementation of a fix here, as the below “solution” only works for operationType related to user deposits and withdrawals, and specific processes might be necessary for other operationType.
+
+In a loop, adds up all withdrawal and deposit request amount to be processed, and only processes the needed amount.
+E.g, `int256 amountToDelegate = deposit.amounts - withdrawal.amounts` to finally check the sign of `amount` and act accordingly: withdraw to spot the withdrawal amount, and delegate the remaining.
+
+This will also have the potential to reduce the gas consumption, as this will lower the number of external calls made to the L1Write contract.
+
+Kinetiq disputed and commented:
+
+If any scenario occurs as Infect3D mentioned, we can append an L1 operation to the deposit queue with 0.1 HYPE as the rebalance operation.
+
+The full workflow will be:
+
+ORIGINALLY
+
+`1. Alice stake 10 HYPE (and receive 10 kHYPE)
+2. Bob stake 1 HYPE (and receive 1 kHYPE)
+3. Carol stake 1 HYPE (and receive 1 kHYPE)
+4. Alice queue withdrawal for 10 kHYPE (which result in 9 HYPE to be withdrawn after fees)
+5. Bob queue withdrawal for 1 kHYPE (which result in 0.9 HYPE to be withdrawn)
+
+L1 Operation logics:
+1. Alice's withdrawal is processed first: undelegation fails (as nothing has been delegated yet), withdrawal 9 HYPE from "staking" to "spot" succeed (reduce the staking balance available to delegate)
+2. Bob's withdrawal is processed second: undelegation fails (same reason), withdrawal of 0.9 HYPE from "staking" to "spot" succeed, now equal to 9.9 HYPE being unstaked.
+3. Alice's deposit is processed, which tries to delegate 9 HYPE, but as they are already in the withdrawal process, this fails as there isn't enough "staking" balance to delegate.
+4. Bob's deposit is processed for 1 HYPE and successfully pass, making the delegated balance equal to 1 HYPE.
+5. Carol's deposit is processed for 1 HYPE and successfully pass, making the delegated balance equal to 2 HYPE.
+
+So, at the end of the whole process we will have this state:
+
+L1 Spot: 0 HYPE (still in unstaking queue for 7 days)
+L1 "Unstaking Queue": 9.9 HYPE
+L1 Staking: 0.1 HYPE
+L1 Delegated: 2 HYPE`
+
+A rebalance deposit of 0.1 HYPE will be provided by queueL1Operations(V, 0.1, RebalanceDeposit) to deposit the retained 0.1 HYPE for L1 Staking.
+
+## [M-05] Attacker can partially DoS L1 operations in StakingManager by making huge number of deposits
+
+Submitted by givn, also found by 0x15, AnimeConsumer, chibi, CoheeYang, dimorge, holtzzx, K42, and NexusAudits
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L601-L620
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L708-L711
+
+https://github.com/code-423n4/2025-04-kinetiq/blob/7f29c917c09341672e73be2f7917edf920ea2adb/src/StakingManager.sol#L750-L754
+
+When a user stakes in `StakingManager`, initially the funds go towards `hypeBuffer` and when it is filled, every deposit is placed in a L1 operation queue.
+
+`L1Operation[] private _pendingDeposits;`
+
+Once a day an operator calls `processL1Operations`. The amount of each deposit is delegated towards a validator and once the whole queue is processed it gets deleted.
+
+`if (_depositProcessingIndex == length) {
+delete _pendingDeposits;
+_depositProcessingIndex = 0;
+}`
+
+The issue is that the whole array gets deleted, which can exceed the block gas limit (30M gas) if the array is big enough. It is very unlikely that this situation happens on its own, because even the biggest staking protocol Lido has < 3k daily active users during its peak usages for the last 4 years.
+
+However, an attacker can intentionally spam the queue with minimal deposits and cause a DoS. The scenario would be something like this:
+
+- Attacker takes out a (flash) loan of HYPE
+
+- Attacker stakes minimum amounts to flood the deposit queue and receives kHYPE in return
+
+- The attacker then sells the kHYPE and pays loan fees
+
+- When the `StakingManager` operator calls `processL1Operations` it will fail with out of gas error, because the amount of gas required to delete the array will be > 30M.
+
+We should note that:
+
+- `minStakeAmount` doesn’t stop the attack since HYPE is relatively cheap
+
+-
+This DoS is done only via staking and is different form DoS caused by withdrawals.
+
+Impact
+
+- `StakingManager` operations will be disrupted, because processing the last element of the deposit queue will cause delete which will revert with OOG. Only allowing batches (max - 1) element to be processed.
+
+- Last element will never deposit.
+
+- Rebalancing and user deposits both will be affected.
+
+- `resetL1OperationsQueue` will reach block gas limit and revert.
+
+Root Cause
+
+The whole pending deposit queue is deleted at once without the possibility of doing it partially.
+
+### Proof of Concept
+
+This PoC demonstrates how `processL1Operations` and `resetL1OperationsQueue` will revert with Out Of Gas when `_pendingDeposits` is too big.
+
+Run `forge install foundry-rs/forge-std` to get latest APIs required for most accurate gas measurement.
+
+We assume the following values for limits and price:
+
+`### (take note of 2 block types, one's limit is much less), the bigger is 30M
+cast block --rpc-url https://rpc.hyperliquid.xyz/evm
+HYPE price = 16.00$ # as time of writing
+minStakeAmount = 0.1 HYPE `
+
+To make the `delete` exceed `30M` in gas, about `4480` deposits need to be made.
+The amount necessary to execute the attack would be `minStakeAmount * 4480 * HYPE price` or ~`7 168`$ as of today.
+
+Flash loan fees range from 0.09% to 0.3%.
+If we assume the higher bound, that would be `21.5`$ in fees, making the attack quite affordable. Any griefer can afford this amount.
+
+Place the code below under `StakingManager.t.sol`:
+
+`function test_DepositsDoS() public {
+// Set delegation targets for staking managers
+vm.startPrank(manager);
+validatorManager.activateValidator(validator);
+validatorManager.setDelegation(address(stakingManager), validator);
+
+// Set target buffer to 0
+stakingManager.setTargetBuffer(0);
+
+// Add many L1 operations in array
+uint256 stakeAmount = 0.1 ether;
+vm.deal(user, 10_000 ether);
+vm.startPrank(user);
+
+// 0.1 * 4480 (num deposits) * 16 (current HYPE price) = 7168 $ required
+for (uint256 i; i < 4480; ++i) { //
+stakingManager.stake{value: stakeAmount}();
+}
+
+// Try to process L1 operations
+// block gas limit: cast block --rpc-url https://rpc.hyperliquid.xyz/evm (take note of 2 block types, one's limit is much less)
+vm.startPrank(operator);
+vm.startSnapshotGas("processL1Operations");
+stakingManager.processL1Operations();
+uint256 gasUsed = vm.stopSnapshotGas();
+
+console.log("gasUsed", gasUsed);
+
+assertGt(gasUsed, 30_000_000);
+}`
+
+### Recommended Mitigation Steps
+
+Allow deleting `_pendingDeposits` in multiple transactions. On each call, make sure to check that all elements have been processed.
+
+Kinetiq disputed and commented:
+
+We can use `processL1Operations(uint256 batchSize)` to batch process those queued operations, also we are able to reset them at once by using `resetL1OperationsQueue`.
+
+# Low Risk and Non-Critical Issues
+
+For this audit, 19 reports were submitted by wardens detailing low risk and non-critical issues. The report highlighted below by dystopia received the top score from the judge.
+
+The following wardens also submitted reports: 0xcb90f054, 0xozovehe, Afriauditor, Agorist, Atharv, dimah7, dobrevaleri, eta, harry, holydevoti0n, IzuMan, K42, newspacexyz, pyk, rayss, Riceee, Sparrow, and Vedhkumar.
+
+### Overview
+
+This report details quality assurance (QA) issues identified in the provided smart contracts. Each issue is assigned a unique identifier, described in detail, and accompanied by a recommended mitigation strategy to enhance security, efficiency, and reliability.
+
+## [01] Missing `whenNotPaused` Modifier in `mint` Function
+
+Contract Name: `KHYPE.sol`
+
+Function Name: `mint`
+
+Description:
+
+The `mint` function does not include the `whenNotPaused` modifier, despite being called by functions that enforce this restriction. This omission allows minting operations to proceed when the contract is paused, potentially leading to unauthorized token issuance or state inconsistencies during a pause intended to halt operations.
+
+Mitigation:
+
+Add the `whenNotPaused` modifier to the `mint` function to ensure it cannot be executed while the contract is paused:
+
+`function mint(...) public whenNotPaused {
+// ... existing logic ...
+}`
+
+## [02] Silent Skipping of Inactive Oracles
+
+Contract Name: `OracleManager.sol`
+
+Function Name: `generatePerformance`
+
+Description:
+
+The `generatePerformance` function skips inactive oracles without emitting an event, reducing transparency. This could allow malicious oracles to selectively participate, potentially skewing performance averages unnoticed.
+
+Mitigation:
+
+Emit an event when skipping an inactive oracle to log the occurrence:
+
+`event OracleSkipped(address indexed oracle, string reason);
+if (!oracle.isActive) {
+emit OracleSkipped(oracle.address, "Inactive oracle");
+continue;
+}`
+
+## [03] Unbounded Oracle Iteration
+
+Contract Name: `OracleManager.sol`
+
+Function Name: `generatePerformance`
+
+Description:
+
+The function iterates over the `authorizedOracles` array without an upper bound, risking high gas costs or transaction failures if the list grows excessively large.
+
+Mitigation:
+
+Introduce a constant to cap the number of oracles processed:
+
+`uint256 public constant MAX_ORACLES = 100;
+function generatePerformance(...) {
+require(authorizedOracles.length <= MAX_ORACLES, "Too many oracles");
+// ... existing logic ...
+}`
+
+## [04] Handling of Zero Timestamps
+
+Contract Name: `OracleManager.sol`
+
+Function Name: `generatePerformance`
+
+Description:
+
+The function does not explicitly validate or handle cases where an oracle returns a zero timestamp, which could indicate invalid or stale data, potentially affecting performance calculations.
+
+Mitigation:
+
+Add a check to skip or flag zero timestamps:
+
+`event InvalidTimestamp(address indexed oracle, uint256 timestamp);
+if (oracleData.timestamp == 0) {
+emit InvalidTimestamp(oracle.address, 0);
+continue;
+}`
+
+## [05] Use of Average Instead of Median
+
+Contract Name: `OracleManager.sol`
+
+Function Name: `generatePerformance`
+
+Description:
+
+The function aggregates oracle data using averages, which are susceptible to manipulation by outliers or malicious oracles, potentially skewing performance metrics.
+
+Mitigation:
+
+Replace averages with medians for robustness:
+
+`function calculateMedian(uint256[] memory values) internal pure returns (uint256) {
+// Sort values and return middle element (or average of two middle elements for even length)
+// ... implementation ...
+}`
+
+## [06] Incomplete Reporting of Rewards and Slashes
+
+Contract Name: `OracleManager.sol`
+
+Function Name: `generatePerformance`
+
+Description:
+
+The function only emits events for new `avgRewardAmount` or `avgSlashAmount` if they strictly exceed previous values, potentially missing cases where equal values should be reported.
+
+Mitigation:
+
+Update the logic to include equal values:
+
+`if (avgRewardAmount >= prevRewardAmount) {
+emit RewardUpdated(validator, avgRewardAmount);
+}
+if (avgSlashAmount >= prevSlashAmount) {
+emit SlashUpdated(validator, avgSlashAmount);
+}`
+
+## [07] Inconsistent Error Message in `unpauseContract`
+
+Contract Name: `PauserRegistery.sol`
+
+Function Name: `unpauseContract`
+
+Description:
+
+The `require` statement in `unpauseContract` uses the error message `"Contract not paused"`, which is inconsistent with `"Contract already paused"` in `pauseContract`, potentially causing confusion during debugging.
+
+Mitigation:
+
+Update the error message for consistency:
+
+`require(!paused, "Contract already unpaused");`
+
+## [08] Inefficient Event Emission in `emergencyPauseAll`
+
+Contract Name: `PauserRegistery.sol`
+
+Function Name: `emergencyPauseAll`
+
+Description:
+
+Emitting a `ContractPaused` event for each contract in a loop increases gas costs, especially with many contracts, impacting efficiency.
+
+Mitigation:
+
+Emit a single event listing all paused contracts:
+
+`event ContractsPaused(address[] contracts);
+function emergencyPauseAll() {
+address[] memory pausedContracts = new address[](contracts.length);
+for (uint256 i = 0; i < contracts.length; i++) {
+pausedContracts[i] = contracts[i];
+// ... pause logic ...
+}
+emit ContractsPaused(pausedContracts);
+}`
+
+## [09] Missing Method to Remove Stale Validators
+
+Contract Name: `DefaultOracle.sol`
+
+Description:
+
+The contract lacks a mechanism to remove inactive validators, allowing stale data to persist and potentially skew performance metrics.
+
+Mitigation:
+
+Add a function to remove stale validators:
+
+`function removeStaleValidators(uint256 inactivityThreshold) external onlyOwner {
+for (uint256 i = 0; i < validators.length; i++) {
+if (block.timestamp - validators[i].lastActive > inactivityThreshold) {
+// Remove validator
+}
+}
+}`
+
+## [10] Lack of Sanity Checks for Reward and Slashing Amounts
+
+Contract Name: `DefaultOracle.sol`
+
+Function Name: `updateValidatorMetrics`
+
+Description:
+
+The `updateValidatorMetrics` function does not validate that `reward` and `slashing` amounts are reasonable relative to the validator’s `balance`, risking inconsistencies.
+
+Mitigation:
+
+Add checks:
+
+`require(reward + slashing <= balance, "Reward and slash exceed balance");
+require(reward >= 0 && slashing >= 0, "Negative amounts not allowed");`
+
+## [11] Immutable `defaultOracle` Creates Single Point of Failure
+
+Contract Name: `DefaultAdapter.sol`
+
+Description:
+
+The `immutable` `defaultOracle` address cannot be updated, creating a single point of failure if the oracle becomes compromised or unreliable.
+
+Mitigation:
+
+Use a mutable variable with access control:
+
+`address public defaultOracle;
+function setOracle(address newOracle) external onlyOwner {
+require(newOracle != address(0), "Invalid oracle");
+defaultOracle = newOracle;
+}`
+
+## [12] `supportsInterface` Implementation Non-Compliant with ERC-165
+
+Contract Name: `DefaultAdapter.sol`
+
+Function Name: `supportsInterface`
+
+Description:
+
+The `supportsInterface` function does not return `true` for the ERC-165 interface ID (`0x01ffc9a7`), violating the standard and potentially causing compatibility issues.
+
+Mitigation:
+
+Update the function:
+
+`function supportsInterface(bytes4 interfaceId) external view returns (bool) {
+return interfaceId == type(IOracleAdapter).interfaceId || interfaceId == type(IERC165).interfaceId;
+}`
+
+## [13] Absence of Slippage Protection in Token Conversion
+
+Contract Name: `StakingManager.sol`
+
+Function Name: `stake`
+
+Description:
+
+No slippage protection during token conversion risks user losses from unfavorable rates.
+
+Mitigation:
+
+Add a minimum output check:
+
+`require(kHYPEAmount >= minKHYPEOut, "Slippage limit exceeded");`
+
+## [14] Lack of Rate Limiting on Withdrawal Queueing
+
+Contract Name: `StakingManager.sol`
+
+Function Name: `queueWithdrawal`
+
+Description:
+
+Users can spam `queueWithdrawal`, bloating the `_withdrawalRequests` mapping and degrading performance.
+
+Mitigation:
+
+Add rate limiting:
+
+`require(lastWithdrawal[msg.sender] + 1 hours < block.timestamp, "Too soon");`
+
+## [15] Inaccurate Event Emission for Delegated Amounts
+
+Function Name: _distributeStake
+
+Contract Name: StakingManager.sol
+
+Description:
+
+The `Delegate` event emits the original amount before truncation, which might not accurately reflect the actual delegated amount.
+
+Mitigation:
+
+Modify the event to include both original and truncated amounts:
+
+`emit Delegate(address(this), validator, amount, truncatedAmount);`
+
+## [16] Silent Precision Loss in Decimal Conversion
+
+Function Name: _withdrawFromValidator
+
+Contract Name: StakingManager.sol
+
+Description:
+
+Converting amounts from 18 to 8 decimals can result in zero values for small amounts, leading to discrepancies between internal accounting and validator state.
+
+Mitigation:
+
+Add a check to ensure the truncated amount is greater than zero:
+
+`require(truncatedAmount > 0, "Truncated withdrawal amount is zero");`
+
+## [17] Missing Event Emission for Rebalance Withdrawals
+
+Function Name: _withdrawFromValidator
+
+Contract Name: StakingManager.sol
+
+Description:
+
+The function does not emit a distinct event for rebalance withdrawals, making it challenging to differentiate between user and rebalance operations.
+
+Mitigation:
+
+Emit a specific event for rebalance withdrawals to enhance observability.
+
+Kinetiq commented:
+
+[07]
+invalid: When `unpauseContract` is called, we assume the contract is paused, so the check `require(isPaused[contractAddress], "Contract not paused");` is correct. `require(!paused,` is incorrect.
+
+[08]
+invalid: Since we use a for loop for the pauseAll logic, multiple `emit ContractPaused(contractAddress);` events occur in this transaction. There’s no need to combine them into one event.
+
+[09]
+invalid: No need to maintain a validator in the oracle; each validator oracle provides the last update time. If the status is stale, the oracle manager will reject it.
+
+[10]
+invalid: We have an isolated contract to apply sanity checks
+
+[11]
+invalid: We prefer to stay immutable and deploy the oracle adapter and provider when changes occur.
+
+[15]
+invalid: The `Delegate` event indicates user-side information. Core events are represented as `L1DelegationProcessed`.
+
+[16]
+invalid: we have the safe guard logic in `_convertTo8Decimals` to roundUp when there it is a withdrawal
+
+# Disclosures
+
+C4 is an open organization governed by participants in the community.
+
+C4 audits incentivize the discovery of exploits, vulnerabilities, and bugs in smart contracts. Security researchers are rewarded at an increasing rate for finding higher-risk issues. Audit submissions are judged by a knowledgeable security researcher and disclosed to sponsoring developers. C4 does not conduct formal verification regarding the provided code but instead provides final verification.
+
+C4 does not provide any guarantee or warranty regarding the security of this project. All smart contract software should be used at the sole risk and responsibility of users.
+
+Top- Twitter
+- Discord
+- GitHub
+- Media kit
+- Terms
+- Privacy

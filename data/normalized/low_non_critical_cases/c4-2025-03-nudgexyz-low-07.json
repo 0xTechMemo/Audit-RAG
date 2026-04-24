@@ -1,0 +1,44 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Nudge.xyz Findings and Analysis Report (2025-03) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2025-03-nudgexyz#low-risk-and-non-critical-issues",
+  "source_report_section": "Low Risk and Non-Critical Issues",
+  "protocol_name": "Nudge.xyz",
+  "project_repo": "https://github.com/code-423n4/2025-03-nudgexyz",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2025-03-nudgexyz-low-07",
+  "component_types": [
+    "points-campaign",
+    "token-recovery",
+    "admin-functions"
+  ],
+  "issue_title": "Missing rescueTokens function in NudgePointsCampaigns contract",
+  "classification": "low",
+  "summary": "NudgePointsCampaigns lacks a rescueTokens function even though NudgeCampaign has one. Tokens accidentally sent to the points campaign contract may be permanently locked because administrators have no emergency recovery function.",
+  "root_cause": "inconsistent administrative token-recovery surface between related campaign contracts",
+  "why_not_medium_or_high": "the issue concerns accidental token transfers and emergency recovery; it does not show a permissionless exploit path or theft from intended protocol flows",
+  "operational_risk": "mistaken transfers to NudgePointsCampaigns can become unrecoverable, creating support burden and potential user/admin losses from operational mistakes",
+  "affected_functions": [
+    "NudgePointsCampaigns missing rescueTokens",
+    "NudgeCampaign.rescueTokens as reference behavior"
+  ],
+  "recommended_mitigation": [
+    "add an admin-gated rescueTokens function to NudgePointsCampaigns",
+    "ensure rescue logic cannot withdraw tokens needed for active campaign accounting",
+    "emit events for rescued tokens"
+  ],
+  "when_it_could_escalate": [
+    "if users commonly transfer tokens directly to campaign contracts",
+    "if valuable reward or target tokens can become stuck outside normal accounting",
+    "if there is no alternative recovery process or upgrade path"
+  ],
+  "tags": [
+    "low",
+    "token-recovery",
+    "rescue-tokens",
+    "admin-functions",
+    "points-campaign",
+    "locked-funds"
+  ]
+}

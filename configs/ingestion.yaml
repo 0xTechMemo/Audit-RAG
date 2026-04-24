@@ -1,0 +1,13 @@
+ingestion:
+  source_types:
+    - c4
+    - sherlock
+    - public-audit
+    - exploit-postmortem
+    - personal-notes
+  split_level: finding
+  require_human_review_for:
+    - missing-root-cause
+    - ambiguous-severity
+    - privileged-only-candidate
+    - sparse-tags

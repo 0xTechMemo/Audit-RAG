@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ValidationRecipe",
+  "type": "object",
+  "required": [
+    "id",
+    "goal",
+    "test_style"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "pattern_id": {
+      "type": "string"
+    },
+    "test_style": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "setup_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "minimal_state": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attacker_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "common_failures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
