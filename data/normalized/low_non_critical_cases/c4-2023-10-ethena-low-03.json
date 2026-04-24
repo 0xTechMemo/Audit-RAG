@@ -1,0 +1,35 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "source_report_section": "Low Risk and Non-Critical Issues / QA",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2023-10-ethena-low-03",
+  "component_types": [
+    "minting-flow",
+    "collateral-management",
+    "usde-token"
+  ],
+  "issue_title": "Delta neutrality caution",
+  "classification": "low",
+  "summary": "Users should be cautioned about the impermanent losses entailed arising from the delta-neutral stability strategy adopted by the protocol, specifically if the short positions were to encounter hefty losses. Apparently, the users could have held on to their collateral, e.g. stETH or WETH, and ended up a lot richer with the equivalent amount of USDe. I suggest all minting entries to begin with stable coins like USDC, DAI etc that could be converted to stETH to generate yield if need be instead of having users depositing stETH from their wallet reserves. Psychologically, this will make the users feel better as the mentality has been fostered more on preserving the 1:1 peg of USDe at all times.",
+  "root_cause": "QA/low-risk implementation weakness described in the final C4 low/non-critical report.",
+  "why_not_medium_or_high": "the issue appears in the final report low/non-critical or QA section and does not by itself prove a permissionless high-impact exploit",
+  "operational_risk": "Users should be cautioned about the impermanent losses entailed arising from the delta-neutral stability strategy adopted by the protocol, specifically if the short positions were to encounter hefty losses. Apparently, the users could have held on to their collateral, e.g. stETH or WETH, and ended up a lot richer with the equivalent amount of USDe. I suggest all minting entries to begin with stable coins like USDC, DAI etc that could be converted to stETH to generate yield if need be instead of having users depositing stETH from their wallet reserves. Psychologically, this will make the users ",
+  "affected_functions": [],
+  "recommended_mitigation": [],
+  "when_it_could_escalate": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "minting",
+    "collateral",
+    "yield-accounting",
+    "usde",
+    "low"
+  ]
+}

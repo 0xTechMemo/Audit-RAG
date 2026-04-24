@@ -1,0 +1,125 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10)",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-10-ethena-m-01",
+  "component_types": [
+    "staking",
+    "withdrawal-flow",
+    "redemption-flow",
+    "minting-flow",
+    "token",
+    "reward-distribution",
+    "usde-token",
+    "susde-token"
+  ],
+  "finding_title": "FULL_RESTRICTED Stakers can bypass restriction through approvals",
+  "summary": "The StakedUSDe contract implements a method to SOFTLY or FULLY restrict user address, and either transfer to another user or burn.",
+  "root_cause": "Report-described logic/accounting flaw: The StakedUSDe contract implements a method to SOFTLY or FULLY restrict user address, and either transfer to another user or burn.",
+  "broken_invariants": [
+    "The staking flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants."
+  ],
+  "attack_preconditions": [
+    "the affected code version and configuration match the public report",
+    "the report-described function sequence or state condition is reachable"
+  ],
+  "attacker_capability": "external user or protocol participant able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described action sequence",
+    "observe accounting, access-control, or availability divergence"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The StakedUSDe contract implements a method to SOFTLY or FULLY restrict user address, and either transfer to another user or burn."
+  },
+  "why_not_higher": "the final report classified this as Medium; impact or likelihood is bounded relative to High severity",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify reachability under current roles, pause state, and integration configuration",
+    "check whether audited commit and line links match the code under review",
+    "check whether sponsor-side operational assumptions fully remove the exploit path"
+  ],
+  "mitigations": [
+    "Check the token owner as well in the _withdraw function: if (hasRole(FULL_RESTRICTED_STAKER_ROLE, caller) || hasRole(FULL_RESTRICTED_STAKER_ROLE, receiver) || hasRole(FULL_RESTRICTED_STAKER_ROLE, _owner) ) { revert OperationNotAllowed(); }"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/102",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/112",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/147",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/172",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/214",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/233",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/319",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/320",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDe.sol#L225-L238",
+      "note": "GitHub permalink or repository link from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDe.sol#L245-L248",
+      "note": "GitHub permalink or repository link from final report"
+    }
+  ],
+  "tags": [
+    "staking",
+    "withdrawal",
+    "minting",
+    "redemption",
+    "reward-accounting",
+    "share-accounting",
+    "access-control",
+    "blacklist",
+    "gas-dos",
+    "rounding",
+    "token-transfer",
+    "usde",
+    "susde",
+    "ethena",
+    "medium"
+  ]
+}

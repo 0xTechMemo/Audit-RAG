@@ -1,0 +1,89 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11)",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "protocol_name": "Ethena Labs",
+  "project_repo": "https://github.com/code-423n4/2024-11-ethena-labs",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "disputed-by-sponsor-but-included-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-11-ethena-labs-m-01",
+  "component_types": [
+    "collateral-management",
+    "token"
+  ],
+  "finding_title": "Blacklisted user can burn tokens during WHITELIST_ENABLED state",
+  "summary": "Blacklisted user can burn tokens during WHITELIST_ENABLED state. This breaks the main invariant from the README. This could become an issue when the admin tries to redistribute the blacklisted user’s UStb balance using redistributeLockedAmount() but the blacklisted user frontruns it with a burn.",
+  "root_cause": "Report-described logic/accounting flaw: Blacklisted user can burn tokens during WHITELIST_ENABLED state. This breaks the main invariant from the README. This could become an issue when the admin tries to redistribute the blacklisted user’s UStb balance using redistributeLockedAmount() but the blacklisted user frontruns it with a burn.",
+  "broken_invariants": [
+    "The collateral-management flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The token flow should preserve protocol accounting, authorization, and user fund invariants."
+  ],
+  "attack_preconditions": [
+    "the affected code version and configuration match the public report",
+    "the report-described function sequence or state condition is reachable"
+  ],
+  "attacker_capability": "external user or protocol participant able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described action sequence",
+    "observe accounting, access-control, or availability divergence"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Blacklisted user can burn tokens during WHITELIST_ENABLED state. This breaks the main invariant from the README. This could become an issue when the admin tries to redistribute the blacklisted user’s UStb balance using redistributeLockedAmount() but the blacklisted user frontruns it with a burn."
+  },
+  "why_not_higher": "the final report classified this as Medium; impact or likelihood is bounded relative to High severity",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify reachability under current roles, pause state, and integration configuration",
+    "check whether audited commit and line links match the code under review",
+    "check whether sponsor-side operational assumptions fully remove the exploit path"
+  ],
+  "mitigations": [
+    "Add the conditions !hasRole(BLACKLISTED_ROLE, msg.sender) and !hasRole(BLACKLISTED_ROLE, from) to the check."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/e93ee09b10f900bd3be385f392c80920898bf53e/contracts/ustb/UStb.sol#L209",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs-findings/issues/15",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs-findings/issues/3",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs-findings/issues/3#issuecomment-2479266803",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/tree/main#main-invariants",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "UStb.sol#L208-L209",
+      "note": "file and line range rendered in final report code block"
+    }
+  ],
+  "tags": [
+    "collateral",
+    "access-control",
+    "blacklist",
+    "token-transfer",
+    "ethena",
+    "medium"
+  ]
+}

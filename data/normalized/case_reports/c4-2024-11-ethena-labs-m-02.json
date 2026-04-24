@@ -1,0 +1,119 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11)",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "protocol_name": "Ethena Labs",
+  "project_repo": "https://github.com/code-423n4/2024-11-ethena-labs",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "disputed-by-sponsor-but-included-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2024-11-ethena-labs-m-02",
+  "component_types": [
+    "redemption-flow",
+    "minting-flow",
+    "collateral-management",
+    "token"
+  ],
+  "finding_title": "Non-whitelisted users can burn UStb and redeem collateral during WHITELIST_ENABLED state",
+  "summary": "Non-whitelisted users can redeem collateral tokens and burn their UStb even when whitelist mode has been enabled on UStb contract. This breaks the main invariant mentioned in the README.",
+  "root_cause": "Report-described logic/accounting flaw: Non-whitelisted users can redeem collateral tokens and burn their UStb even when whitelist mode has been enabled on UStb contract. This breaks the main invariant mentioned in the README.",
+  "broken_invariants": [
+    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The minting-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The collateral-management flow should preserve protocol accounting, authorization, and user fund invariants."
+  ],
+  "attack_preconditions": [
+    "the affected code version and configuration match the public report",
+    "the report-described function sequence or state condition is reachable"
+  ],
+  "attacker_capability": "external user or protocol participant able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described action sequence",
+    "observe accounting, access-control, or availability divergence"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Non-whitelisted users can redeem collateral tokens and burn their UStb even when whitelist mode has been enabled on UStb contract. This breaks the main invariant mentioned in the README."
+  },
+  "why_not_higher": "the final report classified this as Medium; impact or likelihood is bounded relative to High severity",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify reachability under current roles, pause state, and integration configuration",
+    "check whether audited commit and line links match the code under review",
+    "check whether sponsor-side operational assumptions fully remove the exploit path"
+  ],
+  "mitigations": [
+    "Add hasRole(WHITELISTED_ROLE, from) in the check."
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/README.md",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/IUStbMintingEvents.sol#L17",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStb.sol#L165-L218",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStb.sol#L206",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStb.sol#L73",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStb.sol#L91",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStbMinting.sol#L111-L120",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStbMinting.sol#L127",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStbMinting.sol#L187",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-11-ethena-labs/blob/main/contracts/ustb/UStbMinting.sol#L568",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "UStb.sol#L193",
+      "note": "file and line range rendered in final report code block"
+    }
+  ],
+  "tags": [
+    "minting",
+    "redemption",
+    "collateral",
+    "access-control",
+    "blacklist",
+    "token-transfer",
+    "ethena",
+    "medium"
+  ]
+}

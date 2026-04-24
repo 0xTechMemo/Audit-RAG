@@ -1,0 +1,125 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10)",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "disputed-by-sponsor-but-included-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-10-ethena-m-02",
+  "component_types": [
+    "staking",
+    "withdrawal-flow",
+    "redemption-flow",
+    "minting-flow",
+    "token",
+    "reward-distribution",
+    "cooldown-flow",
+    "usde-token"
+  ],
+  "finding_title": "Soft Restricted Staker Role can withdraw stUSDe for USDe",
+  "summary": "A requirement is stated that a user with the SOFT_RESTRICTED_STAKER_ROLE is not allowed to withdraw USDe for stUSDe.",
+  "root_cause": "Report-described logic/accounting flaw: A requirement is stated that a user with the SOFT_RESTRICTED_STAKER_ROLE is not allowed to withdraw USDe for stUSDe.",
+  "broken_invariants": [
+    "The staking flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants."
+  ],
+  "attack_preconditions": [
+    "the affected code version and configuration match the public report",
+    "the report-described function sequence or state condition is reachable"
+  ],
+  "attacker_capability": "external user or protocol participant able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described action sequence",
+    "observe accounting, access-control, or availability divergence"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "A requirement is stated that a user with the SOFT_RESTRICTED_STAKER_ROLE is not allowed to withdraw USDe for stUSDe."
+  },
+  "why_not_higher": "the final report classified this as Medium; impact or likelihood is bounded relative to High severity",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify reachability under current roles, pause state, and integration configuration",
+    "check whether audited commit and line links match the code under review",
+    "check whether sponsor-side operational assumptions fully remove the exploit path"
+  ],
+  "mitigations": [
+    "With the function overriding present, to prevent the SOFT_RESTRICTED_STAKER_ROLE from being able to exchange their stUSDs for USDe, make the following change in StakedUSDe https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDe.sol#L232 - if (hasRole(FULL_RESTRICTED_STAKER_ROLE, caller) || hasRole(FULL_RESTRICTED_STAKER_ROLE, receiver)) { + if (hasRole(FULL_RESTRICTED_STAKER_ROLE, caller) || hasRole(FULL_RESTRICTED_STAKER_ROLE, receiver) || hasRole(SOFT_RESTRICTED_STAKER_ROLE, caller)) { revert OperationNotAllowed(); }"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/116",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/208",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/235",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/246",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/246#issuecomment-1810742469",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/246#issuecomment-1858130415",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/248",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/README.md?plain=1#L98",
+      "note": "GitHub permalink or repository link from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDe.sol#L232",
+      "note": "GitHub permalink or repository link from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/test/foundry/staking/StakedUSDe.t.sol",
+      "note": "GitHub permalink or repository link from final report"
+    }
+  ],
+  "tags": [
+    "staking",
+    "withdrawal",
+    "minting",
+    "redemption",
+    "reward-accounting",
+    "share-accounting",
+    "access-control",
+    "blacklist",
+    "cooldown",
+    "rounding",
+    "token-transfer",
+    "yield-accounting",
+    "usde",
+    "ethena",
+    "medium"
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10)",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-10-ethena-m-04",
+  "component_types": [
+    "withdrawal-flow",
+    "minting-flow",
+    "token",
+    "usde-token"
+  ],
+  "finding_title": "Malicious users can front-run to cause a denial of service (DoS) for StakedUSDe due to MinShares checks",
+  "summary": "Malicious users can transfer USDe token to StakedUSDe protocol directly lead to a denial of service (DoS) for StakedUSDe due to the limit shares check.",
+  "root_cause": "Report-described logic/accounting flaw: Malicious users can transfer USDe token to StakedUSDe protocol directly lead to a denial of service (DoS) for StakedUSDe due to the limit shares check.",
+  "broken_invariants": [
+    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The minting-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The token flow should preserve protocol accounting, authorization, and user fund invariants."
+  ],
+  "attack_preconditions": [
+    "the affected code version and configuration match the public report",
+    "the report-described function sequence or state condition is reachable"
+  ],
+  "attacker_capability": "external user or protocol participant able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described action sequence",
+    "observe accounting, access-control, or availability divergence"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Malicious users can transfer USDe token to StakedUSDe protocol directly lead to a denial of service (DoS) for StakedUSDe due to the limit shares check."
+  },
+  "why_not_higher": "the final report classified this as Medium; impact or likelihood is bounded relative to High severity",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify reachability under current roles, pause state, and integration configuration",
+    "check whether audited commit and line links match the code under review",
+    "check whether sponsor-side operational assumptions fully remove the exploit path"
+  ],
+  "mitigations": [
+    "We can solve this issue by setting a minimum deposit amount. ### Assessed type DoS"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L104-L107",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L111-L136",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L162-L174",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L194-L205",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L339-L348",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L413-L433",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L436-L440",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L443-L447",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/EthenaMinting.sol#L97-L100",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDe.sol#L173-L181",
+      "note": "GitHub blob permalink from final report HTML"
+    }
+  ],
+  "tags": [
+    "staking",
+    "withdrawal",
+    "minting",
+    "share-accounting",
+    "access-control",
+    "denial-of-service",
+    "rounding",
+    "decimal-conversion",
+    "token-transfer",
+    "usde",
+    "ethena",
+    "medium"
+  ]
+}

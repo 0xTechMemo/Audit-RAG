@@ -1,0 +1,34 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Labs Findings and Analysis Report (2024-11) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2024-11-ethena-labs",
+  "source_report_section": "Low Risk and Non-Critical Issues / QA",
+  "protocol_name": "Ethena Labs",
+  "project_repo": "https://github.com/code-423n4/2024-11-ethena-labs",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2024-11-ethena-labs-low-09",
+  "component_types": [
+    "minting-flow",
+    "token"
+  ],
+  "issue_title": "Non-blacklisted addresses can’t burn UStb tokens in a FULLY_ENABLED transfer state if address(0) is blaklisted",
+  "classification": "low",
+  "summary": "- Only non-blacklisted addresses can send/receive/burn UStb tokens in a FULLY_ENABLED transfer state.",
+  "root_cause": "QA/low-risk implementation weakness described in the final C4 low/non-critical report.",
+  "why_not_medium_or_high": "the issue appears in the final report low/non-critical or QA section and does not by itself prove a permissionless high-impact exploit",
+  "operational_risk": "- Only non-blacklisted addresses can send/receive/burn UStb tokens in a FULLY_ENABLED transfer state.",
+  "affected_functions": [],
+  "recommended_mitigation": [],
+  "when_it_could_escalate": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "minting",
+    "access-control",
+    "blacklist",
+    "token-transfer",
+    "low"
+  ]
+}

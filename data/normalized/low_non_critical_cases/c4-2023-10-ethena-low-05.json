@@ -1,0 +1,36 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "source_report_section": "Low Risk and Non-Critical Issues / QA",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2023-10-ethena-low-05",
+  "component_types": [
+    "reward-distribution",
+    "usde-token"
+  ],
+  "issue_title": "Inexpedient code lines",
+  "classification": "low",
+  "summary": "In the function below, the if block already dictates that getUnvestedAmount() == 0 manages to avoid a revert. Hence, consider refactoring the following code lines as it makes no sense adding 0 value getUnvestedAmount() of to the addend, amount:",
+  "root_cause": "QA/low-risk implementation weakness described in the final C4 low/non-critical report.",
+  "why_not_medium_or_high": "the issue appears in the final report low/non-critical or QA section and does not by itself prove a permissionless high-impact exploit",
+  "operational_risk": "In the function below, the if block already dictates that getUnvestedAmount() == 0 manages to avoid a revert. Hence, consider refactoring the following code lines as it makes no sense adding 0 value getUnvestedAmount() of to the addend, amount:",
+  "affected_functions": [],
+  "recommended_mitigation": [],
+  "when_it_could_escalate": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "staking",
+    "reward-accounting",
+    "access-control",
+    "token-transfer",
+    "usde",
+    "ethena",
+    "low"
+  ]
+}

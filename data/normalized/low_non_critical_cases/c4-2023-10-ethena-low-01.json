@@ -1,0 +1,39 @@
+{
+  "source_type": "code4rena-report-low-non-critical",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10) - Low Risk and Non-Critical Issues",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "source_report_section": "Low Risk and Non-Critical Issues / QA",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "retrieval_channel": "low_non_critical_caution",
+  "id": "c4-2023-10-ethena-low-01",
+  "component_types": [
+    "redemption-flow",
+    "minting-flow",
+    "cooldown-flow",
+    "usde-token"
+  ],
+  "issue_title": "Use an efficient logic in setter functions",
+  "classification": "low",
+  "summary": "When intending to emit both the old and new values, there isn’t a need to cache the old value that will only be used once. Simply emit both values before assigning a new value to the state variable. For example, the following setter function may be refactored as follows:",
+  "root_cause": "QA/low-risk implementation weakness described in the final C4 low/non-critical report.",
+  "why_not_medium_or_high": "the issue appears in the final report low/non-critical or QA section and does not by itself prove a permissionless high-impact exploit",
+  "operational_risk": "When intending to emit both the old and new values, there isn’t a need to cache the old value that will only be used once. Simply emit both values before assigning a new value to the state variable. For example, the following setter function may be refactored as follows:",
+  "affected_functions": [],
+  "recommended_mitigation": [],
+  "when_it_could_escalate": [
+    "if combined with permissionless access or large-value state transitions",
+    "if the affected path becomes critical to mint/redeem/withdrawal solvency or availability"
+  ],
+  "tags": [
+    "staking",
+    "minting",
+    "redemption",
+    "access-control",
+    "cooldown",
+    "usde",
+    "ethena",
+    "low"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Ethena Findings and Analysis Report (2023-10)",
+  "source_url": "https://code4rena.com/reports/2023-10-ethena",
+  "protocol_name": "Ethena",
+  "project_repo": "https://github.com/code-423n4/2023-10-ethena",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-10-ethena-m-03",
+  "component_types": [
+    "staking",
+    "withdrawal-flow",
+    "redemption-flow",
+    "minting-flow",
+    "vault",
+    "token",
+    "reward-distribution",
+    "cooldown-flow",
+    "usde-token",
+    "susde-token"
+  ],
+  "finding_title": "users still forced to follow previously set cooldownDuration even when cooldown is off (set to zero) before unstaking",
+  "summary": "The StakedUSDeV2 contract can enforces coolDown periods for users before they are able to unstake/ take out their funds from the silo contract if coolDown is on. Based on the presence of the modifiers ensureCooldownOff and ensureCooldownOn, it is known that the coolDown state of the StakedUSDeV2 contract can be toggled on or off. In a scenario where coolDown is on (always turned on by default) and Alice and Bob deposits, two days after Alice wants to withdraw/redeem. Alice is forced to wait for 90 days before completing withdrawal/getting her tokens from the silo contract because Alice must call coolDownAsset()/coolDownShares() fcns respectively. Bob decides to wait an extra day.",
+  "root_cause": "Report-described logic/accounting flaw: The StakedUSDeV2 contract can enforces coolDown periods for users before they are able to unstake/ take out their funds from the silo contract if coolDown is on. Based on the presence of the modifiers ensureCooldownOff and ensureCooldownOn, it is known that the coolDown state of the StakedUSDeV2 contract can be toggled on or off. In a scenario where coolDown is on (always turned on by default) and Alice and Bob deposits, two days after Alice wants to withdraw/redeem. Alice is forced to wait for 90 days before completing withdrawal/getting her tokens from the silo contract because Alice must ca",
+  "broken_invariants": [
+    "The staking flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The withdrawal-flow flow should preserve protocol accounting, authorization, and user fund invariants.",
+    "The redemption-flow flow should preserve protocol accounting, authorization, and user fund invariants."
+  ],
+  "attack_preconditions": [
+    "the affected code version and configuration match the public report",
+    "the report-described function sequence or state condition is reachable"
+  ],
+  "attacker_capability": "external user or protocol participant able to trigger the affected flow",
+  "trigger_actions": [
+    "execute the report-described action sequence",
+    "observe accounting, access-control, or availability divergence"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The StakedUSDeV2 contract can enforces coolDown periods for users before they are able to unstake/ take out their funds from the silo contract if coolDown is on. Based on the presence of the modifiers ensureCooldownOff and ensureCooldownOn, it is known that the coolDown state of the StakedUSDeV2 contract can be toggled on or off. In a scenario where coolDown is on (always turned on by default) and Alice and Bob deposits, two days after Alice wants to withdraw/redeem. Alice is forced to wait for 90 days before completing withdrawal/getting her tokens from the silo contract because Alice must ca"
+  },
+  "why_not_higher": "the final report classified this as Medium; impact or likelihood is bounded relative to High severity",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify reachability under current roles, pause state, and integration configuration",
+    "check whether audited commit and line links match the code under review",
+    "check whether sponsor-side operational assumptions fully remove the exploit path"
+  ],
+  "mitigations": [
+    "Modify the code in unstake() fcn to allow for withdrawals from the silo contract when the contract’s coolDownDuration has become 0. ### Assessed type Error"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/94697be8a3f0dfcd95dfb13ffbd39b5973f5c65d/contracts/token/ERC20/extensions/ERC4626.sol#L171C1-L181C6",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDeV2.sol#L124C38-L124C135",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDeV2.sol#L126C1-L135C2",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDeV2.sol#L27C1-L30C4",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDeV2.sol#L52C1-L61C1",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDeV2.sol#L65C1-L73C4",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2023-10-ethena/blob/ee67d9b542642c9757a6b826c82d0cae60256509/contracts/StakedUSDeV2.sol#L78C1-L90C4",
+      "note": "GitHub blob permalink from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/198",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/198#issuecomment-1858131607",
+      "note": "GitHub report/finding reference from final report HTML"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-10-ethena-findings/issues/424",
+      "note": "GitHub report/finding reference from final report HTML"
+    }
+  ],
+  "tags": [
+    "staking",
+    "withdrawal",
+    "minting",
+    "redemption",
+    "reward-accounting",
+    "share-accounting",
+    "access-control",
+    "blacklist",
+    "cooldown",
+    "usde",
+    "susde",
+    "ethena",
+    "medium"
+  ]
+}
