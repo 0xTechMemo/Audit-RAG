@@ -1,0 +1,71 @@
+{
+  "source_type": "code4rena-mitigation-review-finding",
+  "source_name": "Code4rena Reserve Protocol Mitigation Review Findings (2023-09)",
+  "source_url": "https://github.com/code-423n4/2023-09-reserve-mitigation-findings/issues/19",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-09-reserve-mitigation",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "unmitigated-in-mitigation-review",
+  "validation_style": [
+    "public-mitigation-review-finding",
+    "github-issue-evidence"
+  ],
+  "id": "c4-2023-09-reserve-mitigation-m-04",
+  "component_types": [
+    "reward-accounting"
+  ],
+  "finding_title": "Reward rounding rollover remained unmitigated in mitigation review",
+  "summary": "## Impact The previously identified vulnerability of potential rounding issues during reward calculations has not been fully mitigated. The current strategy to keep remainders and use them in subsequent _claimAndSyncRewards() calls does not adequately address the issue when the rewardToken has a decimal smaller than 6 and/or the total reward tokens entailed is much smaller. This could lead to significant truncation losses as the remainder rolls over until it's large enough to overcome truncation, unfairly disadvantaging users, particularly those exiting the investment earlier, as they would miss out on a sizable amount of reward. This rounding issue, if left unresolved, can erode trust and potentially open up the system to arbitrage opportunities, further exacerbating the loss of rewards for regular users.",
+  "root_cause": "reward remainder rollover still fails for low-decimal or small reward amounts, causing users who exit before rollover accumulation to miss accrued rewards",
+  "broken_invariants": [
+    "mitigations for reward rounding must preserve each user’s accrued rewards even when token decimals are small",
+    "reward remainders must not only benefit users who remain until a later rollover threshold is reached",
+    "a mitigation review should not consider a rounding bug fixed when the same value-loss condition survives under smaller reward amounts"
+  ],
+  "attack_preconditions": [
+    "reward token has low decimals or total reward amount is small enough for truncation to dominate",
+    "users exit before accumulated remainders are large enough to be distributed"
+  ],
+  "attacker_capability": "protocol state or user timing condition; direct attacker may not be required",
+  "trigger_actions": [
+    "claim or transfer rewards under low-decimal/small-reward conditions",
+    "exit before remainder rollover compensates the user"
+  ],
+  "impact": {
+    "type": "reward-loss",
+    "description": "## Impact The previously identified vulnerability of potential rounding issues during reward calculations has not been fully mitigated. The current strategy to keep remainders and use them in subsequent _claimAndSyncRewards() calls does not adequately address the issue when the rewardToken has a decimal smaller than 6 and/or the total reward tokens entailed is much smaller. This could lead to significant truncation losses as the remainder rolls over until it's large enough to overcome truncation, unfairly disadvantaging users, particularly those exiting the investment earlier, as they would mi"
+  },
+  "why_not_higher": "mitigation review labels the underlying issue as Medium and impact is bounded to reward accounting loss",
+  "why_not_lower": "unmitigated mitigation-review issue describes continuing user reward loss, not mere code quality",
+  "common_false_positive_angles": [
+    "quantify whether truncation exceeds dust",
+    "check whether reward token decimals and reward amount make the rollover loss material",
+    "confirm users can exit before later rollover distribution"
+  ],
+  "mitigations": [],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/erc20/RewardableERC20.sol#L86",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/896",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2023-09-reserve-mitigation-findings/issues/19",
+      "note": "GitHub issue from mitigation review"
+    }
+  ],
+  "tags": [
+    "reward-accounting",
+    "rounding",
+    "precision-loss",
+    "mitigation-review",
+    "unmitigated"
+  ]
+}

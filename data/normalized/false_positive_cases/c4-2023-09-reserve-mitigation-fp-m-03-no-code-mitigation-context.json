@@ -1,0 +1,26 @@
+{
+  "id": "c4-2023-09-reserve-mitigation-fp-m-03-no-code-mitigation-context",
+  "source_type": "code4rena-mitigation-review-context",
+  "source_name": "Code4rena Reserve Protocol Mitigation Review Findings (2023-09)",
+  "source_url": "https://github.com/code-423n4/2023-09-reserve-mitigation-findings/issues/25",
+  "protocol_name": "Reserve Protocol",
+  "issue_claim": "M-03 Unmitigated",
+  "why_it_looked_bad": "The issue presents an edge condition which will expand the error of the RToken oracle price. It can come into play when one RToken is using another RToken as collateral either directly or indirectly through an LP token. If there is RSR overcollateralization then this issue is mitigated.",
+  "why_not_valid": "the reviewer explicitly agreed with the no-code mitigation and marked it unmitigated only to call judge attention; use as a caution that documentation/context mitigations may be acceptable when overcollateralization or deployment assumptions bound the risk",
+  "classification": "mitigation-review-downgrade-reference",
+  "downgrade_reason": "no direct code change does not automatically imply an exploitable unresolved HM issue; the remaining edge condition depends on nested RToken collateral configuration and RSR overcollateralization assumptions",
+  "trust_assumption": "Treat as caution unless the current system proves a concrete nested RToken path with insufficient overcollateralization and material oracle error expansion.",
+  "when_it_could_be_real": [
+    "nested RToken collateral is used directly or through an LP token",
+    "RSR overcollateralization is insufficient to absorb the expanded oracle error",
+    "the no-code/documentation mitigation is not followed by deployers"
+  ],
+  "tags": [
+    "rToken",
+    "oracle",
+    "margin-of-error",
+    "mitigation-review",
+    "documentation-mitigation",
+    "downgrade-reference"
+  ]
+}

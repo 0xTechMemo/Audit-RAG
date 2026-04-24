@@ -1,0 +1,64 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-h-02",
+  "component_types": [
+    "curve"
+  ],
+  "finding_title": "CurveVolatileCollateral Collateral status can be manipulated by flashloan attack",
+  "summary": "Attacker can make the CurveVolatileCollateral enter the status of IFFY/DISABLED. It will cause the basket to rebalance and sell off all the CurveVolatileCollateral.",
+  "root_cause": "flash-loan-manipulable Curve volatile pool pricing can push collateral status across thresholds during a single transaction",
+  "broken_invariants": [
+    "collateral status checks must not depend on instantly manipulable pool balances or spot prices",
+    "flash-loan changes to a Curve volatile pool must not be able to mark collateral sound or unsound incorrectly",
+    "default/delay logic must be based on manipulation-resistant prices"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "Attacker can make the CurveVolatileCollateral enter the status of IFFY/DISABLED. It will cause the basket to rebalance and sell off all the CurveVolatileCollateral."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "I think the de-pegged status in the volatile pool may be unimportant. It will be temporary and have little impact on the price of outside lp tokens. After all, override the _anyDepeggedOutsidePool to check the lp price might be a good idea. ### Assessed type Context"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/896",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "curve",
+    "flash-loan",
+    "oracle-manipulation",
+    "collateral-status",
+    "spot-price",
+    "default-detection"
+  ]
+}

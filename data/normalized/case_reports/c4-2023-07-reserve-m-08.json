@@ -1,0 +1,81 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-08",
+  "component_types": [
+    "curve",
+    "rToken",
+    "redemption"
+  ],
+  "finding_title": "User can’t redeem from RToken based on CurveStableRTokenMetapoolCollateral when any underlying collateral of paired RToken’s price oracle is offline(timeout)",
+  "summary": "The CurveStableMetapoolCollateral is intended for 2-fiattoken stable metapools that involve RTokens, such as eUSD-fraxBP. The metapoolToken coin0 is pairedToken, which is also a RToken, and the coin1 is lpToken, e.g. 3CRV. And the CurveStableRTokenMetapoolCollateral.tryPairedPrice uses RTokenAsset.price() as the oracle to get the pairedToken price:",
+  "root_cause": "RToken redemption through CurveStableRTokenMetapoolCollateral is blocked when any paired RToken underlying oracle times out",
+  "broken_invariants": [
+    "users should not lose redemption availability merely because an unrelated paired RToken underlying oracle is stale",
+    "metapool collateral adapters must isolate redemption-critical paths from nonessential paired-token oracle failures",
+    "composed collateral pricing should fail gracefully without blocking valid exits"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The CurveStableMetapoolCollateral is intended for 2-fiattoken stable metapools that involve RTokens, such as eUSD-fraxBP. The metapoolToken coin0 is pairedToken, which is also a RToken, and the coin1 is lpToken, e.g. 3CRV. And the CurveStableRTokenMetapoolCollateral.tryPairedPrice uses RTokenAsset.price() as the oracle to get the pairedToken price:"
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "The Fix.plus can’t handle the uint192 overflow error. Try to override _anyDepeggedOutsidePool for CurveStableRTokenMetapoolCollateral as: unchecked { uint192 mid = (high - low) / 2 + low; } The assert assert(low <= high) in the RTokenAsset.tryPrice has already protected everything. ### Assessed type DoS"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/curve/CurveStableCollateral.sol#L119-L121",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/curve/CurveStableMetapoolCollateral.sol#L122-L138",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/curve/CurveStableRTokenMetapoolCollateral.sol#L46-L54",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/917",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "redemption",
+    "stale-oracle",
+    "curve",
+    "metapool",
+    "availability",
+    "rToken"
+  ]
+}

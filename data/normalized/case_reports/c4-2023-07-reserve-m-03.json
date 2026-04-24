@@ -1,0 +1,74 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-03",
+  "component_types": [
+    "oracle",
+    "rToken"
+  ],
+  "finding_title": "RTokenAsset price estimation accounts for margin of error twice",
+  "summary": "RTokenAsset estimates the price by multiplying the BU (basket unit) price estimation by the estimation of baskets held (then dividing by total supply). The issue is that both BU and baskets held account for price margin of error, widening the range of the price more than necessary.",
+  "root_cause": "RTokenAsset applies margin-of-error adjustments twice, producing overly conservative or distorted price estimates",
+  "broken_invariants": [
+    "RTokenAsset price estimation should apply each configured oracle margin exactly once",
+    "nested or composed asset pricing must not double-count uncertainty buffers",
+    "price range widening must reflect real uncertainty rather than duplicated math"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "RTokenAsset estimates the price by multiplying the BU (basket unit) price estimation by the estimation of baskets held (then dividing by total supply). The issue is that both BU and baskets held account for price margin of error, widening the range of the price more than necessary."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "I think the best way to mitigate this would be to use a dedicated function to estimate the price, I don’t see an easy way to fix this while using the existing functions. ### Assessed type Other"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/RTokenAsset.sol#L100-L115",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/RTokenAsset.sol#L53-L72",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/916",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "price-range",
+    "margin-of-error",
+    "rToken",
+    "oracle",
+    "double-counting"
+  ]
+}

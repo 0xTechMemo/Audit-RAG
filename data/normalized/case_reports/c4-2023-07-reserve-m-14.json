@@ -1,0 +1,75 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-14",
+  "component_types": [
+    "aToken",
+    "withdrawal",
+    "wrapper"
+  ],
+  "finding_title": "Lack of protection when withdrawing Static Atoken",
+  "summary": "The Aave plugin is associated with an ever-increasing exchange rate. The earlier a user wraps the AToken, the more Static Atoken will be minted and understandably no slippage protection is needed.",
+  "root_cause": "StaticAToken withdrawal lacks sufficient protection against unsafe exchange-rate or liquidity conditions",
+  "broken_invariants": [
+    "static aToken withdrawals must validate underlying redemption conditions before burning or transferring shares",
+    "wrapper exits must not rely on assumptions about external Aave token behavior without protection",
+    "withdrawal paths should preserve principal even when external yield-token state is abnormal"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The Aave plugin is associated with an ever-increasing exchange rate. The earlier a user wraps the AToken, the more Static Atoken will be minted and understandably no slippage protection is needed."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "Consider implementing slippage protection on StaticATokenLM._withdraw so that users could opt for the minimum amount of AToken to receive or the maximum amount of Static Atoken to burn. ### Assessed type Timing"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/aave/StaticATokenLM.sol#L293-L295",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/aave/StaticATokenLM.sol#L297-L299",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/aave/StaticATokenLM.sol#L338-L355",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "aToken",
+    "wrapper",
+    "withdrawal",
+    "external-integration",
+    "safety-check"
+  ]
+}

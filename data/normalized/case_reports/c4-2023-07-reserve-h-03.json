@@ -1,0 +1,62 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "high",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-h-03",
+  "component_types": [],
+  "finding_title": "ConvexStakingWrapper.sol after shutdown，rewards can be stolen",
+  "summary": "After shutdown, checkpoints are stopped, leading to possible theft of rewards.",
+  "root_cause": "reward shutdown accounting bug: after Convex shutdown, wrapper reward handling allows accumulated rewards to be claimed or redirected incorrectly",
+  "broken_invariants": [
+    "rewards accrued before and after staking shutdown must remain attributable to the correct wrapper/share holders",
+    "shutdown paths must not leave reward tokens claimable by the wrong party",
+    "staking wrapper reward state must be synchronized before disabling or changing reward flows"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "After shutdown, checkpoints are stopped, leading to possible theft of rewards."
+  },
+  "why_not_higher": "already classified as High in the final C4 report",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "Still execute \\_checkpoint function _checkpoint(address[2] memory _accounts) internal nonReentrant { //if shutdown, no longer checkpoint in case there are problems - if (isShutdown()) return; uint256 supply = _getTotalSupply(); uint256[2] memory depositedBalance; depositedBalance[0] = _getDepositedBalance(_accounts[0]); depositedBalance[1] = _getDepositedBalance(_accounts[1]); IRewardStaking(convexPool).getReward(address(this), true); _claimExtras(); uint256 rewardCount = rewards.length; for (uint256 i = 0; i < rewardCount; i++) { _calcRewardIntegral(i, _accounts, depositedBalance, supply, false); } } ### Assessed type Context"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/930",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "rewards",
+    "staking-wrapper",
+    "shutdown",
+    "convex",
+    "reward-theft",
+    "accounting-desync"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-11",
+  "component_types": [
+    "aToken",
+    "reward-accounting"
+  ],
+  "finding_title": "StaticATokenLM transfer missing _updateRewards",
+  "summary": "Transfer missing _updateRewards(), resulting in the loss of from’s reward.",
+  "root_cause": "StaticATokenLM transfer does not update rewards before balance movement, desynchronizing accrued reward accounting",
+  "broken_invariants": [
+    "reward state must be updated before token balances move",
+    "transfers of yield/reward-bearing tokens must not let accrued rewards attach to the wrong holder",
+    "balance-dependent reward indexes must be synchronized on every balance-changing path"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Transfer missing _updateRewards(), resulting in the loss of from’s reward."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "_beforeTokenTransfer first trigger _updateRewards(). function _beforeTokenTransfer( address from, address to, uint256 ) internal override { if (address(INCENTIVES_CONTROLLER) == address(0)) { return; } + _updateRewards(); if (from != address(0)) { _updateUser(from); } if (to != address(0)) { _updateUser(to); } } ### Assessed type Context"
+  ],
+  "snippets": [],
+  "tags": [
+    "aToken",
+    "reward-accounting",
+    "transfer-hook",
+    "state-sync",
+    "yield-token"
+  ]
+}

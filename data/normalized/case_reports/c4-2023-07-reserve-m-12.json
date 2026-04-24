@@ -1,0 +1,56 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-12",
+  "component_types": [
+    "reward-accounting"
+  ],
+  "finding_title": "_claimRewardsOnBehalf() User’s rewards may be lost",
+  "summary": "Incorrect determination of maximum rewards, which may lead to loss of user rewards.",
+  "root_cause": "_claimRewardsOnBehalf updates accounting incorrectly when claiming rewards for another user, causing user rewards to be lost",
+  "broken_invariants": [
+    "claim-on-behalf flows must credit and debit the beneficiary reward state, not the caller or an incorrect account",
+    "reward claims must preserve each user’s accrued amount across delegated claiming paths",
+    "on-behalf reward accounting must handle partial or capped reward amounts without losing balances"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Incorrect determination of maximum rewards, which may lead to loss of user rewards."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "function _claimRewardsOnBehalf( address onBehalfOf, address receiver, bool forceUpdate ) internal { if (forceUpdate) { _collectAndUpdateRewards(); } uint256 balance = balanceOf(onBehalfOf); uint256 reward = _getClaimableRewards(onBehalfOf, balance, false); uint256 totBal = REWARD_TOKEN.balanceOf(address(this)); - if (reward > totBal) { + if (forceUpdate && reward > totBal) { reward = totBal; } if (reward > 0) { _unclaimedRewards[onBehalfOf] = 0; _updateUserSnapshotRewardsPerToken(onBehalfOf); REWARD_TOKEN.safeTransfer(receiver, reward); } } ### Assessed type Context"
+  ],
+  "snippets": [],
+  "tags": [
+    "reward-accounting",
+    "claim-on-behalf",
+    "state-desync",
+    "user-rewards"
+  ]
+}

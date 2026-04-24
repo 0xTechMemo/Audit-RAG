@@ -1,0 +1,11 @@
+{
+  "id": "c4-2023-07-reserve-protocol-invitational",
+  "contest_name": "2023 07 reserve protocol invitational",
+  "repo_url": "https://github.com/code-423n4/2023-01-reserve/blob/main/audits/Ackee%20-%20Oct%2007%202022.pdf",
+  "source_url": "https://code4rena.com/audits/2023-07-reserve-protocol-invitational",
+  "architecture_summary": "Reserve Protocol audit or mitigation review page. Stored as contest context; final HM findings are normalized separately from report/finding sources.",
+  "known_issues": [],
+  "hotspot_modules": [],
+  "candidate_leads": [],
+  "dead_ends": []
+}

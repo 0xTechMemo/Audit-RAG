@@ -1,0 +1,57 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "public-contest-finding",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-07",
+  "component_types": [
+    "trading"
+  ],
+  "finding_title": "The Asset.lotPrice doubles the oracle timeout in the worst case",
+  "summary": "When the tryPrice() function revert, for example oracle timeout, the Asset.lotPrice will use a decayed historical value:",
+  "root_cause": "Asset.lotPrice composes oracle timeouts so the effective staleness window can double the intended timeout",
+  "broken_invariants": [
+    "lot pricing must not extend oracle freshness beyond the configured timeout",
+    "combined price reads should use the strictest relevant timestamp rather than accumulating stale windows",
+    "trading decisions must not execute against prices older than the protocol tolerance"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "When the tryPrice() function revert, for example oracle timeout, the Asset.lotPrice will use a decayed historical value:"
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "Starts lotPrice decay immediately or updated the lastSave to updateTime instead of block.timestamp. ### Assessed type Context"
+  ],
+  "snippets": [],
+  "tags": [
+    "oracle-timeout",
+    "stale-price",
+    "lot-price",
+    "trading",
+    "freshness"
+  ]
+}

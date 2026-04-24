@@ -1,0 +1,79 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-09",
+  "component_types": [
+    "collateral-pricing",
+    "rToken"
+  ],
+  "finding_title": "RTokenAsset price oracle can return a huge but valid high price when any underlying collateral’s price oracle timeout",
+  "summary": "The RTokenAsset is an implementation of interface IRTokenOracle to work as a oracle price feed for the little RToken. RTokenAsset implements the latestPrice function to get the oracle price and saved time from the cachedOracleData, which is updated by _updateCachedPrice function:",
+  "root_cause": "RTokenAsset can return an extreme but valid high price when any underlying collateral oracle is timed out",
+  "broken_invariants": [
+    "RTokenAsset pricing must propagate stale underlying oracle failures instead of producing valid-looking extreme prices",
+    "basket-level price aggregation must not mask one collateral timeout as a high valid RToken price",
+    "stale oracle handling must be consistent across nested collateral structures"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "The RTokenAsset is an implementation of interface IRTokenOracle to work as a oracle price feed for the little RToken. RTokenAsset implements the latestPrice function to get the oracle price and saved time from the cachedOracleData, which is updated by _updateCachedPrice function:"
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "Add a BU price valid check in the RToken.tryPrice: function tryPrice() external view virtual returns (uint192 low, uint192 high) { (uint192 lowBUPrice, uint192 highBUPrice) = basketHandler.price(); // {UoA/BU} require(lowBUPrice != 0 && highBUPrice != FIX_MAX, \"invalid price\"); ### Assessed type Context"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/p1/BasketHandler.sol#L329-L351",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/RTokenAsset.sol#L163-L175",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/RTokenAsset.sol#L53-L69",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/917",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "rToken",
+    "stale-oracle",
+    "price-inflation",
+    "collateral-pricing",
+    "timeout"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "c4-2023-08-reserve-protocol-mitigation-review",
+  "contest_name": "2023 08 reserve protocol mitigation review",
+  "repo_url": "https://github.com/code-423n4/2023-08-reserve-mitigation",
+  "source_url": "https://code4rena.com/audits/2023-08-reserve-protocol-mitigation-review",
+  "architecture_summary": "Reserve Protocol audit or mitigation review page. Stored as contest context; final HM findings are normalized separately from report/finding sources.",
+  "known_issues": [
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/10",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/11",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/13",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/15",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/16",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/2",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/29",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/34",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/4",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/47",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/48",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/6",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/7",
+    "https://github.com/code-423n4/2023-06-reserve-findings/issues/8"
+  ],
+  "hotspot_modules": [],
+  "candidate_leads": [],
+  "dead_ends": []
+}

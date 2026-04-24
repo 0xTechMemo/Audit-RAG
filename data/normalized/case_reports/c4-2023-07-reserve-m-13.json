@@ -1,0 +1,85 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "acknowledged-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-13",
+  "component_types": [
+    "compound-v3",
+    "withdrawal",
+    "wrapper"
+  ],
+  "finding_title": "Lack of protection when caling CusdcV3Wrapper._withdraw",
+  "summary": "When unwrapping the wComet to its rebasing comet, users with an equivalent amount of wComet invoking CusdcV3Wrapper._withdraw at around the same time could end up having different percentage gains because comet is not linearly rebasing.",
+  "root_cause": "CusdcV3Wrapper withdrawal lacks protection around the external Comet withdraw path, exposing users to integration failure or unsafe redemption conditions",
+  "broken_invariants": [
+    "wrapper withdrawals must validate external protocol state before moving user shares or assets",
+    "Comet integration failures must not leave users with inconsistent wrapper accounting",
+    "principal exits from wrappers need explicit protection separate from reward logic"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "When unwrapping the wComet to its rebasing comet, users with an equivalent amount of wComet invoking CusdcV3Wrapper._withdraw at around the same time could end up having different percentage gains because comet is not linearly rebasing."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "Consider implementing slippage protection on CusdcV3Wrapper._withdraw so that users could opt for the minimum amount of comet to receive or the maximum amount of wComet to burn. ### Assessed type Timing"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CometHelpers.sol#L29-L35",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CusdcV3Wrapper.sol#L134-L170",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CusdcV3Wrapper.sol#L225-L231",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CusdcV3Wrapper.sol#L241-L244",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CusdcV3Wrapper.sol#L298-L313",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "compound-v3",
+    "wrapper",
+    "withdrawal",
+    "external-integration",
+    "safety-check"
+  ]
+}

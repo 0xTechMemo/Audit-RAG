@@ -1,0 +1,80 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-02",
+  "component_types": [
+    "collateral-pricing",
+    "compound-v3",
+    "oracle"
+  ],
+  "finding_title": "CTokenV3Collateral._underlyingRefPerTok should use the decimals from underlying Comet",
+  "summary": "CTokenV3Collateral._underlyingRefPerTok uses erc20Decimals which is the decimals of CusdcV3Wrapper. But it should use the decimals of the underlying Comet.",
+  "root_cause": "Comet collateral refPerTok uses the wrong decimals source, causing underlying reference-per-token scaling errors",
+  "broken_invariants": [
+    "CTokenV3 collateral wrappers must use the underlying Comet asset decimals when converting refPerTok",
+    "decimal assumptions must match the actual yield-bearing token accounting domain",
+    "misconfigured decimal sources must not skew collateral valuation"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "CTokenV3Collateral._underlyingRefPerTok uses erc20Decimals which is the decimals of CusdcV3Wrapper. But it should use the decimals of the underlying Comet."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "function _underlyingRefPerTok() internal view virtual override returns (uint192) { - return shiftl_toFix(ICusdcV3Wrapper(address(erc20)).exchangeRate(), -int8(erc20Decimals)); + return shiftl_toFix(ICusdcV3Wrapper(address(erc20)).exchangeRate(), -int8(comet.decimals())); } ### Assessed type Decimal"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CTokenV3Collateral.sol#L56",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CusdcV3Wrapper.sol#L236",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/reserve-protocol/protocol/blob/9ee60f142f9f5c1fe8bc50eef915cf33124a534f/contracts/plugins/assets/compoundv3/CusdcV3Wrapper.sol#L46",
+      "note": "link preserved from Code4rena report or mitigation review"
+    },
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/889",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "compound-v3",
+    "decimal-scaling",
+    "ref-per-token",
+    "collateral-pricing",
+    "oracle"
+  ]
+}

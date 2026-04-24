@@ -1,0 +1,62 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reserve Protocol Invitational Findings and Analysis Report (2023-07)",
+  "source_url": "https://code4rena.com/reports/2023-07-reserve",
+  "protocol_name": "Reserve Protocol",
+  "project_repo": "https://github.com/code-423n4/2023-07-reserve",
+  "language": "solidity",
+  "severity": "medium",
+  "validation_status": "confirmed-by-sponsor",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links"
+  ],
+  "id": "c4-2023-07-reserve-m-04",
+  "component_types": [
+    "reward-accounting"
+  ],
+  "finding_title": "Possible rounding during the reward calculation",
+  "summary": "Some rewards might be locked inside the contract due to the rounding loss.",
+  "root_cause": "reward distribution math loses value through rounding when proportional reward calculations truncate without fair remainder handling",
+  "broken_invariants": [
+    "reward accounting must not systematically strand or misallocate truncated remainders",
+    "small holders or early exiters must not lose rewards due to repeated proportional rounding",
+    "reward distribution should preserve total distributable value across claims"
+  ],
+  "attack_preconditions": [
+    "the affected Reserve collateral/plugin/wrapper is deployed or configured in an RToken basket",
+    "the report-described oracle, reward, wrapper, or integration edge case is reachable in the audited code version"
+  ],
+  "attacker_capability": "external user, trader, or protocol participant able to trigger the affected pricing/trading/reward/withdrawal flow",
+  "trigger_actions": [
+    "execute or wait for the report-described state transition",
+    "observe mispricing, reward misallocation, fund lock, or availability failure"
+  ],
+  "impact": {
+    "type": "bounded-loss-or-protocol-disruption",
+    "description": "Some rewards might be locked inside the contract due to the rounding loss."
+  },
+  "why_not_higher": "final C4 severity is Medium; impact, preconditions, or scope are bounded relative to High",
+  "why_not_lower": "included as a validated High/Medium C4 finding with concrete affected code paths and impact narrative",
+  "common_false_positive_angles": [
+    "verify the exact collateral plugin/wrapper is in scope and configured",
+    "check whether oracle freshness, decimals, or external integration assumptions differ in the current target",
+    "confirm the issue affects value movement, redemption availability, or reward ownership rather than a harmless view mismatch"
+  ],
+  "mitigations": [
+    "I think there would be 2 mitigations. - Use a bigger multiplier. - Keep the remainders and use them next time in _claimAndSyncRewards() like this. if (balanceAfterClaimingRewards > _previousBalance) { uint256 delta = balanceAfterClaimingRewards - _previousBalance; //new rewards uint256 deltaPerShare = (delta * one) / _totalSupply; //new delta per share // decrease balanceAfterClaimingRewards so remainders can be used next time balanceAfterClaimingRewards = _previousBalance + deltaPerShare * _totalSupply / one; _rewardsPerShare += deltaPerShare; } lastRewardBalance = balanceAfterClaimingRewards; ### Assessed type Math"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/reserve-protocol/protocol/pull/896",
+      "note": "link preserved from Code4rena report or mitigation review"
+    }
+  ],
+  "tags": [
+    "reward-accounting",
+    "rounding",
+    "precision-loss",
+    "pro-rata-distribution"
+  ]
+}
