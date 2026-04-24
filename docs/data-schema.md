@@ -96,12 +96,14 @@
 
 ## 4. low_non_critical_case
 
-表示公开报告里的 Low / Non-critical / QA 问题。
+表示公开报告里的 Low / Non-critical / QA 原始问题。
 
-这些记录必须和 Medium/High 的 `case_report` 分开存储，默认放在：
-- `data/normalized/low_non_critical_cases/`
+当前默认策略：不把 Low / QA 作为长期主知识对象保留。只有当它能回答“为什么这个看起来像 Medium / High 的线索其实应当降级”时，才转写为 `false_positive_case`，放入：
+- `data/normalized/false_positive_cases/`
 
-核心必填字段：
+`data/normalized/low_non_critical_cases/` 只作为临时导入/中转目录使用；完成人工或规则化筛选后，应清空或删除低价值 QA 项，避免污染主检索。
+
+如果确实需要临时保存 low_non_critical_case，核心字段为：
 - `id`
 - `source_type`
 - `protocol_name`
@@ -120,16 +122,12 @@
 - `when_it_could_escalate`
 - `retrieval_channel`
 
-作用：
-- QA/Low 知识沉淀
-- 严重性降级校准
-- 配置、可用性、运维风险检索
-- 避免把弱问题混入 HM 候选样本池
-
 质量要求：
 - `classification` 使用 `low`、`non-critical` 或 `qa`
 - 默认 `retrieval_channel` 使用 `low_non_critical_caution`
 - 不要和 `case_reports/` 下的 Medium/High 样本混排
+- 不要机械保留 typo、setter 优化、事件参数微瑕疵等无审计决策价值条目
+- 有降级价值的条目优先转为 `false_positive_case`，补充 `why_not_valid` 和 `when_it_could_be_real`
 
 ## 5. component_checklist
 

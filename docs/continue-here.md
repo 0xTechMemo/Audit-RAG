@@ -101,7 +101,7 @@
 
 - CLI 入口：`src/audit_rag/cli/main.py`
 - triage 逻辑：`src/audit_rag/retrieval/issue_triage.py`
-- 检索骨架：`src/audit_rag/indexing/hybrid_search.py`
+- lexical-first 检索：`src/audit_rag/indexing/hybrid_search.py`
 - skill runtime：`src/audit_rag/orchestration/skill_runtime.py`
 - triage 契约：`src/audit_rag/contracts/triage.py`
 - 基础模型：`src/audit_rag/domain/models.py`

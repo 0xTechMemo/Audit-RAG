@@ -1,15 +1,231 @@
 from __future__ import annotations
 
+import json
+import math
+import re
+from pathlib import Path
+from typing import Any
+
 from audit_rag.retrieval.query_context import QueryContext
 
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_NORMALIZED_DIR = _REPO_ROOT / "data" / "normalized"
+_TOKEN_RE = re.compile(r"[a-zA-Z0-9_]+")
 
-def hybrid_search(query: str, context: QueryContext | None = None) -> dict:
+
+DOCUMENT_SETS = {
+    "case_report": _NORMALIZED_DIR / "case_reports",
+    "vulnerability_pattern": _NORMALIZED_DIR / "vulnerability_patterns",
+    "validation_recipe": _NORMALIZED_DIR / "validation_recipes",
+    "false_positive_case": _NORMALIZED_DIR / "false_positive_cases",
+}
+
+
+FIELD_WEIGHTS = {
+    "id": 1.0,
+    "finding_title": 4.0,
+    "issue_title": 4.0,
+    "pattern_name": 4.0,
+    "title": 4.0,
+    "root_cause": 5.0,
+    "broken_invariants": 3.5,
+    "summary": 2.0,
+    "issue_claim": 4.0,
+    "why_it_looked_bad": 2.5,
+    "why_not_valid": 3.0,
+    "tags": 3.0,
+    "component_types": 2.5,
+    "mitigations": 1.0,
+    "common_false_positive_angles": 1.5,
+}
+
+
+STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "by",
+    "can",
+    "for",
+    "from",
+    "in",
+    "into",
+    "is",
+    "it",
+    "of",
+    "on",
+    "or",
+    "the",
+    "their",
+    "this",
+    "to",
+    "with",
+    "without",
+}
+
+
+def _tokens(text: str) -> list[str]:
+    return [t.lower() for t in _TOKEN_RE.findall(text) if len(t) > 1 and t.lower() not in STOPWORDS]
+
+
+def _flatten(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return " ".join(_flatten(item) for item in value)
+    if isinstance(value, dict):
+        return " ".join(_flatten(item) for item in value.values())
+    return str(value)
+
+
+def _load_documents(document_type: str) -> list[dict[str, Any]]:
+    directory = DOCUMENT_SETS[document_type]
+    if not directory.exists():
+        return []
+    documents: list[dict[str, Any]] = []
+    for path in sorted(directory.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["_document_type"] = document_type
+        data["_path"] = path
+        documents.append(data)
+    return documents
+
+
+def _field_score(query_terms: set[str], data: dict[str, Any]) -> tuple[float, list[str]]:
+    score = 0.0
+    matched_terms: set[str] = set()
+    for field, weight in FIELD_WEIGHTS.items():
+        text = _flatten(data.get(field))
+        if not text:
+            continue
+        terms = set(_tokens(text))
+        overlap = query_terms & terms
+        if not overlap:
+            continue
+        matched_terms.update(overlap)
+        # sqrt dampens repeated broad fields while preserving field weights.
+        score += weight * math.sqrt(len(overlap))
+    return score, sorted(matched_terms)
+
+
+def _context_score(context: QueryContext, data: dict[str, Any]) -> float:
+    score = 0.0
+    if context.component_type:
+        component = context.component_type.lower()
+        components = " ".join(data.get("component_types", [])).lower()
+        tags = " ".join(data.get("tags", [])).lower()
+        if component in components or component in tags:
+            score += 2.0
+    if context.stage_name == "candidate-triage":
+        if data.get("_document_type") == "case_report":
+            score += 1.0
+        if data.get("_document_type") == "false_positive_case":
+            score += 0.75
+    return score
+
+
+def _source_for(data: dict[str, Any]) -> str:
+    doc_type = data["_document_type"]
+    return f"local://{doc_type}s/{data.get('id', data.get('pattern_id', 'unknown'))}"
+
+
+def _project_match(data: dict[str, Any], score: float, matched_terms: list[str]) -> dict[str, Any]:
+    doc_type = data["_document_type"]
+    item = {
+        "id": data.get("id") or data.get("pattern_id"),
+        "document_type": doc_type,
+        "score": round(score, 3),
+        "matched_terms": matched_terms[:20],
+        "source": _source_for(data),
+        "source_url": data.get("source_url"),
+        "tags": data.get("tags", []),
+    }
+    if doc_type == "case_report":
+        item.update(
+            {
+                "title": data.get("finding_title"),
+                "severity": data.get("severity"),
+                "protocol_name": data.get("protocol_name"),
+                "root_cause": data.get("root_cause"),
+                "broken_invariants": data.get("broken_invariants", []),
+                "summary": data.get("summary"),
+            }
+        )
+    elif doc_type == "false_positive_case":
+        item.update(
+            {
+                "title": data.get("issue_claim"),
+                "classification": data.get("classification"),
+                "why_not_valid": data.get("why_not_valid"),
+                "downgrade_reason": data.get("downgrade_reason"),
+            }
+        )
+    elif doc_type == "vulnerability_pattern":
+        item.update(
+            {
+                "title": data.get("pattern_name") or data.get("title"),
+                "root_cause": data.get("root_cause"),
+                "summary": data.get("summary"),
+            }
+        )
+    else:
+        item.update({"title": data.get("title") or data.get("name"), "summary": data.get("summary")})
+    return item
+
+
+def _rank(query: str, context: QueryContext, document_types: list[str], limit: int) -> list[dict[str, Any]]:
+    query_terms = set(_tokens(query))
+    if context.component_type:
+        query_terms.update(_tokens(context.component_type))
+    matches: list[dict[str, Any]] = []
+    for document_type in document_types:
+        for data in _load_documents(document_type):
+            lexical_score, matched_terms = _field_score(query_terms, data)
+            if lexical_score <= 0:
+                continue
+            score = lexical_score + _context_score(context, data)
+            matches.append(_project_match(data, score, matched_terms))
+    matches.sort(key=lambda item: (-item["score"], item.get("id") or ""))
+    return matches[:limit]
+
+
+def hybrid_search(query: str, context: QueryContext | None = None) -> dict[str, Any]:
+    """Lexical-first local retrieval over normalized audit-rag JSON records.
+
+    This is the minimum useful implementation before embeddings: structured fields are
+    weighted, positive evidence is kept separate from false-positive/downgrade caution
+    evidence, and the query context can add lightweight component/stage boosts.
+    """
+
     runtime = context or QueryContext()
+    positive_matches = _rank(
+        query,
+        runtime,
+        ["case_report", "vulnerability_pattern", "validation_recipe"],
+        limit=8,
+    )
+    caution_matches = (
+        _rank(query, runtime, ["false_positive_case"], limit=5)
+        if runtime.require_false_positive_check
+        else []
+    )
     return {
         "query": query,
-        "status": "todo",
-        "message": "Hybrid retrieval not implemented yet.",
+        "status": "ok",
+        "retrieval_mode": "lexical-first",
         "skill_name": runtime.skill_name,
         "stage_name": runtime.stage_name,
         "component_type": runtime.component_type,
+        "positive_matches": positive_matches,
+        "caution_matches": caution_matches,
+        "message": (
+            f"Retrieved {len(positive_matches)} positive matches and "
+            f"{len(caution_matches)} caution matches from local normalized data."
+        ),
     }
