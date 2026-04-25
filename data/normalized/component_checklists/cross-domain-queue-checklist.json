@@ -1,0 +1,47 @@
+{
+  "id": "cross-domain-queue-checklist",
+  "component_type": "cross-domain-queue",
+  "description": "Checklist for L1/L2/external-system queues, native token receive handlers, batch operation processing, and domain-specific balances.",
+  "core_invariants": [
+    "the protocol must validate balances in the domain where assets actually reside",
+    "queues must be bounded, resumable, and economically resistant to spam",
+    "system settlement transfers must not be confused with user deposits"
+  ],
+  "trust_boundaries": [
+    "EVM balance vs L1/core balance",
+    "operator/keeper batch processing",
+    "native token receive/fallback handler",
+    "pending deposit/withdrawal queues"
+  ],
+  "common_bug_classes": [
+    "local balance check for external-domain funds",
+    "receive() auto-stakes withdrawal proceeds",
+    "unbounded queue reset/process gas DoS",
+    "withdrawal/deposit not netted before external operation",
+    "cancelWithdrawal fails to restore buffer/pending queue"
+  ],
+  "check_items": [
+    "Map every state variable to asset location and lifecycle stage",
+    "Test receive() with system settlement sender vs user sender",
+    "Check batch size, resume index, and queue deletion behavior",
+    "Net deposits/withdrawals before external operation where intended",
+    "Cancel queued withdrawal and verify all buckets/queues restored"
+  ],
+  "test_ideas": [
+    "mock external settlement transfer into receive()",
+    "create thousands of tiny queue entries and measure gas",
+    "queue withdrawal before loss/slashing then confirm after",
+    "cancel withdrawal fulfilled from buffer and inspect pending operations"
+  ],
+  "related_pattern_ids": [
+    "cross-domain-balance-location-mismatch-pattern",
+    "queue-processing-gas-dos-pattern",
+    "withdrawal-exit-path-fund-lock-pattern"
+  ],
+  "tags": [
+    "cross-domain-accounting",
+    "queue-processing",
+    "l1-integration",
+    "native-token-receive"
+  ]
+}

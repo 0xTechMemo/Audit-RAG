@@ -1,0 +1,29 @@
+{
+  "id": "reward-rounding-validation-recipe",
+  "pattern_id": "reward-rounding-remainder-loss-pattern",
+  "test_style": "differential-test",
+  "goal": "Compare actual reward distribution to exact rational entitlement under low-decimal and small-reward conditions.",
+  "setup_requirements": [
+    "reward token with configurable decimals",
+    "multiple holders with different balances and exit times"
+  ],
+  "minimal_state": [
+    "rewards accrued but not claimed",
+    "total reward amount small relative to holder count or token decimals"
+  ],
+  "attacker_actions": [
+    "distribute reward",
+    "let one user claim/exit early",
+    "continue distribution or rollover",
+    "compare every user actual claim to exact entitlement"
+  ],
+  "assertions": [
+    "loss is bounded to documented dust or remainder is fairly preserved",
+    "early exit does not forfeit material accrued reward"
+  ],
+  "common_failures": [
+    "testing only 18-decimal reward tokens",
+    "checking aggregate distribution but not per-user fairness"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

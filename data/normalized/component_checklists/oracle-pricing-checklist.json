@@ -1,0 +1,47 @@
+{
+  "id": "oracle-pricing-checklist",
+  "component_type": "oracle-pricing",
+  "description": "Checklist for oracle adapters, composed prices, LP/metapool pricing, and collateral valuation.",
+  "core_invariants": [
+    "every value-affecting price must be fresh, healthy, correctly scaled, and manipulation-resistant",
+    "composed prices must fail closed when any underlying leg is stale or invalid",
+    "oracle uncertainty/margins must be applied exactly once and in the right direction"
+  ],
+  "trust_boundaries": [
+    "Chainlink or external feed health state",
+    "AMM pool spot balances vs TWAP",
+    "adapter registration and token decimal configuration",
+    "nested asset/basket components"
+  ],
+  "common_bug_classes": [
+    "stale oracle accepted as valid",
+    "timeout doubled by composition",
+    "wrong decimals/refPerTok scaling",
+    "flash-loan manipulated spot price",
+    "margin-of-error double counted"
+  ],
+  "check_items": [
+    "List every price leg and its freshness/health check",
+    "Trace decimals from feed/token/wrapper to final protocol unit",
+    "Force one underlying oracle timeout and inspect top-level behavior",
+    "Check whether AMM prices use spot, virtual price, TWAP, or bounded oracle",
+    "Verify margin/error buffers are not applied twice in nested pricing"
+  ],
+  "test_ideas": [
+    "mock stale feed in one leg of a metapool",
+    "flash-loan change AMM pool balance before status check",
+    "fuzz token decimals and feed decimals",
+    "compare adapter output to high-precision off-chain reference"
+  ],
+  "related_pattern_ids": [
+    "oracle-stale-timeout-propagation-pattern",
+    "flash-loan-price-status-manipulation-pattern",
+    "numeric-domain-cast-overflow-pattern"
+  ],
+  "tags": [
+    "oracle",
+    "collateral-pricing",
+    "stale-oracle",
+    "decimal-scaling"
+  ]
+}

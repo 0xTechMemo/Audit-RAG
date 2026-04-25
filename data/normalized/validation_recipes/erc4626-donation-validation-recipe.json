@@ -1,0 +1,29 @@
+{
+  "id": "erc4626-donation-validation-recipe",
+  "pattern_id": "erc4626-share-inflation-donation-pattern",
+  "test_style": "poc-and-fuzz-test",
+  "goal": "Test unsolicited donation, first-depositor, tiny-deposit, and flash-loan share-supply manipulation against vault share math.",
+  "setup_requirements": [
+    "ERC4626/vault harness",
+    "attacker ability to transfer underlying directly",
+    "victim deposit/redeem path"
+  ],
+  "minimal_state": [
+    "empty or low-liquidity vault",
+    "attacker can donate underlying or flash manipulate supply"
+  ],
+  "attacker_actions": [
+    "donate or manipulate share supply",
+    "victim deposits with minShares",
+    "redeem/claim yield"
+  ],
+  "assertions": [
+    "victim deposit does not revert unexpectedly or lose material value",
+    "attacker cannot drain yield or force share price distortion"
+  ],
+  "common_failures": [
+    "ignoring direct ERC20 transfer to vault",
+    "only testing normal deposit path"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

@@ -1,0 +1,29 @@
+{
+  "id": "access-control-entrypoint-validation-recipe",
+  "pattern_id": "alternate-entrypoint-access-control-bypass-pattern",
+  "test_style": "call-graph-and-unit-test",
+  "goal": "Enumerate alternate entrypoints to a restricted value-moving function and test caller/owner/from/receiver permutations.",
+  "setup_requirements": [
+    "call graph or manual list of external functions",
+    "test accounts with restricted/unrestricted roles"
+  ],
+  "minimal_state": [
+    "one account restricted or blacklisted",
+    "another account approved or able to call alternate path"
+  ],
+  "attacker_actions": [
+    "attempt direct path",
+    "attempt approved/operator path",
+    "attempt callback/executor path",
+    "attempt later lifecycle path such as confirm/claim"
+  ],
+  "assertions": [
+    "every path enforces the same policy on the correct owner/from/beneficiary",
+    "trusted executors validate user intent and target constraints"
+  ],
+  "common_failures": [
+    "only testing msg.sender",
+    "not testing approved operators or callback paths"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

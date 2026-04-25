@@ -1,0 +1,29 @@
+{
+  "id": "withdrawal-fund-lock-validation-recipe",
+  "pattern_id": "withdrawal-exit-path-fund-lock-pattern",
+  "test_style": "state-machine-test",
+  "goal": "Exercise queue/cancel/confirm/external-failure states to prove principal remains withdrawable.",
+  "setup_requirements": [
+    "state machine around deposit/queue/cancel/confirm",
+    "mock external wrapper failure or system settlement"
+  ],
+  "minimal_state": [
+    "user has principal deposited through wrapper or queued withdrawal",
+    "external integration can fail or special state can be triggered"
+  ],
+  "attacker_actions": [
+    "queue withdrawal",
+    "fail reward/external integration or change special state",
+    "attempt cancel and confirm",
+    "inspect all balances and pending queues"
+  ],
+  "assertions": [
+    "principal can exit or explicit pause explains block",
+    "no accounting bucket keeps assets permanently unavailable"
+  ],
+  "common_failures": [
+    "only checking happy-path withdrawal",
+    "not distinguishing rewards blocked from principal blocked"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

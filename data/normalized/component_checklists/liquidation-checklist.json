@@ -1,0 +1,47 @@
+{
+  "id": "liquidation-checklist",
+  "component_type": "liquidation",
+  "description": "Checklist for collateral ratio, liquidation incentives, partial liquidation, bad debt, and liquidation collateral transfer.",
+  "core_invariants": [
+    "every undercollateralized position must have a viable liquidation path",
+    "liquidator compensation must be economically positive under supported position sizes",
+    "liquidation must transfer the correct collateral and update all debt/collateral accounting"
+  ],
+  "trust_boundaries": [
+    "oracle/collateral valuation",
+    "liquidator market incentives",
+    "special collateral types",
+    "position/NFT ownership registry"
+  ],
+  "common_bug_classes": [
+    "no partial liquidation for huge positions",
+    "liquidation bonus lower than debt burned",
+    "special collateral not transferred",
+    "exogenous collateral check blocks valid liquidation",
+    "flash-loan guard bypass via self-liquidation"
+  ],
+  "check_items": [
+    "Model liquidator payoff over CR, debt size, and collateral mix",
+    "Check partial liquidation support and max close factor",
+    "Trace all collateral movement to liquidator",
+    "Verify liquidation preconditions for special collateral classes",
+    "Test tiny positions and gas/incentive thresholds"
+  ],
+  "test_ideas": [
+    "create CR < 1 and CR slightly below threshold positions",
+    "liquidate with only special/kerosene collateral",
+    "attempt self-liquidation in same block as deposit",
+    "fuzz position size vs gas and bonus economics"
+  ],
+  "related_pattern_ids": [
+    "liquidation-incentive-or-profitability-failure-pattern",
+    "collateral-double-counting-licensing-pattern",
+    "flash-loan-price-status-manipulation-pattern"
+  ],
+  "tags": [
+    "liquidation",
+    "bad-debt",
+    "collateral",
+    "incentives"
+  ]
+}

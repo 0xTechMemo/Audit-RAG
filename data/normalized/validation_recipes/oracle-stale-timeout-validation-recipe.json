@@ -1,0 +1,27 @@
+{
+  "id": "oracle-stale-timeout-validation-recipe",
+  "pattern_id": "oracle-stale-timeout-propagation-pattern",
+  "test_style": "property-and-unit-test",
+  "goal": "Prove that a composed price fails closed or remains bounded when one underlying oracle leg is stale, deprecated, or timed out.",
+  "setup_requirements": [
+    "mockable oracle feeds or forked feed wrappers",
+    "access to top-level price/tryPrice/read function"
+  ],
+  "minimal_state": [
+    "all price legs fresh and protocol accepts price",
+    "one underlying leg stale/timed out/deprecated"
+  ],
+  "attacker_actions": [
+    "set one feed timestamp beyond timeout or mark unhealthy",
+    "call the composed price and downstream mint/redeem/trade path"
+  ],
+  "assertions": [
+    "top-level price reverts, returns invalid status, or uses documented bound",
+    "no mint/redeem/liquidation/trade succeeds with the stale leg as valid"
+  ],
+  "common_failures": [
+    "test only the direct feed but not the composed consumer",
+    "forget nested LP/RToken/basket legs"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

@@ -1,0 +1,47 @@
+{
+  "id": "vault-accounting-checklist",
+  "component_type": "vault-accounting",
+  "description": "Checklist for ERC4626-like vaults, share accounting, deposits, redemptions, and donation/deflation behavior.",
+  "core_invariants": [
+    "share price must not be manipulable by unsolicited asset transfers or flash-loan supply changes",
+    "deposit/redeem must preserve user value within bounded rounding dust",
+    "vault accounting must distinguish actual assets from pending, external, or untracked balances"
+  ],
+  "trust_boundaries": [
+    "underlying token balanceOf vs accounting variable",
+    "external strategy balances",
+    "flash-loan or callback hooks",
+    "share supply and virtual shares"
+  ],
+  "common_bug_classes": [
+    "donation attack causing minShares DoS",
+    "vault deflation yield drain",
+    "first depositor inflation",
+    "withdrawal uses stale exchange rate",
+    "principal locked by external wrapper failure"
+  ],
+  "check_items": [
+    "Check totalAssets source and unsolicited donation handling",
+    "Review minShares/minAssets checks under direct asset transfers",
+    "Test first depositor and tiny deposit states",
+    "Trace pending deposits/withdrawals through queue/cancel/confirm",
+    "Verify flash-loan hooks cannot manipulate share math"
+  ],
+  "test_ideas": [
+    "donate underlying before victim deposit",
+    "flash borrow/mint/burn around yield accrual",
+    "fuzz tiny deposits and high exchange rates",
+    "simulate queue withdrawal before/after slashing or loss event"
+  ],
+  "related_pattern_ids": [
+    "erc4626-share-inflation-donation-pattern",
+    "withdrawal-exit-path-fund-lock-pattern",
+    "cross-domain-balance-location-mismatch-pattern"
+  ],
+  "tags": [
+    "vault",
+    "erc4626",
+    "share-accounting",
+    "withdrawal"
+  ]
+}

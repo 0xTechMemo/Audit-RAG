@@ -1,0 +1,27 @@
+{
+  "id": "flash-loan-status-validation-recipe",
+  "pattern_id": "flash-loan-price-status-manipulation-pattern",
+  "test_style": "poc-test",
+  "goal": "Show whether same-transaction liquidity manipulation can influence a price/status/liquidation decision.",
+  "setup_requirements": [
+    "flash-loan or temporary liquidity mock",
+    "target decision function"
+  ],
+  "minimal_state": [
+    "protocol collateral/status decision depends on AMM or callback-reachable state"
+  ],
+  "attacker_actions": [
+    "manipulate pool balance or invoke flash-loan callback",
+    "call the target decision before state normalizes",
+    "settle transaction"
+  ],
+  "assertions": [
+    "decision cannot cross economically meaningful threshold from transient manipulation",
+    "no irreversible liquidation/default/withdrawal effect occurs"
+  ],
+  "common_failures": [
+    "using too-small liquidity to prove non-exploit",
+    "not checking permanent side effect after transaction"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "position-registry-validation-recipe",
+  "pattern_id": "position-registry-tracking-corruption-pattern",
+  "test_style": "lifecycle-integration-test",
+  "goal": "Verify position registry state across add, borrow, decrease, transfer, close, and external staking lifecycle branches.",
+  "setup_requirements": [
+    "connector/registry test harness",
+    "external protocol position mocks"
+  ],
+  "minimal_state": [
+    "position can be partially changed or moved across accounts/connectors"
+  ],
+  "attacker_actions": [
+    "open position",
+    "borrow/decrease/transfer/stake/un-stake",
+    "inspect registry keys and TVL after each step"
+  ],
+  "assertions": [
+    "each active economic exposure has exactly one registry entry",
+    "position removal only happens when exposure is truly zero"
+  ],
+  "common_failures": [
+    "testing only open/close happy path",
+    "not checking ownerConnector/calculatorConnector/account dimensions"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

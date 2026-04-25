@@ -1,0 +1,27 @@
+{
+  "id": "connector-tvl-ground-truth-validation-recipe",
+  "pattern_id": "connector-tvl-miscalculation-pattern",
+  "test_style": "integration-test",
+  "goal": "Compare connector-reported TVL against direct external protocol ground truth for every sub-position.",
+  "setup_requirements": [
+    "fork or mocks for the external protocol",
+    "connector position creation helpers"
+  ],
+  "minimal_state": [
+    "vault owns a position with wallet balance, staked balance, reward balance, and/or NFT/tick exposure"
+  ],
+  "attacker_actions": [
+    "open position",
+    "stake or move part of position into protocol-specific sub-account",
+    "call connector TVL and independent ground-truth reads"
+  ],
+  "assertions": [
+    "connector TVL equals independent ground truth within rounding tolerance",
+    "registry remains active while any external exposure remains"
+  ],
+  "common_failures": [
+    "only testing simple wallet balances",
+    "not testing partial decrease/transfer/recovery modes"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

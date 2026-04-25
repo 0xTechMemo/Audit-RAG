@@ -1,0 +1,27 @@
+{
+  "id": "queue-gas-dos-validation-recipe",
+  "pattern_id": "queue-processing-gas-dos-pattern",
+  "test_style": "gas-growth-test",
+  "goal": "Measure queue processing/reset gas growth and prove the queue is bounded or batch-resumable.",
+  "setup_requirements": [
+    "gas snapshot support",
+    "permissionless queue entry creation"
+  ],
+  "minimal_state": [
+    "attacker can create many small queue entries"
+  ],
+  "attacker_actions": [
+    "create N entries over increasing N",
+    "call process/reset/distribute",
+    "measure gas and resume behavior"
+  ],
+  "assertions": [
+    "gas remains under block limit for configured batch size",
+    "partial processing can resume without double-processing or skipped entries"
+  ],
+  "common_failures": [
+    "using unrealistic N",
+    "not testing delete/reset path"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

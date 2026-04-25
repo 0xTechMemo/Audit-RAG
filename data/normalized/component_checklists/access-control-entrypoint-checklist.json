@@ -1,0 +1,48 @@
+{
+  "id": "access-control-entrypoint-checklist",
+  "component_type": "access-control",
+  "description": "Checklist for restrictions, roles, whitelists/blacklists, trusted executors, and alternate entrypoints to value-moving functions.",
+  "core_invariants": [
+    "the same policy must protect every path reaching a value-moving internal action",
+    "owner/from/beneficiary dimensions must be checked, not only msg.sender",
+    "trusted executors/callbacks must prove user intent and target constraints"
+  ],
+  "trust_boundaries": [
+    "msg.sender vs owner/from/receiver",
+    "approved ERC4626 operators",
+    "whitelist/blacklist role managers",
+    "flash-loan callbacks and permissionless executors",
+    "pause lifecycle stages"
+  ],
+  "common_bug_classes": [
+    "owner not checked in approved withdraw",
+    "blacklist and whitelist dual-role conflict",
+    "trusted executor is permissionless",
+    "missing pause modifier on later lifecycle function",
+    "connector helper callable through another vault"
+  ],
+  "check_items": [
+    "Build a call graph to every internal value-moving function",
+    "Test caller/owner/from/receiver permutations",
+    "Check role conflict and role revocation effects",
+    "Verify pause modifiers on queue/cancel/confirm/claim stages",
+    "Check executor calldata target and initiator validation"
+  ],
+  "test_ideas": [
+    "approve attacker to withdraw restricted owner shares",
+    "assign both whitelist and blacklist roles and test burn/redeem",
+    "route calldata through trusted executor from attacker",
+    "call confirm/claim while withdrawal/reward pause is active"
+  ],
+  "related_pattern_ids": [
+    "alternate-entrypoint-access-control-bypass-pattern",
+    "whitelist-blacklist-role-conflict-pattern"
+  ],
+  "tags": [
+    "access-control-bypass",
+    "owner-validation",
+    "whitelist",
+    "blacklist",
+    "executor-trust-boundary"
+  ]
+}

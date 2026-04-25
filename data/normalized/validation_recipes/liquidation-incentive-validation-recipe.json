@@ -1,0 +1,28 @@
+{
+  "id": "liquidation-incentive-validation-recipe",
+  "pattern_id": "liquidation-incentive-or-profitability-failure-pattern",
+  "test_style": "economic-simulation-test",
+  "goal": "Model liquidator payoff across collateral ratio, position size, collateral mix, and gas assumptions.",
+  "setup_requirements": [
+    "liquidation test harness",
+    "price controls",
+    "multiple collateral types"
+  ],
+  "minimal_state": [
+    "positions around liquidation thresholds including CR <= 1 and small/huge positions"
+  ],
+  "attacker_actions": [
+    "compute expected collateral received vs debt burned",
+    "execute liquidation",
+    "include gas/bonus/min size assumptions"
+  ],
+  "assertions": [
+    "liquidator has non-negative expected payoff for intended liquidatable positions",
+    "bad debt does not grow because liquidation is unprofitable or impossible"
+  ],
+  "common_failures": [
+    "testing only one healthy size",
+    "ignoring special collateral classes or gas cost"
+  ],
+  "notes": "Derived from existing normalized Code4rena case reports and intended as a reusable validation scaffold, not a protocol-specific PoC."
+}

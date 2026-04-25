@@ -1,0 +1,47 @@
+{
+  "id": "connector-integration-checklist",
+  "component_type": "connector-integration",
+  "description": "Checklist for DeFi connectors/adapters that hold, stake, borrow, lend, or price positions in external protocols.",
+  "core_invariants": [
+    "connector-reported TVL must equal the external protocol ground truth owned by the vault",
+    "external integration failures must not strand principal or corrupt accounting",
+    "position registry and external protocol state must remain synchronized"
+  ],
+  "trust_boundaries": [
+    "external protocol position ownership",
+    "connector registry/account mapping",
+    "reward/gauge/staking sub-positions",
+    "cross-chain/token decimal assumptions"
+  ],
+  "common_bug_classes": [
+    "TVL omits staked LP or rewards",
+    "TVL counts liquidity not owned by the vault",
+    "position removed while external exposure remains",
+    "deposit/withdraw sends tokens to wrong receiver",
+    "external protocol recovery mode has special claim path"
+  ],
+  "check_items": [
+    "Enumerate every balance component controlled by the external protocol",
+    "Check add/decrease/transfer/close paths update registry symmetrically",
+    "Compare connector TVL to direct external protocol reads",
+    "Verify receiver address for minted/redeemed assets",
+    "Check special modes such as recovery mode, shutdown, paused, blacklisted, or gauge staking"
+  ],
+  "test_ideas": [
+    "open a multi-part external position and assert TVL equals ground truth",
+    "partially decrease a position and ensure registry remains active",
+    "simulate external protocol recovery/shutdown mode",
+    "fuzz receiver/account identifiers across connector calls"
+  ],
+  "related_pattern_ids": [
+    "connector-tvl-miscalculation-pattern",
+    "position-registry-tracking-corruption-pattern",
+    "withdrawal-exit-path-fund-lock-pattern"
+  ],
+  "tags": [
+    "connector",
+    "tvl-accounting",
+    "external-integration",
+    "position-accounting"
+  ]
+}

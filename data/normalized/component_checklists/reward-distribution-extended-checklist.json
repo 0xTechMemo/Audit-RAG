@@ -1,0 +1,48 @@
+{
+  "id": "reward-distribution-extended-checklist",
+  "component_type": "reward-distribution",
+  "description": "Checklist for reward distribution, transfer hooks, claim-on-behalf, rounding, holder arrays, and reward shutdown behavior.",
+  "core_invariants": [
+    "each participant’s accrued reward must be preserved across claims, transfers, burns, and exits",
+    "rounding remainders must not create material unfairness or loss",
+    "holder lists and distribution tokens must not be mutable in ways that double-claim or brick cycles"
+  ],
+  "trust_boundaries": [
+    "reward token decimals",
+    "transfer/burn hooks",
+    "holder array mutation",
+    "owner-controlled distribution token list",
+    "external reward/staking contract shutdown"
+  ],
+  "common_bug_classes": [
+    "missing _updateRewards on transfer",
+    "claim-on-behalf updates wrong user",
+    "zero amount transfer mutates holder list",
+    "rounding rollover excludes early exiters",
+    "owner list change bricking/double-claim"
+  ],
+  "check_items": [
+    "Trace reward index update before every balance mutation",
+    "Check claim-on-behalf beneficiary accounting",
+    "Test zero amount transfer/burn and holder list uniqueness",
+    "Evaluate low-decimal reward tokens and small rewards",
+    "Check owner list changes during active distribution cycle"
+  ],
+  "test_ideas": [
+    "pending rewards then transfer/burn before claim",
+    "low-decimal rewards with early exit",
+    "zero transfer repeatedly to mutate holders",
+    "change distributable tokens between claim steps"
+  ],
+  "related_pattern_ids": [
+    "reward-rounding-remainder-loss-pattern",
+    "reward-transfer-hook-desync-pattern",
+    "queue-processing-gas-dos-pattern"
+  ],
+  "tags": [
+    "reward-accounting",
+    "rounding",
+    "transfer-hook",
+    "distribution"
+  ]
+}

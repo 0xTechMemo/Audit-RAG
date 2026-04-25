@@ -17,6 +17,7 @@ _TOKEN_RE = re.compile(r"[a-zA-Z0-9_]+")
 DOCUMENT_SETS = {
     "case_report": _NORMALIZED_DIR / "case_reports",
     "vulnerability_pattern": _NORMALIZED_DIR / "vulnerability_patterns",
+    "component_checklist": _NORMALIZED_DIR / "component_checklists",
     "validation_recipe": _NORMALIZED_DIR / "validation_recipes",
     "false_positive_case": _NORMALIZED_DIR / "false_positive_cases",
 }
@@ -27,15 +28,30 @@ FIELD_WEIGHTS = {
     "finding_title": 4.0,
     "issue_title": 4.0,
     "pattern_name": 4.0,
+    "name": 4.0,
     "title": 4.0,
     "root_cause": 5.0,
     "broken_invariants": 3.5,
     "summary": 2.0,
+    "description": 2.5,
     "issue_claim": 4.0,
     "why_it_looked_bad": 2.5,
     "why_not_valid": 3.0,
     "tags": 3.0,
     "component_types": 2.5,
+    "component_type": 4.0,
+    "core_invariants": 3.5,
+    "trust_boundaries": 2.0,
+    "common_bug_classes": 2.5,
+    "check_items": 3.0,
+    "test_ideas": 2.0,
+    "related_pattern_ids": 1.0,
+    "common_triggers": 2.0,
+    "preconditions": 1.5,
+    "typical_impact": 1.5,
+    "validation_methods": 1.0,
+    "goal": 3.0,
+    "assertions": 1.5,
     "mitigations": 1.0,
     "common_false_positive_angles": 1.5,
 }
@@ -171,9 +187,21 @@ def _project_match(data: dict[str, Any], score: float, matched_terms: list[str])
     elif doc_type == "vulnerability_pattern":
         item.update(
             {
-                "title": data.get("pattern_name") or data.get("title"),
-                "root_cause": data.get("root_cause"),
-                "summary": data.get("summary"),
+                "title": data.get("pattern_name") or data.get("name") or data.get("title"),
+                "root_cause": data.get("root_cause") or data.get("description"),
+                "broken_invariants": data.get("broken_invariants", []),
+                "summary": data.get("summary") or data.get("description"),
+                "severity_baseline": data.get("severity_baseline"),
+            }
+        )
+    elif doc_type == "component_checklist":
+        item.update(
+            {
+                "title": data.get("component_type"),
+                "summary": data.get("description"),
+                "core_invariants": data.get("core_invariants", []),
+                "check_items": data.get("check_items", []),
+                "common_bug_classes": data.get("common_bug_classes", []),
             }
         )
     else:
@@ -209,7 +237,7 @@ def hybrid_search(query: str, context: QueryContext | None = None) -> dict[str, 
     positive_matches = _rank(
         query,
         runtime,
-        ["case_report", "vulnerability_pattern", "validation_recipe"],
+        ["case_report", "vulnerability_pattern", "component_checklist", "validation_recipe"],
         limit=8,
     )
     caution_matches = (
