@@ -1,0 +1,30 @@
+{
+  "id": "soroban-vec-uniqueness-pricing-recipe",
+  "pattern_id": "soroban-duplicate-asset-list-pricing-pattern",
+  "test_style": "soroban-unit-or-property-test",
+  "goal": "验证 reserve/asset Vec 输入不会因重复元素导致拍卖、抵押、reward 或债务估值重复计算。",
+  "setup_requirements": [
+    "至少两个 reserve/asset，其中 A 有非零价格或债务",
+    "公开函数接受 Vec<Address>/Vec<Asset>/reserve list"
+  ],
+  "minimal_state": [
+    "A 的价格、债务、奖励或 collateral value 可观测",
+    "协议支持创建 auction、quote、liquidation 或 valuation"
+  ],
+  "attacker_actions": [
+    "分别提交 [A]、[A,A]、[A,B,A]",
+    "在不同排序下重复同一资产",
+    "比较创建后的 auction lot/debt/price/reward"
+  ],
+  "assertions": [
+    "重复输入必须 revert，或结果等于 dedupe 后唯一集合",
+    "重复项不得增加债务、奖励、抵押或 auction 可得价值",
+    "持久化状态不得记录重复 reserve"
+  ],
+  "common_failures": [
+    "只检查 Vec 长度不检查唯一性",
+    "估值循环先累加，最后才去重",
+    "Map 写入覆盖了状态但价格/债务已重复累加"
+  ],
+  "notes": "Blend V2 M-04 是该类 Stellar Rust/Soroban 输入归一化问题的 C4 样本。"
+}

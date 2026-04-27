@@ -1,0 +1,31 @@
+{
+  "id": "soroban-require-auth-entrypoint-matrix-recipe",
+  "pattern_id": "soroban-require-auth-entrypoint-bypass-pattern",
+  "test_style": "soroban-unit-test",
+  "goal": "验证每个 Soroban 公开 entrypoint 是否对被消耗状态的正确 Address 执行 require_auth，避免 alternate entrypoint 授权绕过。",
+  "setup_requirements": [
+    "构造 owner、attacker、receiver 三个 Address",
+    "初始化有余额、reward 或 position 的 owner 状态",
+    "将所有 value-moving/claim/config entrypoint 纳入调用矩阵"
+  ],
+  "minimal_state": [
+    "owner 有可被 claim/withdraw/transfer 的状态",
+    "attacker 能传入 owner 或 receiver 参数"
+  ],
+  "attacker_actions": [
+    "用 attacker 作为 invoker 调用 owner 参数相关入口",
+    "排列 owner/receiver/caller 不一致的组合",
+    "对 flash-loan、claim、admin-like config path 做等价入口测试"
+  ],
+  "assertions": [
+    "未由 owner 授权的调用必须失败",
+    "任何成功调用都不得减少 owner 状态或把奖励转给 attacker",
+    "所有等价入口的授权主体一致"
+  ],
+  "common_failures": [
+    "只在主入口 require_auth，helper/alternate path 漏检",
+    "require_auth(receiver) 而实际消耗 owner 状态",
+    "测试只覆盖 happy path signer"
+  ],
+  "notes": "适用于 Stellar/Soroban Rust 合约；重点不是 msg.sender，而是 Address.require_auth 的主体绑定。"
+}

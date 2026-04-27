@@ -1,0 +1,30 @@
+{
+  "id": "soroban-storage-ttl-expiry-recipe",
+  "pattern_id": "soroban-storage-ttl-rent-dos-pattern",
+  "test_style": "soroban-ledger-ttl-simulation",
+  "goal": "验证关键 persistent/temporary storage 在 ledger 推进、TTL 到期、用户可控增长时不会丢失状态或造成 DoS。",
+  "setup_requirements": [
+    "测试环境可推进 ledger 或模拟 TTL",
+    "识别每个 storage key 的类型与生命周期"
+  ],
+  "minimal_state": [
+    "存在用户 position、reward index、auction 或 config state",
+    "状态需要跨多个 ledger 后 claim/withdraw/settle"
+  ],
+  "attacker_actions": [
+    "推进 ledger 到接近/超过 TTL",
+    "创建大量用户可控条目或单个大 Vec/Map",
+    "尝试在过期/膨胀状态下 withdraw/claim/settle"
+  ],
+  "assertions": [
+    "关键状态在合法生命周期内被 extend_ttl 或可安全恢复",
+    "超限增长被拒绝或分页处理",
+    "过期不应导致资金永久锁定或奖励丢失"
+  ],
+  "common_failures": [
+    "把长期 position 放进 temporary storage",
+    "只在创建时 extend_ttl，后续访问不续期",
+    "用户可无限 append 到单个 ledger entry"
+  ],
+  "notes": "结合 Veridise/Valkyri 对 Soroban storage rent、TTL、unbounded data 的公开安全建议。"
+}

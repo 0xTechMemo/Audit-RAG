@@ -1,0 +1,86 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Blend V2 Audit + Certora Formal Verification Findings and Analysis Report (2025-02)",
+  "protocol_name": "Blend V2",
+  "project_repo": "https://github.com/code-423n4/2025-02-blend",
+  "language": "rust-soroban",
+  "validation_status": "confirmed-or-mitigated-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "stellar-soroban-rust"
+  ],
+  "id": "c4-2025-02-blend-v2-m-18",
+  "source_url": "https://code4rena.com/reports/2025-02-blend-v2-audit-certora-formal-verification#m-18-interest-auctions-enable-inflation-attacks-on-backstop-vaults-allowing-attackers-to-steal-user-deposits",
+  "severity": "medium",
+  "component_types": [
+    "backstop",
+    "vault-accounting",
+    "auction"
+  ],
+  "finding_title": "Interest auctions enable inflation attacks on backstop vaults, allowing attackers to steal user deposits",
+  "summary": "Blend V2 的 Soroban/Rust C4 报告收录该问题：Interest auctions enable inflation attacks on backstop vaults, allowing attackers to steal user deposits。该样本用于 Stellar Rust 审计时召回相似的授权、状态更新、整数数学、拍卖、奖励和金库会计缺陷。",
+  "root_cause": "interest auctions interact with a backstop vault whose share price can be inflated, allowing attackers to extract value from later depositors",
+  "broken_invariants": [
+    "vault share mint/redeem math must resist donation or temporary balance inflation",
+    "auction settlement must not use manipulable vault share price as a transfer-of-value primitive"
+  ],
+  "attack_preconditions": [
+    "攻击者或普通用户能够调用相关公开 Soroban 合约 entrypoint",
+    "相关池、backstop、auction 或 reward-zone 状态达到报告描述的边界条件"
+  ],
+  "attacker_capability": "external Soroban contract user able to submit transactions and choose action parameters or operation ordering",
+  "trigger_actions": [
+    "构造报告描述的函数调用序列或边界状态",
+    "观察授权绕过、会计偏移、奖励归属错误、DoS 或资金转移异常"
+  ],
+  "impact": {
+    "type": "loss-of-funds-or-protocol-disruption",
+    "description": "Interest auctions enable inflation attacks on backstop vaults, allowing attackers to steal user deposits"
+  },
+  "why_not_higher": "保留 Code4rena final report 的严重性分级；具体项目中需按可盗金额、可达性和协议影响重新判断。",
+  "why_not_lower": "final report 中作为 High/Medium 收录，且有具体 Soroban/Rust affected code links 与缓解记录。",
+  "common_false_positive_angles": [
+    "确认当前代码是否仍在 audited commit 或相同逻辑版本",
+    "确认 require_auth / pool status / reserve uniqueness / accrual update 是否已在所有等价入口执行",
+    "确认攻击者能否达到边界状态，而不是只有 admin 或测试配置可触发"
+  ],
+  "mitigations": [
+    "在所有价值转移入口统一执行授权、状态检查和结算前置更新；对 Soroban Vec/Map 输入做唯一性与边界检查；对整数数学添加低分母/精度回归测试。"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-02-blend/blob/f23b3260763488f365ef6a95bfb139c95b0ed0f9/blend-contracts-v2/backstop/src/contract.rs#L317-L325",
+      "note": "GitHub permalink from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-02-blend/blob/f23b3260763488f365ef6a95bfb139c95b0ed0f9/blend-contracts-v2/backstop/src/backstop/deposit.rs#L8-L33",
+      "note": "GitHub permalink from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-02-blend/blob/f23b3260763488f365ef6a95bfb139c95b0ed0f9/blend-contracts-v2/pool/src/contract.rs#L412-L421",
+      "note": "GitHub permalink from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-02-blend/blob/f23b3260763488f365ef6a95bfb139c95b0ed0f9/blend-contracts-v2/pool/src/auctions/backstop_interest_auction.rs#L63-L67",
+      "note": "GitHub permalink from final report"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-02-blend/blob/f23b3260763488f365ef6a95bfb139c95b0ed0f9/blend-contracts-v2/pool/src/auctions/user_liquidation_auction.rs#L50-L53",
+      "note": "GitHub permalink from final report"
+    }
+  ],
+  "tags": [
+    "share-inflation",
+    "auction-settlement",
+    "vault-accounting",
+    "donation-attack",
+    "soroban-rust",
+    "stellar-rust"
+  ]
+}

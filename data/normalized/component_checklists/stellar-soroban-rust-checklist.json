@@ -1,0 +1,58 @@
+{
+  "id": "stellar-soroban-rust-checklist",
+  "component_type": "stellar-soroban-rust-contract",
+  "description": "Stellar/Soroban Rust 合约审计入口 checklist，覆盖 require_auth、storage TTL/rent、Vec 输入唯一性、整数 fixed-point math、emission/index 更新顺序、pool status 与 vault/auction accounting。",
+  "core_invariants": [
+    "每个消耗用户余额、头寸、奖励或权限的公开 entrypoint 都必须对正确 Address 调用 require_auth",
+    "storage persistent/temporary/instance 的生命周期必须覆盖协议真实状态存活期，且用户可控增长有硬上限",
+    "Vec/Map 输入在估值、拍卖、奖励、抵押计算前必须完成唯一性、排序或边界校验",
+    "所有奖励/利息/费率 index 在余额或配置改变前更新",
+    "整数数学必须保护零分母、低 supply、精度截断和舍入方向"
+  ],
+  "trust_boundaries": [
+    "external user supplied Address/Vec/Symbol/BytesN parameters",
+    "cross-contract token calls and callback-like flash-loan execution",
+    "admin reward-zone / pool status / reserve config mutation",
+    "ledger TTL and storage rent lifecycle"
+  ],
+  "common_bug_classes": [
+    "missing require_auth or wrong authenticated subject",
+    "alternate entrypoint bypasses pool status or freeze checks",
+    "duplicate reserve list double-counting",
+    "stale reward/emission/interest index",
+    "division-before-multiplication and zero denominator",
+    "unbounded storage or missing TTL extension",
+    "share-price/vault donation inflation"
+  ],
+  "check_items": [
+    "列出所有 pub fn / #[contractimpl] entrypoint，标记 value-moving、config-changing、claiming 三类敏感动作",
+    "对每个 Address 参数确认是否 require_auth，以及 require_auth 的主体是否等于被扣款/被 claim 的账户",
+    "搜索 storage().temporary/persistent/instance，确认关键状态 TTL extension、上限和 cleanup",
+    "对 Vec<Address>/Vec<Asset>/reserve list 写重复项测试，比较 [A] 与 [A,A] 结果",
+    "对 reward/emission/interest index 检查 update-before-mutate 顺序",
+    "对 total_supply、denominator、rate、fixed-point math 做 0/1/min/max 边界测试",
+    "检查 flash-loan、auction、withdraw、donate/draw 是否绕过 pool status/freeze/backstop 状态检查"
+  ],
+  "test_ideas": [
+    "Soroban unit test：随机 actor/owner/receiver 组合，断言未授权账户无法 claim/withdraw/config",
+    "proptest：任意 Vec 输入先 dedupe 后的估值应等于协议计算值",
+    "ledger/time simulation：storage TTL 过期后 withdrawal/claim 不能丢失关键状态",
+    "boundary math：low supply、zero denominator、donation/share inflation、rounding repeatability"
+  ],
+  "related_pattern_ids": [
+    "soroban-require-auth-entrypoint-bypass-pattern",
+    "soroban-storage-ttl-rent-dos-pattern",
+    "soroban-duplicate-asset-list-pricing-pattern",
+    "soroban-emission-accrual-before-state-change-pattern",
+    "soroban-integer-math-low-denominator-pattern"
+  ],
+  "tags": [
+    "stellar-rust",
+    "soroban-rust",
+    "require-auth",
+    "storage-ttl",
+    "integer-math",
+    "duplicate-assets",
+    "emissions"
+  ]
+}

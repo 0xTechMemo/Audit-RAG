@@ -34,14 +34,14 @@
 - skill-aware triage 骨架
 
 当前状态：
-- `case_reports`: 97 条，主召回流只放 Medium/High 和少量手写高质量样本
-- `false_positive_cases`: 21 条，用于降级、误报和 QA-like caution 通道
-- `vulnerability_patterns`: 17 条，已从现有 C4 样本提炼出 oracle、connector、liquidation、access control、withdrawal、reward、cross-domain queue 等核心模式
-- `component_checklists`: 8 条，用于组件级 intake / 模块审计辅助
-- `validation_recipes`: 11 条，用于把候选问题转成 PoC / 单测 / 状态机验证路线
+- `case_reports`: 107 条，主召回流只放 Medium/High 和少量手写高质量样本；已新增 Stellar/Soroban Rust 类目样本
+- `false_positive_cases`: 22 条，用于降级、误报和 QA-like caution 通道
+- `vulnerability_patterns`: 22 条，已从现有 C4 样本提炼出 oracle、connector、liquidation、access control、withdrawal、reward、cross-domain queue、Stellar/Soroban Rust 等核心模式
+- `component_checklists`: 9 条，用于组件级 intake / 模块审计辅助，包含 `stellar-soroban-rust-checklist`
+- `validation_recipes`: 14 条，用于把候选问题转成 PoC / 单测 / 状态机验证路线
 - `contest_notes`: 3 条，用于保存 audit page / mitigation review 上下文
 - `hybrid_search.py`: 已有 lexical-first 实现；同时召回 case / pattern / validation recipe，并保持 false-positive caution 通道独立
-- `data/eval/retrieval_queries.jsonl`: 26 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
+- `data/eval/retrieval_queries.jsonl`: 32 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
 - `data/provisional/`: 活跃审计中的候选知识暂存区，不参与正式 RAG 检索；最终确认后再归档
 
 当前架构默认采用：
