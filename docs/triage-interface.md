@@ -30,6 +30,19 @@
 
 第一版可空。
 
+CLI 已支持把 `stage_context` 中的核心字段作为参数传入：
+
+```bash
+python -m audit_rag.cli.main triage-issue \
+  "<candidate issue statement>" \
+  --skill-name c4-contest-auditor \
+  --stage-name candidate-triage \
+  --component-type cross-domain-bridge \
+  --audit-goal "find similar bugs and downgrade risks"
+```
+
+如需跳过 caution 通道，可使用 `--no-false-positive-check`；默认会保留 false-positive / downgrade 检索。
+
 ### stage_context
 
 类型：对象

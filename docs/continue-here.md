@@ -59,11 +59,11 @@
 
 如果你下次没说具体做什么，建议默认按下面顺序推进：
 
-1. 扩充第二批样本数据
-2. 实现 `validate-data` 命令
-3. 把 `triage-issue` 接到本地样本检索
-4. 做最小 lexical retrieval
-5. 再考虑 richer retrieval 和向量检索
+1. 审计中产生的新知识先写入 `data/provisional/contests/<contest-slug>/`，不要直接污染正式 RAG
+2. 针对最新 contest 候选问题运行 `triage-issue`，用 `--component-type` 等上下文参数提升召回质量
+3. 维护 `validate-data`、`pytest` 和 retrieval eval 回归，避免正式数据可用性退化
+4. 等最终报告/提交结果确认后，再把可复用知识从 provisional 归档到 `data/normalized/` 和正式 eval
+5. 扩展更细的 component checklist / recipe，并继续考虑 richer retrieval、向量检索和重排模型
 
 ## 当前仓库里最重要的文档
 

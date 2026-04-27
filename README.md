@@ -6,12 +6,17 @@
 
 这个项目不是通用聊天机器人，也不是自动报洞器。
 
-它的目标是服务 Code4rena、Sherlock 这类比赛型审计流程，帮助你：
+它的目标是服务 Code4rena、Sherlock 这类比赛型审计流程。它不是替你证明漏洞，而是在审计辅助中帮助你更快找到类似漏洞、相邻模式、验证路径和降级风险，并在每次真实审计后继续沉淀为更通用的审计 RAG。
+
+它具体帮助你：
 - 更快召回相关漏洞模式
 - 更快拿到组件级审计 checklist
 - 更快判断候选问题值不值得继续追
 - 更少浪费时间在误报、弱问题、QA-only 方向上
 - 更快形成验证思路与证据补强路径
+- 把审计结束后已经确认的新模式、false-positive 和 recipe 反哺回本地知识库
+
+活跃审计中的未确认线索不直接进入正式 RAG。它们先放在 `data/provisional/contests/<contest-slug>/`，等最终报告或提交结果确认后，再经过归档审校写入 `data/normalized/` 和正式 eval。
 
 ## 首版范围
 
@@ -37,6 +42,7 @@
 - `contest_notes`: 3 条，用于保存 audit page / mitigation review 上下文
 - `hybrid_search.py`: 已有 lexical-first 实现；同时召回 case / pattern / validation recipe，并保持 false-positive caution 通道独立
 - `data/eval/retrieval_queries.jsonl`: 26 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
+- `data/provisional/`: 活跃审计中的候选知识暂存区，不参与正式 RAG 检索；最终确认后再归档
 
 当前架构默认采用：
 - skill 定义阶段、质量门槛、默认输入输出契约
@@ -49,7 +55,7 @@ skill 管流程，RAG 管知识，AI 管推理。
 ## 目录说明
 
 - `configs/`：项目配置
-- `data/`：原始数据、结构化数据、chunk、索引、评测集
+- `data/`：原始数据、正式结构化数据、provisional 候选知识、chunk、索引、评测集
 - `docs/`：PRD、schema、标签体系、检索设计、阶段架构、术语表、周计划
 - `src/audit_rag/orchestration/`：skill-aware 工作流运行时与阶段配置
 - `src/audit_rag/contracts/`：阶段输入输出契约模型

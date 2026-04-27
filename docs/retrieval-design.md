@@ -84,6 +84,10 @@
 
 false-positive 记录不能和正向案例混在同一个主排序流里。它们应该作为单独的警示通道输出。
 
+RAG 的职责是辅助审计者更快找到类似漏洞、相邻模式、验证 recipe 和降级风险；它不能替代当前仓库代码阅读、可达性分析、影响证明或 PoC。
+
+审计过程中发现但还没最终确认的案例、pattern、recipe 或 false-positive 判断，不得直接写入 `data/normalized/` 或正式 `data/eval/retrieval_queries.jsonl`。这些线索先存放在 `data/provisional/contests/<contest-slug>/`，作为当前审计的研究素材。只有在最终报告、最终提交结果、judge/sponsor 反馈或用户明确确认之后，才重新审校、抽象并归档到正式 RAG。
+
 ## skill-aware 检索约定
 
 第一版推荐做法：

@@ -89,7 +89,33 @@ Low / Non-critical / QA 不进入主 case_reports。
 - setter 逻辑可优化
 - 无直接审计决策价值的 gas micro-optimization
 
-## 3. 入库后验证
+## 3. provisional：活跃审计中的临时知识
+
+活跃审计过程中发现的候选案例、pattern、false-positive 判断和 validation recipe，在最终结果确认前不要进入正式 RAG。
+
+原因：这些内容还可能被后续 PoC、独立 review、sponsor/judge 反馈或最终报告推翻。如果提前进入 `data/normalized/` 或正式 eval，会把未确认假设固化成检索事实，污染后续审计判断。
+
+默认存放位置：
+
+```text
+data/provisional/contests/<contest-slug>/
+  candidate_patterns/
+  candidate_cases/
+  false_positive_candidates/
+  validation_recipes/
+  eval_candidates/
+  notes/
+```
+
+归档到 `data/normalized/` 的前置条件：
+
+1. 审计已经结束，或该 finding 已形成最终提交/最终报告/明确确认结果；
+2. 重新检查 root cause、broken invariant、impact 和 downgrade 条件；
+3. 抽掉当前 contest 的偶然细节，只保留可跨协议复用的知识；
+4. 再补正式 eval 查询；
+5. 跑完整验证门槛。
+
+## 4. 入库后验证
 
 每次批量沉淀后至少检查：
 

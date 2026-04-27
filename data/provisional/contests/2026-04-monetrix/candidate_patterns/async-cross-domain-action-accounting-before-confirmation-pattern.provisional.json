@@ -1,0 +1,69 @@
+{
+  "status": "provisional_during_active_audit",
+  "contest_slug": "2026-04-monetrix",
+  "source_context": "Derived during active Monetrix audit before final contest/report outcome. Do not load into normalized RAG retrieval or eval until final archival review.",
+  "promotion_policy": "Promote to data/normalized only after final audit report/submission outcome confirms the issue and the record passes curation review.",
+  "candidate_record_type": "vulnerability_pattern",
+  "candidate": {
+    "id": "async-cross-domain-action-accounting-before-confirmation-pattern",
+    "name": "Async cross-domain action accounting before confirmation",
+    "category": "cross-domain-accounting",
+    "component_types": [
+      "cross-domain-bridge",
+      "external-settlement",
+      "vault-accounting",
+      "redemption-flow"
+    ],
+    "applicable_languages": [
+      "solidity"
+    ],
+    "description": "A protocol emits or queues an asynchronous action to an external domain and immediately clears local accounting or retry state before the external domain has observably settled the action. If the external action is later rejected, silently dropped, or cannot debit spendable balance, the local system can lose retry information while user-facing funding, redemption, or settlement remains incomplete.",
+    "broken_invariants": [
+      "local accounting that enables retry or reconciliation must not be cleared before external-domain settlement is confirmed",
+      "emitting an asynchronous cross-domain action is not equivalent to final settlement or receipt of funds",
+      "redemption and funding flows must remain retryable when an external bridge or settlement action does not deliver the expected assets",
+      "availability checks for external-domain transfers must use spendable/free balance, not only a reported total balance that can include held or locked amounts"
+    ],
+    "common_triggers": [
+      "CoreWriter or bridge writer emits an action/log that is processed only after the EVM transaction or block",
+      "local state is decremented before checking that tokens actually arrived on the destination domain",
+      "bridge availability checks use total balance while ignoring held, locked, reserved, or margin-encumbered balance",
+      "external transfer prerequisites such as gas, account existence, allowlist state, or free balance are not enforced before local accounting is mutated"
+    ],
+    "preconditions": [
+      "the protocol relies on an asynchronous external-domain action for user redemption, withdrawal, settlement, or rebalancing",
+      "local retry/accounting state is mutated before the destination-domain effect is observable",
+      "the external-domain action can fail, be rejected, or produce no asset receipt after the local transaction succeeds"
+    ],
+    "typical_impact": [
+      "valid redemptions, withdrawals, or funding operations become stuck because the retry accounting has been cleared",
+      "operators or keepers cannot safely retry the bridge/settlement action without manual reconciliation",
+      "the protocol reports completed internal accounting while destination-domain assets were not received"
+    ],
+    "common_false_positives": [
+      "the external-domain action is synchronously reverting and fully rolls back local accounting on every failure path",
+      "a separate confirmed-receipt mechanism restores or preserves retry accounting before users are affected",
+      "the only failure mode is malicious or inactive trusted operator behavior with no contract-side invariant break",
+      "the impact is only a temporary delay and the protocol has a documented safe retry path that does not require privileged manual repair"
+    ],
+    "severity_baseline": "medium",
+    "validation_methods": [
+      "model the external writer as accepting the local transaction without delivering destination-domain funds",
+      "assert that local outstanding/retry accounting is cleared before the expected assets arrive",
+      "assert that a normal retry reverts or is blocked because the accounting has already been consumed",
+      "assert a downstream user-facing claim, redemption, withdrawal, or funding path remains blocked after the normal waiting period",
+      "separately verify external-domain docs or code showing action processing is asynchronous or can be rejected after local emission"
+    ],
+    "related_case_ids": [
+      "c4-2025-04-kinetiq-m-01"
+    ],
+    "tags": [
+      "cross-domain-accounting",
+      "asynchronous-settlement",
+      "bridge-retry-accounting",
+      "external-domain-action",
+      "balance-availability",
+      "redemption-availability"
+    ]
+  }
+}
