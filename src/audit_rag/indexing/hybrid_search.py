@@ -132,6 +132,71 @@ def _field_score(query_terms: set[str], data: dict[str, Any]) -> tuple[float, li
     return score, sorted(matched_terms)
 
 
+def _runtime_metadata(data: dict[str, Any]) -> dict[str, set[str]]:
+    """Infer normalized runtime dimensions without requiring every old record to be migrated.
+
+    The data corpus started as EVM/Solidity and later gained Stellar/Soroban Rust.
+    Newer records may carry explicit language/applicable_languages/tags, while older
+    patterns/checklists often only expose ecosystem words in ids and tags. Keep this
+    inference conservative: it is used for boosts and optional strict filtering, not
+    as a replacement for source-level validation.
+    """
+
+    haystack = " ".join(
+        _flatten(data.get(field))
+        for field in (
+            "id",
+            "language",
+            "applicable_languages",
+            "runtime",
+            "ecosystem",
+            "tags",
+            "component_type",
+            "component_types",
+            "pattern_id",
+            "source_name",
+        )
+    ).lower()
+    languages = set(_tokens(_flatten(data.get("language")))) | set(_tokens(_flatten(data.get("applicable_languages"))))
+    ecosystems: set[str] = set(_tokens(_flatten(data.get("ecosystem"))))
+    runtimes: set[str] = set(_tokens(_flatten(data.get("runtime"))))
+
+    if "solidity" in haystack:
+        languages.add("solidity")
+        ecosystems.add("evm")
+        runtimes.add("evm")
+    if any(marker in haystack for marker in ("erc20", "erc4626", "erc721", "evm")):
+        ecosystems.add("evm")
+        runtimes.add("evm")
+    if any(marker in haystack for marker in ("rust-soroban", "soroban-rust", "soroban", "stellar-rust", "stellar")):
+        languages.add("rust-soroban")
+        ecosystems.add("stellar")
+        runtimes.add("soroban")
+    return {"languages": languages, "ecosystems": ecosystems, "runtimes": runtimes}
+
+
+def _runtime_targets(context: QueryContext) -> dict[str, set[str]]:
+    return {
+        "languages": set(_tokens(context.language or "")),
+        "ecosystems": set(_tokens(context.ecosystem or "")),
+        "runtimes": set(_tokens(context.runtime or "")),
+    }
+
+
+def _matches_runtime_context(context: QueryContext, data: dict[str, Any]) -> bool:
+    targets = _runtime_targets(context)
+    if not any(targets.values()):
+        return True
+    metadata = _runtime_metadata(data)
+    for key, expected in targets.items():
+        if not expected:
+            continue
+        known = metadata[key]
+        if not known or not (expected & known):
+            return False
+    return True
+
+
 def _context_score(context: QueryContext, data: dict[str, Any]) -> float:
     score = 0.0
     if context.component_type:
@@ -140,6 +205,11 @@ def _context_score(context: QueryContext, data: dict[str, Any]) -> float:
         tags = " ".join(data.get("tags", [])).lower()
         if component in components or component in tags:
             score += 2.0
+    metadata = _runtime_metadata(data)
+    targets = _runtime_targets(context)
+    for key, expected in targets.items():
+        if expected and expected & metadata[key]:
+            score += 2.5
     if context.stage_name == "candidate-triage":
         if data.get("_document_type") == "case_report":
             score += 1.0
@@ -163,6 +233,7 @@ def _project_match(data: dict[str, Any], score: float, matched_terms: list[str])
         "source": _source_for(data),
         "source_url": data.get("source_url"),
         "tags": data.get("tags", []),
+        "runtime_metadata": {key: sorted(value) for key, value in _runtime_metadata(data).items()},
     }
     if doc_type == "case_report":
         item.update(
@@ -216,6 +287,8 @@ def _rank(query: str, context: QueryContext, document_types: list[str], limit: i
     matches: list[dict[str, Any]] = []
     for document_type in document_types:
         for data in _load_documents(document_type):
+            if context.strict_runtime and not _matches_runtime_context(context, data):
+                continue
             lexical_score, matched_terms = _field_score(query_terms, data)
             if lexical_score <= 0:
                 continue
@@ -252,6 +325,10 @@ def hybrid_search(query: str, context: QueryContext | None = None) -> dict[str, 
         "skill_name": runtime.skill_name,
         "stage_name": runtime.stage_name,
         "component_type": runtime.component_type,
+        "ecosystem": runtime.ecosystem,
+        "language": runtime.language,
+        "runtime": runtime.runtime,
+        "strict_runtime": runtime.strict_runtime,
         "positive_matches": positive_matches,
         "caution_matches": caution_matches,
         "message": (

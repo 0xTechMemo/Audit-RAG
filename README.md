@@ -40,7 +40,7 @@
 - `component_checklists`: 9 条，用于组件级 intake / 模块审计辅助，包含 `stellar-soroban-rust-checklist`
 - `validation_recipes`: 14 条，用于把候选问题转成 PoC / 单测 / 状态机验证路线
 - `contest_notes`: 3 条，用于保存 audit page / mitigation review 上下文
-- `hybrid_search.py`: 已有 lexical-first 实现；同时召回 case / pattern / validation recipe，并保持 false-positive caution 通道独立
+- `hybrid_search.py`: 已有 lexical-first 实现；同时召回 case / pattern / validation recipe，并保持 false-positive caution 通道独立；支持 `ecosystem` / `language` / `runtime` 软加权和 `strict_runtime` 强过滤
 - `data/eval/retrieval_queries.jsonl`: 32 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
 - `data/provisional/`: 活跃审计中的候选知识暂存区，不参与正式 RAG 检索；最终确认后再归档
 
@@ -74,6 +74,16 @@ pip install -e .[dev]
 python -m audit_rag.cli.main --help
 python -m audit_rag.cli.main validate-data
 pytest -q
+```
+
+多链/多运行时检索示例：
+
+```bash
+# 默认 soft runtime：允许跨生态相似案例参与召回，但会对匹配 runtime 的记录加权
+python -m audit_rag.cli.main triage-issue "ERC4626 donation manipulates share price" --ecosystem evm --language solidity --runtime evm
+
+# strict runtime：过滤掉已知冲突生态/语言/运行时的记录，适合只想看 Stellar/Soroban Rust 证据时使用
+python -m audit_rag.cli.main triage-issue "Soroban duplicate reserve Vec overprices bad debt auction" --ecosystem stellar --language rust-soroban --runtime soroban --strict-runtime
 ```
 
 ## 建议先读的文档

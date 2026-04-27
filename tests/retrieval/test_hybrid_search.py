@@ -28,3 +28,31 @@ def test_hybrid_search_separates_false_positive_caution_channel() -> None:
     assert result["caution_matches"]
     assert result["caution_matches"][0]["document_type"] == "false_positive_case"
     assert "why_not_valid" in result["caution_matches"][0]
+
+
+def test_strict_runtime_keeps_evm_query_out_of_known_soroban_records() -> None:
+    result = hybrid_search(
+        "ERC4626 donation manipulates share price and causes minShares deposit denial of service",
+        QueryContext(ecosystem="evm", language="solidity", runtime="evm", strict_runtime=True),
+    )
+
+    assert result["strict_runtime"] is True
+    assert result["ecosystem"] == "evm"
+    ids = [item["id"] for item in result["positive_matches"]]
+    assert "erc4626-share-inflation-donation-pattern" in ids
+    assert not any("blend-v2" in item_id for item_id in ids)
+
+
+def test_strict_runtime_prioritizes_stellar_soroban_records() -> None:
+    result = hybrid_search(
+        "Soroban Rust duplicate reserve Vec entries overprice bad debt auction",
+        QueryContext(ecosystem="stellar", language="rust-soroban", runtime="soroban", strict_runtime=True),
+    )
+
+    assert result["strict_runtime"] is True
+    ids = [item["id"] for item in result["positive_matches"]]
+    assert ids[:2] == [
+        "c4-2025-02-blend-v2-m-04",
+        "soroban-duplicate-asset-list-pricing-pattern",
+    ]
+    assert all("solidity" not in item["runtime_metadata"]["languages"] for item in result["positive_matches"])

@@ -95,6 +95,27 @@ RAG 的职责是辅助审计者更快找到类似漏洞、相邻模式、验证 
 - retrieval 层根据上下文切换策略
 - output 层返回固定 schema，而不是自由散文
 
+## 多链 / 多运行时检索约定
+
+当前项目已经从 EVM/Solidity 扩展到 Stellar/Soroban Rust。长期方向不是为每条链复制一套 RAG，而是在统一知识对象上增加运行时上下文：
+
+- `ecosystem`：生态，例如 `evm`、`stellar`、`sui`、`aptos`、`cosmos`、`starknet`
+- `language`：合约语言，例如 `solidity`、`rust-soroban`、`move`、`cosmwasm`、`cairo`
+- `runtime`：执行运行时，例如 `evm`、`soroban`、`move-vm`、`cosmwasm`、`cairo-vm`
+- `strict_runtime`：是否过滤已知冲突运行时的数据
+
+检索默认采用 soft runtime：
+- 与 `ecosystem` / `language` / `runtime` 匹配的记录获得加权
+- 跨生态相似模式仍可进入结果，例如 EVM vault/share-inflation 与 Soroban vault/share-inflation 可以互相提供启发
+- 适合模式探索、候选问题早期 triage
+
+当用户传入 `--strict-runtime` 时采用 hard filter：
+- 如果记录带有已知且冲突的 ecosystem/language/runtime metadata，则排除
+- 如果记录没有可推断的 runtime metadata，也会被排除；这要求后续新数据必须显式写入 `language` / `applicable_languages` 或可推断的 runtime tags
+- 适合只想看某条链/运行时证据、避免跨生态噪音的阶段
+
+当前 runtime metadata 既读取显式字段，也会从 `language`、`applicable_languages`、`tags`、`component_types`、`id`、`pattern_id` 等字段保守推断。后续新增 Move/CosmWasm/Cairo 数据时，应优先显式写入 `language` / `applicable_languages`，并保持 tags 可检索，例如 `move-vm`、`cosmwasm`、`cairo-vm`。
+
 ## 第一版默认策略
 
 - 先做 lexical-first 的原型
