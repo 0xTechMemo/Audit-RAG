@@ -4,11 +4,9 @@
 
 ## 项目定位
 
-这个项目不是通用聊天机器人，也不是自动报洞器。
+目标是服务 Code4rena、Sherlock 这类比赛型审计流程。在审计辅助中帮助你更快找到类似漏洞、相邻模式、验证路径和降级风险，并在每次真实审计后继续沉淀为更通用的审计 RAG。
 
-它的目标是服务 Code4rena、Sherlock 这类比赛型审计流程。它不是替你证明漏洞，而是在审计辅助中帮助你更快找到类似漏洞、相邻模式、验证路径和降级风险，并在每次真实审计后继续沉淀为更通用的审计 RAG。
-
-它具体帮助你：
+能帮助你：
 - 更快召回相关漏洞模式
 - 更快拿到组件级审计 checklist
 - 更快判断候选问题值不值得继续追
@@ -16,7 +14,7 @@
 - 更快形成验证思路与证据补强路径
 - 把审计结束后已经确认的新模式、false-positive 和 recipe 反哺回本地知识库
 
-活跃审计中的未确认线索不直接进入正式 RAG。它们先放在 `data/provisional/contests/<contest-slug>/`，等最终报告或提交结果确认后，再经过归档审校写入 `data/normalized/` 和正式 eval。
+活跃审计中的未确认的线索不直接进入正式 RAG。先放在 `data/provisional/contests/<contest-slug>/`，等最终报告或提交结果确认后，再经过归档审校写入 `data/normalized/` 和正式 eval。
 
 ## 首版范围
 
@@ -48,9 +46,6 @@
 - skill 定义阶段、质量门槛、默认输入输出契约
 - RAG 提供 pattern / case / false-positive / validation 证据
 - AI 在阶段上下文和检索证据约束下组织结论
-
-一句话：
-skill 管流程，RAG 管知识，AI 管推理。
 
 ## 目录说明
 
