@@ -84,41 +84,53 @@ Expected outputs:
 - `audit-context/<slug>/heuristic-hits.json`
 - `audit-context/<slug>/audit-notes.md`
 
-### 3. Audit-RAG assisted triage
+### 3. Audit-RAG assisted lead ledger / triage
 
-Before or alongside manual auditing, use the local audit-rag project as a retrieval and triage aid. Treat audit-rag output as supporting context only, not as proof of a finding.
+Before or alongside manual auditing, use the local audit-rag project as the stateful backend for leads, triage evidence, downgrade/suppression checks, and PoC recipes. Treat audit-rag output as supporting context only, not as proof of a finding.
 
 Local defaults:
 - audit-rag repo: `/Users/qwe/Audit/audit-rag`
 - Python command: `python3.11` / project venv
 - CLI: `python -m audit_rag.cli.main`
 
-For each strong lead or suspicious invariant break, run a concise triage query from the audit-rag repo. Check `triage-issue --help` first because the local CLI contract may be narrower than the design docs. As of live use on the Monetrix contest, the command accepts only the issue text argument:
+For each non-trivial lead, persist it before deep work:
 
 ```bash
 cd /Users/qwe/Audit/audit-rag
 source .venv/bin/activate
-python -m audit_rag.cli.main triage-issue \
-  "<candidate issue statement>"
+python -m audit_rag.cli.main add-lead <contest-slug> \
+  "<short lead title>" \
+  --component "<component-family>" \
+  --text "<candidate issue statement>"
 ```
 
-If a future audit-rag version adds `--skill-name`, `--stage-name`, or `--component-type`, pass them explicitly; otherwise keep the stage/component context inside the issue text.
+For each strong lead or suspicious invariant break, run persisted scorecard triage:
+
+```bash
+python -m audit_rag.cli.main triage-lead <contest-slug> <lead-id>
+```
+
+For weak, duplicate-looking, QA/Low-looking, or false-positive-prone leads, run:
+
+```bash
+python -m audit_rag.cli.main suppress-check <contest-slug> <lead-id>
+```
+
+The current audit-rag backend writes:
+- `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`
+- `data/provisional/contests/<contest-slug>/rag-triage/<lead-id>.json`
 
 Operational discipline:
-- Save the full JSON/text output from each triage query under `<repo>/audit-context/<slug>/rag-triage/<NN>-<short-topic>.json` or `.txt`.
-- In `first-pass-notes.md`, record only a short summary and a pointer to the saved raw output.
-- Add a short relevance scorecard before acting on a top match:
-  - root cause similarity: exact / adjacent / weak
-  - component similarity: exact / adjacent / weak
-  - impact shape similarity: exact / adjacent / weak
-  - false-positive relevance: high / medium / low
-  - use decision: navigation only / severity calibration / validation recipe / not useful
+- Keep the lead ledger as the canonical active-audit lead state; do not rely only on chat history or scratch notes.
+- In the contest repo’s `first-pass-notes.md`, record only a short summary and a pointer to the saved audit-rag output when useful.
+- Use the scorecard fields before acting on a top match: root-cause similarity, pattern similarity, impact shape, false-positive risks, suppression signals, validation recipe, and report framing.
 - Do not use audit-rag output as proof, a direct report citation, or a substitute for a runnable PoC.
 
 Use the result to:
 - retrieve similar rewarded C4 cases, patterns, recipes, and false-positive cautions
 - identify likely root cause, broken invariant, validation recipe, and downgrade risks
 - decide what local PoC or invariant test is needed next
+- avoid re-chasing duplicate, trusted-role-only, config-only, user-mistake, or QA-only directions
 
 Do not submit or promote a High/Medium solely because audit-rag found similar historical cases. Current contest scope, reachability, impact, and runnable PoC remain mandatory.
 
