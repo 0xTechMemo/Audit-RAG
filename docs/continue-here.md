@@ -62,10 +62,12 @@
 1. 审计中产生的新 lead 先用 `add-lead` 写入 `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`，不要只散落在对话或 scratch note 里
 2. 对非 trivial lead 运行 `triage-lead`，保存 scorecard 到 `data/provisional/contests/<contest-slug>/rag-triage/`
 3. 对弱问题、疑似重复或疑似 QA/Low 的 lead 运行 `suppress-check`，优先记录降级/压制理由
-4. 维护 `validate-data`、`pytest` 和 retrieval eval 回归，避免正式数据可用性退化
-5. 审计中产生的新知识先写入 `data/provisional/contests/<contest-slug>/`，不要直接污染正式 RAG
-6. 等最终报告/提交结果确认后，再把可复用知识从 provisional 归档到 `data/normalized/` 和正式 eval
-7. 扩展更细的 component checklist / recipe；向量检索和重排模型仍然后置
+4. PoC、duplicate review 或最终判断后运行 `update-lead`，让 ledger 成为 active lead 的唯一状态源
+5. 跨会话或阶段复盘时运行 `export-contest-summary`，生成 `contest-summary.md`
+6. 维护 `validate-data`、`pytest` 和 retrieval eval 回归，避免正式数据可用性退化
+7. 审计中产生的新知识先写入 `data/provisional/contests/<contest-slug>/`，不要直接污染正式 RAG
+8. 等最终报告/提交结果确认后，先 dry-run `promote-provisional`，人工审校后再 `--confirmed` 归档到 `data/normalized/` 和正式 eval
+9. 扩展更细的 component checklist / recipe；向量检索和重排模型仍然后置
 
 ## 当前仓库里最重要的文档
 

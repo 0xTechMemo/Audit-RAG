@@ -42,6 +42,9 @@
 - `lead-ledger`: 已新增活跃审计线索台账，默认落盘到 `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`
 - `triage-lead`: 已新增基于 RAG 的 lead scorecard，输出 root-cause/pattern 相似度、suppression signals、validation recipe 和 report framing，并保存到 `data/provisional/contests/<contest-slug>/rag-triage/`
 - `suppress-check`: 已新增 duplicate / false-positive / QA downgrade 风险检查入口
+- `update-lead`: 已新增 PoC、duplicate review、最终判断后的 lead 状态更新入口
+- `export-contest-summary`: 已新增 contest lead 总结导出，默认写入 `data/provisional/contests/<contest-slug>/contest-summary.md`
+- `promote-provisional`: 已新增 provisional→normalized 的安全归档入口，默认 dry-run，必须显式 `--confirmed` 才会写入正式 normalized
 - `docs/skills/`: 已镜像相关 Hermes skill Markdown；后续 skill 更新后运行 `python3.11 scripts/sync_skill_docs.py` 同步进仓库
 - `data/eval/retrieval_queries.jsonl`: 32 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
 - `data/provisional/`: 活跃审计中的候选知识和 lead 状态暂存区，不参与正式 RAG 检索；最终确认后再归档
@@ -89,8 +92,19 @@ python -m audit_rag.cli.main add-lead 2026-04-example \
 # 对已记录 lead 运行 RAG-backed scorecard，并把原始输出保存到 rag-triage/<lead-id>.json
 python -m audit_rag.cli.main triage-lead 2026-04-example bridge-accounting-clears-retry-state-before-async-settlement
 
+# PoC、duplicate review 或最终判断后更新 lead 状态
+python -m audit_rag.cli.main update-lead 2026-04-example bridge-accounting-clears-retry-state-before-async-settlement \
+  --status needs-poc \
+  --current-blocker "need runnable current-repo PoC"
+
 # 专门检查 duplicate / false-positive / QA downgrade 风险
 python -m audit_rag.cli.main suppress-check 2026-04-example bridge-accounting-clears-retry-state-before-async-settlement
+
+# 导出当前 contest lead 总结；默认写入 data/provisional/contests/<slug>/contest-summary.md
+python -m audit_rag.cli.main export-contest-summary 2026-04-example
+
+# 审计结束后先 dry-run promotion；确认最终结果和人工审校后才加 --confirmed
+python -m audit_rag.cli.main promote-provisional 2026-04-example
 ```
 
 多链/多运行时检索示例：

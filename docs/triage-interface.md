@@ -1,171 +1,100 @@
-# candidate-triage 接口定义
+# lead-triage 接口定义
 
 ## 1. 目标
 
-定义第一版 skill-aware triage 的输入输出契约，避免后续把 triage 做成自由散文输出。
+定义 audit-rag 作为审计状态化后端时的 lead triage 输入输出契约，避免把 triage 做成自由散文输出。
+
+`triage-issue` 仍保留为不落盘的自由文本查询；active audit 默认使用 `add-lead` + `triage-lead` + `update-lead`。
 
 ## 2. 输入对象
 
-### issue_text
+### LeadRecord
 
-类型：字符串
+来源：`data/provisional/contests/<contest-slug>/lead-ledger.jsonl`
 
-含义：
-当前审计者对某个怀疑点的一句话或几句话描述。
+关键字段：
+- `id`
+- `contest_slug`
+- `title`
+- `text`
+- `status`
+- `component`
+- `files`
+- `functions`
+- `severity_guess`
+- `current_blocker`
+- `duplicate_check`
+- `false_positive_risk`
+- `validation_command`
+- `poc_path`
+- `final_decision`
 
-例子：
-- `withdraw updates reward debt after transfer, which may allow excess reward claims`
-- `oracle timestamp is checked but heartbeat freshness is not enforced`
+### QueryContext
 
-### code_context
-
-类型：可选对象
-
-建议字段：
-- `repo_path`
-- `file_path`
-- `function_name`
-- `code_snippet`
-- `module_summary`
-
-第一版可空。
-
-CLI 已支持把 `stage_context` 中的核心字段作为参数传入：
-
-```bash
-python -m audit_rag.cli.main triage-issue \
-  "<candidate issue statement>" \
-  --skill-name c4-contest-auditor \
-  --stage-name candidate-triage \
-  --component-type cross-domain-bridge \
-  --audit-goal "find similar bugs and downgrade risks"
-```
-
-如需跳过 caution 通道，可使用 `--no-false-positive-check`；默认会保留 false-positive / downgrade 检索。
-
-### stage_context
-
-类型：对象
-
-建议字段：
-- `skill_name`: 当前工作流名，例如 `contest-audit`
-- `stage_name`: 当前阶段，第一版固定为 `candidate-triage`
-- `component_type`: 例如 `reward-distribution`、`erc4626-vault`
-- `audit_goal`: 例如 `judge whether this lead is submission-worthy`
-- `require_false_positive_check`: 默认 `true`
-- `desired_output_schema`: 默认 `candidate-triage-v1`
-
-## 3. 检索输出对象
-
-### positive_matches
-
-含义：
-正向相似案例与模式。
-
-建议字段：
-- `case_reports`
-- `patterns`
-
-### caution_matches
-
-含义：
-误报、降级、弱问题提示。
-
-建议字段：
-- `false_positive_cases`
-
-### validation_support
-
-含义：
-验证建议素材。
-
-建议字段：
-- `validation_recipes`
-
-## 4. 最终输出对象：candidate-triage-v1
-
-建议字段：
-- `query_type`
+`triage-lead` / `suppress-check` 会构造检索上下文：
 - `skill_name`
 - `stage_name`
-- `issue_text`
-- `likely_root_cause`
-- `broken_invariant`
-- `attacker_profile`
+- `component_type`
+- `ecosystem`
+- `language`
+- `runtime`
+- `strict_runtime`
+- `audit_goal`
+- `desired_output_schema`
+- `require_false_positive_check`
+
+## 3. CLI 契约
+
+```bash
+python -m audit_rag.cli.main add-lead <contest-slug> <title> [--text ...] [--component ...]
+python -m audit_rag.cli.main triage-lead <contest-slug> <lead-id>
+python -m audit_rag.cli.main suppress-check <contest-slug> <lead-id>
+python -m audit_rag.cli.main update-lead <contest-slug> <lead-id> [--status ...]
+python -m audit_rag.cli.main export-contest-summary <contest-slug>
+```
+
+## 4. triage-lead 输出对象：lead-triage-scorecard-v1
+
+保存位置：`data/provisional/contests/<contest-slug>/rag-triage/<lead-id>.json`
+
+建议字段：
+- `lead_id`
+- `contest_slug`
+- `root_cause_similarity`
+- `pattern_similarity`
+- `impact_shape`
+- `probable_severity_range`
 - `matching_cases`
 - `matching_patterns`
 - `false_positive_risks`
-- `probable_severity_range`
+- `suppression_signals`
 - `submission_blockers`
-- `validation_gap`
-- `next_validation_steps`
-- `sources`
-- `notes`
+- `validation_recipe`
+- `report_framing`
+- `raw_triage`
 
-## 5. 字段解释
+## 5. suppress-check 输出对象：suppression-check-v1
 
-### likely_root_cause
-
-这里写根因，不写影响。
-
-错例：
-- `attacker steals rewards`
-
-对例：
-- `reward accounting state desynchronization after balance mutation`
-
-### broken_invariant
-
-这里写被破坏的系统约束。
-
-例子：
-- `reward baseline must remain aligned with effective stake checkpoints`
-
-### attacker_profile
-
-建议值：
-- `permissionless`
-- `privileged-only`
-- `user-mistake-dependent`
-- `unclear`
-
-### probable_severity_range
-
-第一版建议写区间，不强行写单点。
-
-例子：
-- `medium`
-- `qa-to-medium`
-- `low-confidence-medium`
-
-### submission_blockers
-
-描述离 submission-ready 还缺什么。
-
-例子：
-- 没证明攻击者能稳定兑现影响
-- 没排除补偿逻辑
-- 没证明不是 privileged-only
-
-### validation_gap
-
-一句话描述当前最关键的证据缺口。
-
-### sources
-
-必须带来源对象列表，至少能追踪到 case / pattern / fp / recipe 的 ID。
+用于判断是否应继续投入 PoC，或是否应降级/压制：
+- duplicate / known finding overlap
+- false-positive risk
+- QA / Low downgrade signal
+- missing reachability
+- missing impact
+- privileged-only dependency
+- user-mistake-only dependency
 
 ## 6. 固定质量门槛
 
-如果输出里没有下面任一项，就视为 triage 不完整：
-- 根因
-- false-positive 风险
-- validation gap
+如果输出缺少以下任一项，视为 triage 不完整：
+- 相似 case/pattern 或明确说明无强匹配
+- false-positive / downgrade 风险
+- submission blocker
+- 下一步最小验证动作
 - source trace
 
-## 7. 第一版默认策略
+## 7. 边界
 
-- 优先输出结构化 JSON
-- 正向匹配和 caution 通道分开
-- 没有强证据时，不直接写 HM
-- 不把 similarity 说成 exploit proof
+- RAG 相似案例不是当前项目漏洞证明。
+- audit-rag 不决定最终 severity；它只提供证据和阻塞项。
+- 未确认 active audit 知识不能直接进入 `data/normalized/`。

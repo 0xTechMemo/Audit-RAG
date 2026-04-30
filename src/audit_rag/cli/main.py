@@ -1,7 +1,15 @@
 from __future__ import annotations
 
 import typer
-from audit_rag.contest.lead_ledger import add_lead, get_lead, list_leads
+from audit_rag.contest.lead_ledger import (
+    add_lead,
+    export_contest_summary,
+    get_lead,
+    list_leads,
+    mirror_to_contest_repo,
+    promote_provisional,
+    update_lead_record,
+)
 from audit_rag.contest.scorecard import suppress_check, triage_and_persist
 from audit_rag.ingestion.pipelines.ingest_reports import run_ingest
 from audit_rag.quality.data_quality import validate_normalized_data
@@ -129,6 +137,37 @@ def list_leads_cmd(
     print(to_pretty_json(list_leads(contest_slug, status=status)))
 
 
+@app.command("update-lead")
+def update_lead_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+    lead_id: str = typer.Argument(..., help="Lead id from the ledger."),
+    status: str | None = typer.Option(None, help="New lead status."),
+    severity_guess: str | None = typer.Option(None, help="Updated severity guess."),
+    current_blocker: str | None = typer.Option(None, help="Current blocker or next missing evidence."),
+    duplicate_check: str | None = typer.Option(None, help="Duplicate / known finding overlap note."),
+    false_positive_risk: str | None = typer.Option(None, help="False-positive or downgrade risk note."),
+    validation_command: str | None = typer.Option(None, help="Latest validation command."),
+    poc_path: str | None = typer.Option(None, help="Path to local PoC/test artifact."),
+    final_decision: str | None = typer.Option(None, help="Final decision or reviewer-facing status."),
+) -> None:
+    """Update lead state after manual review, PoC, duplicate check, or final decision."""
+    result = update_lead_record(
+        contest_slug,
+        lead_id,
+        {
+            "status": status,
+            "severity_guess": severity_guess,
+            "current_blocker": current_blocker,
+            "duplicate_check": duplicate_check,
+            "false_positive_risk": false_positive_risk,
+            "validation_command": validation_command,
+            "poc_path": poc_path,
+            "final_decision": final_decision,
+        },
+    )
+    print(to_pretty_json(result))
+
+
 @app.command("triage-lead")
 def triage_lead_cmd(
     contest_slug: str = typer.Argument(..., help="Contest slug."),
@@ -184,6 +223,36 @@ def suppress_check_cmd(
         True,
     )
     print(to_pretty_json(suppress_check(lead, context)))
+
+
+@app.command("export-contest-summary")
+def export_contest_summary_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+) -> None:
+    """Export a Markdown summary of the current contest lead ledger."""
+    print(to_pretty_json(export_contest_summary(contest_slug)))
+
+
+@app.command("mirror-contest-state")
+def mirror_contest_state_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+    contest_repo: str = typer.Argument(..., help="Active contest repository path."),
+) -> None:
+    """Mirror audit-rag provisional state into an active contest repo audit-context folder."""
+    print(to_pretty_json(mirror_to_contest_repo(contest_slug, contest_repo)))
+
+
+@app.command("promote-provisional")
+def promote_provisional_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+    confirmed: bool = typer.Option(
+        False,
+        "--confirmed/--dry-run",
+        help="Actually promote records. Default dry-run writes only promotion-manifest.json.",
+    ),
+) -> None:
+    """Promote curated provisional records to normalized data after final outcome review."""
+    print(to_pretty_json(promote_provisional(contest_slug, confirmed=confirmed)))
 
 
 @app.command("validate-data")

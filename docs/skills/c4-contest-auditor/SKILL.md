@@ -337,9 +337,9 @@ Scope and bootstrap lessons:
 - If a shell command with a destructive prefix such as `rm -rf` is blocked/denied, do not retry that exact command. Continue with non-destructive generation or narrower operations.
 
 Audit-RAG lessons:
-- On the local audit-rag CLI used during Monetrix, `triage-issue` accepted only a single text argument. Always check `python -m audit_rag.cli.main triage-issue --help` before assuming optional flags exist.
-- audit-rag is most useful for ranking candidate families and false-positive risks, not for proving issues. Keep RAG results in research notes until current-code reachability, impact, and PoC are verified.
-- Do not add cases, patterns, recipes, or eval queries discovered during an active audit directly into audit-rag `data/normalized/` or formal `data/eval/retrieval_queries.jsonl`. Store them under `/Users/qwe/Audit/audit-rag/data/provisional/contests/<contest-slug>/` first, then archive to formal RAG only after the final report/submission outcome is confirmed and the record passes curation review.
+- The local audit-rag project is now the stateful backend for active audit leads: use `add-lead`, `triage-lead`, `suppress-check`, `update-lead`, and `export-contest-summary` instead of relying on one-off `triage-issue` calls.
+- audit-rag is most useful for preserving lead state, ranking candidate families, surfacing false-positive/suppression risks, and producing PoC recipes, not for proving issues. Keep RAG results in research notes until current-code reachability, impact, and PoC are verified.
+- Do not add cases, patterns, recipes, or eval queries discovered during an active audit directly into audit-rag `data/normalized/` or formal `data/eval/retrieval_queries.jsonl`. Store them under `/Users/qwe/Audit/audit-rag/data/provisional/contests/<contest-slug>/` first, then archive to formal RAG only after the final report/submission outcome is confirmed and the record passes curation review. Use `promote-provisional` dry-run first and only add `--confirmed` after manual review.
 
 Foundry validation lessons:
 - `forge test` may update `foundry.lock` and install submodules/dependencies; note this in final status instead of assuming a clean git tree.

@@ -46,8 +46,12 @@ CLI：
 ```bash
 python -m audit_rag.cli.main add-lead <contest-slug> <title> [--text ...] [--component ...]
 python -m audit_rag.cli.main list-leads <contest-slug>
+python -m audit_rag.cli.main update-lead <contest-slug> <lead-id> [--status ...] [--current-blocker ...]
 python -m audit_rag.cli.main triage-lead <contest-slug> <lead-id>
 python -m audit_rag.cli.main suppress-check <contest-slug> <lead-id>
+python -m audit_rag.cli.main export-contest-summary <contest-slug>
+python -m audit_rag.cli.main promote-provisional <contest-slug> [--confirmed]
+python -m audit_rag.cli.main mirror-contest-state <contest-slug> <contest-repo>
 ```
 
 默认落盘：
@@ -55,6 +59,8 @@ python -m audit_rag.cli.main suppress-check <contest-slug> <lead-id>
 ```text
 data/provisional/contests/<contest-slug>/lead-ledger.jsonl
 data/provisional/contests/<contest-slug>/rag-triage/<lead-id>.json
+data/provisional/contests/<contest-slug>/contest-summary.md
+data/provisional/contests/<contest-slug>/promotion-manifest.json
 ```
 
 ## 使用原则
@@ -62,6 +68,8 @@ data/provisional/contests/<contest-slug>/rag-triage/<lead-id>.json
 1. 非 trivial lead 先入 ledger，不要只放在对话里。
 2. 强 lead 用 `triage-lead`，得到 scorecard 和 PoC recipe。
 3. 弱 lead、疑似重复、疑似 QA/Low 的 lead 用 `suppress-check`。
-4. audit-rag 输出不是漏洞证明；当前代码 reachability、impact 和 runnable PoC 仍然必须单独验证。
-5. 活跃审计知识先放 provisional；最终确认后再 promote 到 normalized/eval。
-6. skill Markdown 镜像在 `docs/skills/`，后续本机 skill 更新后运行 `python3.11 scripts/sync_skill_docs.py` 同步到仓库。
+4. PoC、duplicate review 或最终判断后用 `update-lead` 更新状态，不要只改笔记。
+5. 需要跨会话继续或给人工复盘时，用 `export-contest-summary` 生成 contest summary。
+6. audit-rag 输出不是漏洞证明；当前代码 reachability、impact 和 runnable PoC 仍然必须单独验证。
+7. 活跃审计知识先放 provisional；最终确认后先 dry-run `promote-provisional`，人工审校后再 `--confirmed`。
+8. skill Markdown 镜像在 `docs/skills/`，后续本机 skill 更新后运行 `python3.11 scripts/sync_skill_docs.py` 同步到仓库。

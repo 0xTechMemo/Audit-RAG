@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -10,6 +12,7 @@ from pydantic import BaseModel, Field
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _PROVISIONAL_DIR = _REPO_ROOT / "data" / "provisional" / "contests"
+_NORMALIZED_DIR = _REPO_ROOT / "data" / "normalized"
 
 LEAD_STATUSES = {
     "new",
@@ -22,6 +25,15 @@ LEAD_STATUSES = {
     "submission-ready",
     "suppressed",
     "abandoned",
+}
+
+PROMOTION_TARGETS = {
+    "case_report": "case_reports",
+    "vulnerability_pattern": "vulnerability_patterns",
+    "component_checklist": "component_checklists",
+    "validation_recipe": "validation_recipes",
+    "false_positive_case": "false_positive_cases",
+    "contest_note": "contest_notes",
 }
 
 
@@ -67,6 +79,10 @@ def ledger_path(contest_slug: str) -> Path:
 
 def rag_triage_dir(contest_slug: str) -> Path:
     return contest_dir(contest_slug) / "rag-triage"
+
+
+def summary_path(contest_slug: str) -> Path:
+    return contest_dir(contest_slug) / "contest-summary.md"
 
 
 def load_leads(contest_slug: str) -> list[LeadRecord]:
@@ -153,6 +169,16 @@ def update_lead(contest_slug: str, lead_id: str, updates: dict[str, Any]) -> Lea
     raise KeyError(f"lead not found: {lead_id}")
 
 
+def update_lead_record(contest_slug: str, lead_id: str, updates: dict[str, Any]) -> dict[str, Any]:
+    updated = update_lead(contest_slug, lead_id, updates)
+    return {
+        "status": "ok",
+        "action": "update-lead",
+        "ledger_path": str(ledger_path(contest_slug)),
+        "lead": updated.model_dump(),
+    }
+
+
 def get_lead(contest_slug: str, lead_id: str) -> LeadRecord:
     for lead in load_leads(contest_slug):
         if lead.id == lead_id:
@@ -179,3 +205,158 @@ def save_triage_result(contest_slug: str, lead_id: str, result: dict[str, Any]) 
     path = directory / f"{lead_id}.json"
     path.write_text(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _lead_markdown_row(lead: LeadRecord) -> str:
+    blocker = (lead.current_blocker or "").replace("\n", " ")[:120]
+    return (
+        f"| `{lead.id}` | {lead.status} | {lead.severity_guess} | "
+        f"{lead.component or ''} | {lead.title} | {blocker} |"
+    )
+
+
+def export_contest_summary(contest_slug: str) -> dict[str, Any]:
+    leads = load_leads(contest_slug)
+    counts = Counter(lead.status for lead in leads)
+    path = summary_path(contest_slug)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"# Contest Summary: {contest_slug}",
+        "",
+        f"Generated: {now_iso()}",
+        "",
+        "## Status counts",
+        "",
+    ]
+    if counts:
+        for status, count in sorted(counts.items()):
+            lines.append(f"- `{status}`: {count}")
+    else:
+        lines.append("- no leads recorded")
+    lines.extend(
+        [
+            "",
+            "## Leads",
+            "",
+            "| id | status | severity | component | title | blocker / note |",
+            "|---|---:|---:|---|---|---|",
+        ]
+    )
+    lines.extend(_lead_markdown_row(lead) for lead in leads)
+    lines.extend(
+        [
+            "",
+            "## Files",
+            "",
+            f"- ledger: `{ledger_path(contest_slug)}`",
+            f"- rag triage dir: `{rag_triage_dir(contest_slug)}`",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return {
+        "status": "ok",
+        "action": "export-contest-summary",
+        "contest_slug": contest_slug,
+        "summary_path": str(path),
+        "lead_count": len(leads),
+        "status_counts": dict(sorted(counts.items())),
+    }
+
+
+def _candidate_id(candidate: dict[str, Any], record_type: str) -> str:
+    for key in ("id", "pattern_id", "recipe_id", "checklist_id"):
+        value = candidate.get(key)
+        if value:
+            return str(value)
+    return slugify(candidate.get("title") or candidate.get("name") or record_type)
+
+
+def _iter_promotable_files(contest_slug: str) -> list[Path]:
+    base = contest_dir(contest_slug)
+    if not base.exists():
+        return []
+    return sorted(
+        path
+        for path in base.rglob("*.provisional.json")
+        if path.is_file() and "rag-triage" not in path.parts
+    )
+
+
+def promote_provisional(contest_slug: str, confirmed: bool = False) -> dict[str, Any]:
+    """Promote curated provisional candidate records into normalized data.
+
+    This intentionally requires confirmed=True. Active-audit data must not be promoted
+    accidentally; the caller should only set confirmed after final report/submission outcome
+    and manual curation review.
+    """
+
+    planned: list[dict[str, Any]] = []
+    promoted: list[dict[str, Any]] = []
+    for source_path in _iter_promotable_files(contest_slug):
+        payload = json.loads(source_path.read_text(encoding="utf-8"))
+        record_type = payload.get("candidate_record_type")
+        candidate = payload.get("candidate")
+        if record_type not in PROMOTION_TARGETS or not isinstance(candidate, dict):
+            planned.append(
+                {
+                    "source": str(source_path),
+                    "status": "skipped",
+                    "reason": "missing or unsupported candidate_record_type/candidate",
+                }
+            )
+            continue
+        record_id = _candidate_id(candidate, record_type)
+        target = _NORMALIZED_DIR / PROMOTION_TARGETS[record_type] / f"{record_id}.json"
+        item = {
+            "source": str(source_path),
+            "target": str(target),
+            "record_type": record_type,
+            "record_id": record_id,
+        }
+        planned.append(item)
+        if confirmed:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(
+                json.dumps(candidate, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            promoted.append(item)
+    manifest = contest_dir(contest_slug) / "promotion-manifest.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    result = {
+        "status": "ok",
+        "action": "promote-provisional",
+        "confirmed": confirmed,
+        "contest_slug": contest_slug,
+        "planned_count": len(planned),
+        "promoted_count": len(promoted),
+        "planned": planned,
+        "promoted": promoted,
+        "manifest_path": str(manifest),
+        "warning": "confirmed=false is a dry run; use only after final outcome and curation review",
+    }
+    manifest.write_text(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
+    return result
+
+
+def mirror_to_contest_repo(contest_slug: str, contest_repo: str | Path) -> dict[str, Any]:
+    """Copy the audit-rag ledger/triage summary into an active contest repo audit-context.
+
+    The canonical state remains under audit-rag data/provisional; this mirror only makes it
+    easy to inspect from the contest workspace.
+    """
+
+    source = contest_dir(contest_slug)
+    target = Path(contest_repo) / "audit-context" / contest_slug / "audit-rag"
+    if not source.exists():
+        raise FileNotFoundError(f"contest provisional directory not found: {source}")
+    if target.exists():
+        shutil.rmtree(target)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source, target)
+    return {
+        "status": "ok",
+        "action": "mirror-to-contest-repo",
+        "source": str(source),
+        "target": str(target),
+    }

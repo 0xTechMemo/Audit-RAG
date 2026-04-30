@@ -16,6 +16,7 @@
 
 - skill 是流程和质量门槛。
 - audit-rag 是线索台账、降级判断、PoC recipe、provisional 知识和正式 normalized/eval 数据的状态化后端。
+- 后续 active audit 默认使用 `add-lead` / `triage-lead` / `suppress-check` / `update-lead` / `export-contest-summary`；最终确认后先 dry-run `promote-provisional`，再人工确认 `--confirmed`。
 - 这里不要手工改镜像文件；应先改本机 Hermes skill，再运行同步脚本。
 
 ## 同步命令

@@ -15,11 +15,11 @@ Use this skill when working on the user's local project `/Users/qwe/Audit/audit-
 
 ## Why this skill exists
 
-This project is not a generic chatbot. It is a local, contest-oriented smart-contract audit RAG workbench. The user prefers:
+This project is not a generic chatbot and no longer treats chat-style RAG as the product. It is a local, contest-oriented smart-contract audit workbench where audit-rag acts as the stateful backend for the contract-audit skill. The user prefers:
 - Python over Go for this project
 - Chinese-facing documentation
 - terminal-friendly structure and outputs
-- a workflow-aware design where skill defines stages, RAG provides knowledge, and AI performs reasoning
+- a workflow-aware design where skill defines stages/quality gates, audit-rag stores lead state and evidence, RAG provides knowledge, and AI performs reasoning
 
 ## Environment findings
 
@@ -45,7 +45,8 @@ Do not assume `python3` is sufficient. Use `python3.11` for venv creation.
 - Interface: CLI first
 - Docs: Chinese for user-facing project docs
 - Machine-readable config/schema keys: keep English
-- First-stage architecture: `skill-aware triage`
+- First-stage architecture: `lead-ledger` + `candidate-triage` + `suppression-check`
+- RAG is a knowledge recall layer; the project itself is the audit workbench/state backend
 
 ## Recommended repository structure
 
@@ -89,9 +90,15 @@ Minimum docs:
 - `docs/smart-contract-audit-glossary-zh.md`
 
 If adding the workflow-aware architecture, also include:
+- `docs/audit-workbench-direction.md`
 - `docs/skill-aware-architecture.md`
 - `docs/triage-interface.md`
 - `docs/plans/<date>-skill-aware-triage-implementation-plan.md`
+
+If adding the stateful audit backend, include:
+- `src/audit_rag/contest/lead_ledger.py`
+- `src/audit_rag/contest/scorecard.py`
+- tests under `tests/contest/`
 
 ### 3. Use Chinese for human-facing docs
 
@@ -123,6 +130,39 @@ Add these code areas if absent:
 - `src/audit_rag/orchestration/stage_registry.py`
 - `src/audit_rag/contracts/triage.py`
 - `src/audit_rag/retrieval/query_context.py`
+
+## Stateful audit workbench workflow
+
+Current audit-rag direction:
+- skill defines audit process, severity guardrails, C4 packaging, and when to call audit-rag
+- audit-rag stores active lead state, triage evidence, suppression decisions, PoC recipes, and provisional/normalized knowledge
+- RAG provides historical cases/patterns/false-positive/recipe evidence
+- AI reasons over skill rules, current code evidence, and audit-rag evidence
+
+Core CLI commands:
+```bash
+python -m audit_rag.cli.main add-lead <contest-slug> <title> [--text ...] [--component ...]
+python -m audit_rag.cli.main list-leads <contest-slug>
+python -m audit_rag.cli.main update-lead <contest-slug> <lead-id> [--status ...] [--current-blocker ...]
+python -m audit_rag.cli.main triage-lead <contest-slug> <lead-id>
+python -m audit_rag.cli.main suppress-check <contest-slug> <lead-id>
+python -m audit_rag.cli.main export-contest-summary <contest-slug>
+python -m audit_rag.cli.main promote-provisional <contest-slug> [--confirmed]
+python -m audit_rag.cli.main mirror-contest-state <contest-slug> <contest-repo>
+```
+
+Default active-audit files:
+- `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`
+- `data/provisional/contests/<contest-slug>/rag-triage/<lead-id>.json`
+- `data/provisional/contests/<contest-slug>/contest-summary.md`
+- `data/provisional/contests/<contest-slug>/promotion-manifest.json`
+
+Rules:
+1. Non-trivial active-audit leads must be recorded with `add-lead` before deep work.
+2. Strong leads use `triage-lead`; weak/duplicate/QA-prone leads use `suppress-check`.
+3. After PoC, duplicate review, or final decision, update the ledger with `update-lead`.
+4. Cross-session continuation should use `export-contest-summary`.
+5. `promote-provisional` is dry-run by default; only use `--confirmed` after final outcome and manual curation review.
 
 ## Minimal code expectations
 
@@ -396,7 +436,7 @@ Recommended steps:
    - pool status/freeze checks bypassed through flash-loan or alternate operation paths
 7. Pair the normalized additions with retrieval regression:
    - append `data/eval/retrieval_queries.jsonl` entries for case, pattern, checklist, and caution channels
-   - manually run at least one `triage-issue` query that should retrieve the new category
+   - create a temporary lead with `add-lead`, then manually run one `triage-lead` or `suppress-check` smoke test that should retrieve the new category
    - for long-term multi-chain support, add or verify strict runtime tests using `QueryContext(ecosystem=..., language=..., runtime=..., strict_runtime=True)` so EVM/Solidity queries exclude known Soroban records and Soroban queries exclude known Solidity records
 8. When runtime-specific data grows, upgrade the retrieval context rather than creating separate RAGs:
    - `QueryContext` should include `ecosystem`, `language`, `runtime`, and `strict_runtime`
@@ -408,14 +448,14 @@ Recommended steps:
    - `python -m audit_rag.cli.main validate-data`
    - `python -m audit_rag.cli.main --help`
    - `pytest -q`
-   - one manual `triage-issue` smoke test for the new category
+   - one temporary-ledger `triage-lead` / `suppress-check` smoke test for the new category
 9. Update README counts and retrieval coverage wording, then commit and push if the repo is bound to GitHub.
 
 Practical lessons from adding Stellar/Soroban Rust:
 - Code4rena's Blend V2 report was a useful Stellar/Soroban Rust seed because it had many confirmed H/M findings and report-provided GitHub blob links.
 - C4 report pages may contain many duplicate `[H-..]` / `[M-..]` strings from ToC and embedded page data. Use actual `<h2>` finding sections and section-local GitHub links to avoid wrong snippet attribution.
 - For runtime-specific categories, include at least one false-positive/downgrade record early. Example: an internal helper missing `require_auth` is not a finding unless a public entrypoint reaches it without authenticating the same consumed account.
-- Do not rely on `validate-data` alone; it proves schema shape, not retrieval usefulness. Eval queries and a manual `triage-issue` smoke test are required for category expansion.
+- Do not rely on `validate-data` alone; it proves schema shape, not retrieval usefulness. Eval queries plus a temporary-ledger `triage-lead` / `suppress-check` smoke test are required for category expansion.
 
 ## Obsidian / LLM Wiki evaluation and integration workflow
 
