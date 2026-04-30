@@ -7,8 +7,8 @@
 - 项目名：audit-rag
 - 项目路径：`/Users/qwe/Audit/audit-rag`
 - 默认交流语言：中文
-- 当前方向：面向竞赛型智能合约审计的 skill-aware RAG
-- 第一优先工作流：`candidate-triage`
+- 当前方向：面向竞赛型智能合约审计的线索台账、降级判断和 PoC recipe 工作台；RAG 是知识召回层，不是项目本体
+- 第一优先工作流：`lead-ledger` + `candidate-triage` + `suppression-check`
 
 ## 下次最推荐的开场方式
 
@@ -59,11 +59,13 @@
 
 如果你下次没说具体做什么，建议默认按下面顺序推进：
 
-1. 审计中产生的新知识先写入 `data/provisional/contests/<contest-slug>/`，不要直接污染正式 RAG
-2. 针对最新 contest 候选问题运行 `triage-issue`，用 `--component-type` 等上下文参数提升召回质量
-3. 维护 `validate-data`、`pytest` 和 retrieval eval 回归，避免正式数据可用性退化
-4. 等最终报告/提交结果确认后，再把可复用知识从 provisional 归档到 `data/normalized/` 和正式 eval
-5. 扩展更细的 component checklist / recipe，并继续考虑 richer retrieval、向量检索和重排模型
+1. 审计中产生的新 lead 先用 `add-lead` 写入 `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`，不要只散落在对话或 scratch note 里
+2. 对非 trivial lead 运行 `triage-lead`，保存 scorecard 到 `data/provisional/contests/<contest-slug>/rag-triage/`
+3. 对弱问题、疑似重复或疑似 QA/Low 的 lead 运行 `suppress-check`，优先记录降级/压制理由
+4. 维护 `validate-data`、`pytest` 和 retrieval eval 回归，避免正式数据可用性退化
+5. 审计中产生的新知识先写入 `data/provisional/contests/<contest-slug>/`，不要直接污染正式 RAG
+6. 等最终报告/提交结果确认后，再把可复用知识从 provisional 归档到 `data/normalized/` 和正式 eval
+7. 扩展更细的 component checklist / recipe；向量检索和重排模型仍然后置
 
 ## 当前仓库里最重要的文档
 
@@ -100,6 +102,8 @@
 ## 当前代码里最关键的位置
 
 - CLI 入口：`src/audit_rag/cli/main.py`
+- lead ledger：`src/audit_rag/contest/lead_ledger.py`
+- triage scorecard / suppression：`src/audit_rag/contest/scorecard.py`
 - triage 逻辑：`src/audit_rag/retrieval/issue_triage.py`
 - lexical-first 检索：`src/audit_rag/indexing/hybrid_search.py`
 - skill runtime：`src/audit_rag/orchestration/skill_runtime.py`

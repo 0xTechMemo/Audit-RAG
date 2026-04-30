@@ -1,18 +1,17 @@
 # audit-rag
 
-一个面向竞赛型智能合约审计的本地 RAG 工作台。
+一个面向竞赛型智能合约审计的本地线索台账、降级判断和 PoC recipe 工作台。RAG 是其中的知识召回层，不是项目本体。
 
 ## 项目定位
 
-目标是服务 Code4rena、Sherlock 这类比赛型审计流程。在审计辅助中帮助你更快找到类似漏洞、相邻模式、验证路径和降级风险，并在每次真实审计后继续沉淀为更通用的审计 RAG。
+目标是服务 Code4rena、Sherlock 这类比赛型审计流程。项目不再追求“更像聊天式 RAG”，而是作为合约审计 skill 的状态化后端：skill 定义流程、质量门槛和提交规则；audit-rag 记录审计过程中的 lead、triage 证据、false-positive / duplicate 风险、PoC recipe 和可复用知识。
 
 能帮助你：
-- 更快召回相关漏洞模式
-- 更快拿到组件级审计 checklist
-- 更快判断候选问题值不值得继续追
-- 更少浪费时间在误报、弱问题、QA-only 方向上
-- 更快形成验证思路与证据补强路径
-- 把审计结束后已经确认的新模式、false-positive 和 recipe 反哺回本地知识库
+- 让每次审计产生的线索不丢、不重复追
+- 更快召回相关漏洞模式、组件 checklist、validation recipe 和降级风险
+- 更快判断候选问题值不值得继续追，或应该 QA/Low / duplicate / false-positive suppression
+- 为强 lead 生成可执行的验证路线和报告收窄建议
+- 把活跃审计中的候选知识先放入 provisional，审计结束后再把确认过的新模式、false-positive 和 recipe 反哺回正式知识库
 
 活跃审计中的未确认的线索不直接进入正式 RAG。先放在 `data/provisional/contests/<contest-slug>/`，等最终报告或提交结果确认后，再经过归档审校写入 `data/normalized/` 和正式 eval。
 
@@ -22,13 +21,14 @@
 - Python-first
 - local-first
 - CLI-first
-- 结构化知识库优先
+- 线索台账和结构化知识库优先
 
 首版重点：
-- 本地结构化数据
+- lead ledger：活跃审计线索生命周期管理
 - lexical-first 检索 + 元数据/阶段上下文轻量加权
-- 候选问题 triage
-- false positive 抑制
+- 候选问题 triage scorecard
+- false positive / duplicate / downgrade suppression
+- PoC validation recipe 生成
 - skill-aware triage 骨架
 
 当前状态：
@@ -39,19 +39,25 @@
 - `validation_recipes`: 14 条，用于把候选问题转成 PoC / 单测 / 状态机验证路线
 - `contest_notes`: 3 条，用于保存 audit page / mitigation review 上下文
 - `hybrid_search.py`: 已有 lexical-first 实现；同时召回 case / pattern / validation recipe，并保持 false-positive caution 通道独立；支持 `ecosystem` / `language` / `runtime` 软加权和 `strict_runtime` 强过滤
+- `lead-ledger`: 已新增活跃审计线索台账，默认落盘到 `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`
+- `triage-lead`: 已新增基于 RAG 的 lead scorecard，输出 root-cause/pattern 相似度、suppression signals、validation recipe 和 report framing，并保存到 `data/provisional/contests/<contest-slug>/rag-triage/`
+- `suppress-check`: 已新增 duplicate / false-positive / QA downgrade 风险检查入口
+- `docs/skills/`: 已镜像相关 Hermes skill Markdown；后续 skill 更新后运行 `python3.11 scripts/sync_skill_docs.py` 同步进仓库
 - `data/eval/retrieval_queries.jsonl`: 32 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
-- `data/provisional/`: 活跃审计中的候选知识暂存区，不参与正式 RAG 检索；最终确认后再归档
+- `data/provisional/`: 活跃审计中的候选知识和 lead 状态暂存区，不参与正式 RAG 检索；最终确认后再归档
 
 当前架构默认采用：
 - skill 定义阶段、质量门槛、默认输入输出契约
+- audit-rag 作为 skill 的状态化后端，负责 lead ledger、triage 证据、suppression 判断和 PoC recipe
 - RAG 提供 pattern / case / false-positive / validation 证据
-- AI 在阶段上下文和检索证据约束下组织结论
+- AI 在阶段上下文、当前代码证据和检索证据约束下组织结论
 
 ## 目录说明
 
 - `configs/`：项目配置
 - `data/`：原始数据、正式结构化数据、provisional 候选知识、chunk、索引、评测集
 - `docs/`：PRD、schema、标签体系、检索设计、阶段架构、术语表、周计划
+- `src/audit_rag/contest/`：lead ledger、triage scorecard、suppression check 等活跃审计状态化后端
 - `src/audit_rag/orchestration/`：skill-aware 工作流运行时与阶段配置
 - `src/audit_rag/contracts/`：阶段输入输出契约模型
 - `schemas/`：核心知识对象的 JSON Schema
@@ -69,6 +75,22 @@ pip install -e .[dev]
 python -m audit_rag.cli.main --help
 python -m audit_rag.cli.main validate-data
 pytest -q
+```
+
+活跃审计 lead ledger 示例：
+
+```bash
+# 记录一个候选线索；默认写入 data/provisional/contests/<slug>/lead-ledger.jsonl
+python -m audit_rag.cli.main add-lead 2026-04-example \
+  "Bridge accounting clears retry state before async settlement" \
+  --component cross-domain-bridge \
+  --text "CoreWriter emits async action but local retry accounting is cleared before destination funds arrive"
+
+# 对已记录 lead 运行 RAG-backed scorecard，并把原始输出保存到 rag-triage/<lead-id>.json
+python -m audit_rag.cli.main triage-lead 2026-04-example bridge-accounting-clears-retry-state-before-async-settlement
+
+# 专门检查 duplicate / false-positive / QA downgrade 风险
+python -m audit_rag.cli.main suppress-check 2026-04-example bridge-accounting-clears-retry-state-before-async-settlement
 ```
 
 多链/多运行时检索示例：

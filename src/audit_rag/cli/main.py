@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import typer
+from audit_rag.contest.lead_ledger import add_lead, get_lead, list_leads
+from audit_rag.contest.scorecard import suppress_check, triage_and_persist
 from audit_rag.ingestion.pipelines.ingest_reports import run_ingest
 from audit_rag.quality.data_quality import validate_normalized_data
 from audit_rag.retrieval.issue_triage import triage_issue
@@ -8,6 +10,38 @@ from audit_rag.retrieval.query_context import QueryContext
 from audit_rag.services.output_formatter import to_pretty_json
 
 app = typer.Typer(help="audit-rag CLI")
+
+
+def _split_csv(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _query_context(
+    skill_name: str,
+    stage_name: str,
+    component_type: str | None,
+    ecosystem: str | None,
+    language: str | None,
+    runtime: str | None,
+    strict_runtime: bool,
+    audit_goal: str,
+    desired_output_schema: str,
+    require_false_positive_check: bool,
+) -> QueryContext:
+    return QueryContext(
+        skill_name=skill_name,
+        stage_name=stage_name,
+        component_type=component_type,
+        ecosystem=ecosystem,
+        language=language,
+        runtime=runtime,
+        strict_runtime=strict_runtime,
+        audit_goal=audit_goal,
+        desired_output_schema=desired_output_schema,
+        require_false_positive_check=require_false_positive_check,
+    )
 
 
 @app.command()
@@ -44,21 +78,112 @@ def triage_issue_cmd(
         help="Whether to retrieve false-positive/downgrade caution matches.",
     ),
 ) -> None:
-    """Triage a candidate issue statement."""
-    context = QueryContext(
-        skill_name=skill_name,
-        stage_name=stage_name,
-        component_type=component_type,
-        ecosystem=ecosystem,
-        language=language,
-        runtime=runtime,
-        strict_runtime=strict_runtime,
-        audit_goal=audit_goal,
-        desired_output_schema=desired_output_schema,
-        require_false_positive_check=require_false_positive_check,
+    """Triage a free-form candidate issue statement without persisting it."""
+    context = _query_context(
+        skill_name,
+        stage_name,
+        component_type,
+        ecosystem,
+        language,
+        runtime,
+        strict_runtime,
+        audit_goal,
+        desired_output_schema,
+        require_false_positive_check,
     )
     result = triage_issue(text, context)
     print(to_pretty_json(result))
+
+
+@app.command("add-lead")
+def add_lead_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug, e.g. 2026-04-monetrix."),
+    title: str = typer.Argument(..., help="Short lead title."),
+    text: str | None = typer.Option(None, help="Detailed candidate issue statement. Defaults to title."),
+    component: str | None = typer.Option(None, help="Component family, e.g. cross-domain-bridge."),
+    files: str | None = typer.Option(None, help="Comma-separated current repo file paths."),
+    functions: str | None = typer.Option(None, help="Comma-separated function names."),
+    severity_guess: str = typer.Option("unclear", help="Initial severity guess."),
+    status: str = typer.Option("new", help="Initial lead status."),
+) -> None:
+    """Append a candidate lead to data/provisional/contests/<slug>/lead-ledger.jsonl."""
+    result = add_lead(
+        contest_slug=contest_slug,
+        title=title,
+        text=text,
+        component=component,
+        files=_split_csv(files),
+        functions=_split_csv(functions),
+        severity_guess=severity_guess,
+        status=status,
+    )
+    print(to_pretty_json(result))
+
+
+@app.command("list-leads")
+def list_leads_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+    status: str | None = typer.Option(None, help="Optional status filter."),
+) -> None:
+    """List leads in a contest ledger."""
+    print(to_pretty_json(list_leads(contest_slug, status=status)))
+
+
+@app.command("triage-lead")
+def triage_lead_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+    lead_id: str = typer.Argument(..., help="Lead id from the ledger."),
+    skill_name: str = typer.Option("contest-audit", help="Workflow/skill name for retrieval context."),
+    stage_name: str = typer.Option("candidate-triage", help="Audit stage name."),
+    component_type: str | None = typer.Option(None, help="Override component family."),
+    ecosystem: str | None = typer.Option(None, help="Optional ecosystem."),
+    language: str | None = typer.Option(None, help="Optional language."),
+    runtime: str | None = typer.Option(None, help="Optional execution runtime."),
+    strict_runtime: bool = typer.Option(False, "--strict-runtime/--soft-runtime"),
+    require_false_positive_check: bool = typer.Option(True, "--false-positive-check/--no-false-positive-check"),
+) -> None:
+    """Run RAG-backed scorecard triage for a persisted lead and save raw output."""
+    lead = get_lead(contest_slug, lead_id)
+    context = _query_context(
+        skill_name,
+        stage_name,
+        component_type or lead.component,
+        ecosystem,
+        language,
+        runtime,
+        strict_runtime,
+        "judge whether this lead is submission-worthy",
+        "lead-triage-scorecard-v1",
+        require_false_positive_check,
+    )
+    print(to_pretty_json(triage_and_persist(lead, context)))
+
+
+@app.command("suppress-check")
+def suppress_check_cmd(
+    contest_slug: str = typer.Argument(..., help="Contest slug."),
+    lead_id: str = typer.Argument(..., help="Lead id from the ledger."),
+    component_type: str | None = typer.Option(None, help="Override component family."),
+    ecosystem: str | None = typer.Option(None, help="Optional ecosystem."),
+    language: str | None = typer.Option(None, help="Optional language."),
+    runtime: str | None = typer.Option(None, help="Optional execution runtime."),
+    strict_runtime: bool = typer.Option(False, "--strict-runtime/--soft-runtime"),
+) -> None:
+    """Check duplicate, downgrade, and false-positive suppression risks for a lead."""
+    lead = get_lead(contest_slug, lead_id)
+    context = _query_context(
+        "contest-audit",
+        "candidate-triage",
+        component_type or lead.component,
+        ecosystem,
+        language,
+        runtime,
+        strict_runtime,
+        "identify whether this lead should be suppressed, downgraded, or validated further",
+        "suppression-check-v1",
+        True,
+    )
+    print(to_pretty_json(suppress_check(lead, context)))
 
 
 @app.command("validate-data")
