@@ -10,7 +10,7 @@
 
 - `c4-contest-auditor/SKILL.md`：Code4rena 合约审计主流程、scope、suppression、PoC、submission 规则。
 - `c4-contest-auditor/references/c4-intake-notes.md`：C4 intake 参考说明。
-- `audit-rag-bootstrap/SKILL.md`：audit-rag 项目本身的本地约定和数据治理规则。
+- `audit-rag-workbench-maintainer/SKILL.md`：audit-rag workbench 项目本身的维护约定、数据治理规则和同步规则。
 
 ## 边界
 

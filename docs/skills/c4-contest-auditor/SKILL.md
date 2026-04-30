@@ -86,53 +86,27 @@ Expected outputs:
 
 ### 3. Audit-RAG assisted lead ledger / triage
 
-Before or alongside manual auditing, use the local audit-rag project as the stateful backend for leads, triage evidence, downgrade/suppression checks, and PoC recipes. Treat audit-rag output as supporting context only, not as proof of a finding.
+Use the local audit-rag workbench as a thin state backend for active C4 leads. The detailed implementation and maintenance rules live in the separate `audit-rag-workbench-maintainer` skill; keep this C4 skill focused on when to call it during an audit.
 
 Local defaults:
 - audit-rag repo: `/Users/qwe/Audit/audit-rag`
-- Python command: `python3.11` / project venv
-- CLI: `python -m audit_rag.cli.main`
+- CLI: `cd /Users/qwe/Audit/audit-rag && source .venv/bin/activate && python -m audit_rag.cli.main ...`
 
-For each non-trivial lead, persist it before deep work:
-
+Active-audit calling contract:
 ```bash
-cd /Users/qwe/Audit/audit-rag
-source .venv/bin/activate
-python -m audit_rag.cli.main add-lead <contest-slug> \
-  "<short lead title>" \
-  --component "<component-family>" \
-  --text "<candidate issue statement>"
-```
-
-For each strong lead or suspicious invariant break, run persisted scorecard triage:
-
-```bash
+python -m audit_rag.cli.main add-lead <contest-slug> "<short lead title>" --component "<component-family>" --text "<candidate issue statement>"
 python -m audit_rag.cli.main triage-lead <contest-slug> <lead-id>
-```
-
-For weak, duplicate-looking, QA/Low-looking, or false-positive-prone leads, run:
-
-```bash
 python -m audit_rag.cli.main suppress-check <contest-slug> <lead-id>
+python -m audit_rag.cli.main update-lead <contest-slug> <lead-id> [--status ...] [--current-blocker ...]
+python -m audit_rag.cli.main export-contest-summary <contest-slug>
 ```
 
-The current audit-rag backend writes:
-- `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`
-- `data/provisional/contests/<contest-slug>/rag-triage/<lead-id>.json`
-
-Operational discipline:
-- Keep the lead ledger as the canonical active-audit lead state; do not rely only on chat history or scratch notes.
-- In the contest repo’s `first-pass-notes.md`, record only a short summary and a pointer to the saved audit-rag output when useful.
-- Use the scorecard fields before acting on a top match: root-cause similarity, pattern similarity, impact shape, false-positive risks, suppression signals, validation recipe, and report framing.
-- Do not use audit-rag output as proof, a direct report citation, or a substitute for a runnable PoC.
-
-Use the result to:
-- retrieve similar rewarded C4 cases, patterns, recipes, and false-positive cautions
-- identify likely root cause, broken invariant, validation recipe, and downgrade risks
-- decide what local PoC or invariant test is needed next
-- avoid re-chasing duplicate, trusted-role-only, config-only, user-mistake, or QA-only directions
-
-Do not submit or promote a High/Medium solely because audit-rag found similar historical cases. Current contest scope, reachability, impact, and runnable PoC remain mandatory.
+Rules while auditing:
+- Record every non-trivial lead with `add-lead` before deep work.
+- Use `triage-lead` for strong/suspicious leads and `suppress-check` for weak, duplicate-looking, QA/Low-looking, or false-positive-prone leads.
+- Treat audit-rag output as navigation/evidence only, never as proof or a report citation. Current contest scope, reachability, impact, duplicate review, and runnable PoC remain mandatory.
+- Keep active audit knowledge under `/Users/qwe/Audit/audit-rag/data/provisional/contests/<contest-slug>/`; do not write active-audit discoveries directly into normalized/eval data.
+- Update lead status after PoC, duplicate review, or final decision with `update-lead`; export a summary when handing off or resuming.
 
 ### 4. Manual audit
 
@@ -337,9 +311,9 @@ Scope and bootstrap lessons:
 - If a shell command with a destructive prefix such as `rm -rf` is blocked/denied, do not retry that exact command. Continue with non-destructive generation or narrower operations.
 
 Audit-RAG lessons:
-- The local audit-rag project is now the stateful backend for active audit leads: use `add-lead`, `triage-lead`, `suppress-check`, `update-lead`, and `export-contest-summary` instead of relying on one-off `triage-issue` calls.
-- audit-rag is most useful for preserving lead state, ranking candidate families, surfacing false-positive/suppression risks, and producing PoC recipes, not for proving issues. Keep RAG results in research notes until current-code reachability, impact, and PoC are verified.
-- Do not add cases, patterns, recipes, or eval queries discovered during an active audit directly into audit-rag `data/normalized/` or formal `data/eval/retrieval_queries.jsonl`. Store them under `/Users/qwe/Audit/audit-rag/data/provisional/contests/<contest-slug>/` first, then archive to formal RAG only after the final report/submission outcome is confirmed and the record passes curation review. Use `promote-provisional` dry-run first and only add `--confirmed` after manual review.
+- audit-rag is the stateful backend for active audit leads, but this C4 skill should only keep the thin calling contract. Full repo/CLI/schema maintenance belongs to `audit-rag-workbench-maintainer`.
+- Use `add-lead`, `triage-lead`, `suppress-check`, `update-lead`, and `export-contest-summary` during live audits instead of relying on one-off `triage-issue` calls.
+- Keep active-audit discoveries provisional until final outcome and manual curation; do not write them directly to normalized/eval data.
 
 Foundry validation lessons:
 - `forge test` may update `foundry.lock` and install submodules/dependencies; note this in final status instead of assuming a clean git tree.

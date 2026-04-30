@@ -10,8 +10,8 @@ SKILL_DOCS = {
     / ".hermes/skills/software-development/c4-contest-auditor/SKILL.md",
     "c4-contest-auditor/references/c4-intake-notes.md": Path.home()
     / ".hermes/skills/software-development/c4-contest-auditor/references/c4-intake-notes.md",
-    "audit-rag-bootstrap/SKILL.md": Path.home()
-    / ".hermes/skills/software-development/audit-rag-bootstrap/SKILL.md",
+    "audit-rag-workbench-maintainer/SKILL.md": Path.home()
+    / ".hermes/skills/software-development/audit-rag-workbench-maintainer/SKILL.md",
 }
 
 

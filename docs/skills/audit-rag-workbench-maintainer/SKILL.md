@@ -1,17 +1,17 @@
 ---
-name: audit-rag-bootstrap
-description: Bootstrap and extend the local audit-rag project at /Users/qwe/Audit/audit-rag with Python 3.11, Chinese docs, and a skill-aware triage architecture.
+name: audit-rag-workbench-maintainer
+description: Maintain and extend the local audit-rag workbench at /Users/qwe/Audit/audit-rag — the stateful backend for smart-contract audit leads, triage evidence, suppression checks, PoC recipes, and provisional-to-normalized knowledge.
 version: 1.0.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [python, rag, smart-contract-audit, project-bootstrap, documentation]
+    tags: [python, rag, smart-contract-audit, audit-workbench, documentation]
 ---
 
-# Audit RAG Bootstrap
+# Audit RAG Workbench Maintainer
 
-Use this skill when working on the user's local project `/Users/qwe/Audit/audit-rag`, especially for initial scaffolding, documentation alignment, or extending the first-stage `candidate-triage` architecture.
+Use this skill when maintaining or extending the user's local project `/Users/qwe/Audit/audit-rag`. This is the implementation/maintenance skill for the audit-rag workbench itself, not the live C4 contest-audit workflow skill.
 
 ## Why this skill exists
 
@@ -20,6 +20,14 @@ This project is not a generic chatbot and no longer treats chat-style RAG as the
 - Chinese-facing documentation
 - terminal-friendly structure and outputs
 - a workflow-aware design where skill defines stages/quality gates, audit-rag stores lead state and evidence, RAG provides knowledge, and AI performs reasoning
+
+## Boundary with c4-contest-auditor
+
+Keep this skill separate from `c4-contest-auditor`:
+- `c4-contest-auditor` is the live contest-audit director: C4 intake, scope, known findings, severity guardrails, validation discipline, and submission packaging.
+- `audit-rag-workbench-maintainer` is the backend maintainer: audit-rag repo structure, CLI/data/schema/test changes, skill-doc syncing, provisional/normalized policy, retrieval evals, and wiki/Obsidian integration boundaries.
+
+Do not copy full C4 submission/reporting rules into this skill. Do not copy audit-rag implementation details into `c4-contest-auditor` beyond the thin active-audit calling contract.
 
 ## Environment findings
 
@@ -32,11 +40,11 @@ Do not assume `python3` is sufficient. Use `python3.11` for venv creation.
 
 ## When to use
 
-- Creating the initial repository skeleton
-- Adding or updating docs under `docs/`
-- Extending the `candidate-triage` flow
-- Aligning code structure with the skill-aware architecture
-- Verifying the local Python environment and test baseline
+- Maintaining the audit-rag repository, CLI, schemas, docs, tests, or data pipelines
+- Extending lead-ledger, triage scorecard, suppress-check, promote-provisional, or runtime/category support
+- Adding curated normalized data, provisional promotion rules, retrieval evals, or wiki/Obsidian boundaries
+- Updating project docs under `docs/` and syncing related skill Markdown into the repo
+- Verifying the local Python environment, test baseline, data validation, and ruff gate
 
 ## Required defaults
 
@@ -64,14 +72,14 @@ Keep or extend these key directories:
 - `src/audit_rag/contracts/`
 - `tests/`
 
-## Bootstrap steps
+## Maintenance steps
 
 ### 1. Inspect before writing
 
 Check whether `/Users/qwe/Audit/audit-rag` exists and what is already there.
 Prefer `search_files` and `read_file` to inspect current files before editing.
 
-### 2. Create or update the Python project skeleton
+### 2. Create or update the Python project skeleton when needed
 
 Minimum top-level files:
 - `README.md`
@@ -500,9 +508,9 @@ Avoid:
 
 Overlap note:
 - Use the generic `llm-wiki` and `obsidian` skills for wiki mechanics.
-- Use this `audit-rag-bootstrap` section for audit-rag-specific boundaries, source-of-truth policy, and quality gates.
+- Use this `audit-rag-workbench-maintainer` section for audit-rag-specific boundaries, source-of-truth policy, and quality gates.
 
-## Good next steps after bootstrap
+## Good next steps after maintenance changes
 
 In priority order:
 1. add first sample JSON records under `data/normalized/`
