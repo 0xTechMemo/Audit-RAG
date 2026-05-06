@@ -1,0 +1,66 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reflector V3 Findings & Analysis Report (2025-10)",
+  "protocol_name": "Reflector V3",
+  "project_repo": "https://github.com/code-423n4/2025-10-reflector",
+  "language": "rust-soroban",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "stellar-soroban-rust"
+  ],
+  "id": "c4-2025-10-reflector-v3-h-01",
+  "source_url": "https://code4rena.com/reports/2025-10-reflector-v3#h-01-set_invocation_costs_config-fails-to-authorize-admin-allowing-anyone-to-set-invocation-costs",
+  "severity": "high",
+  "component_types": [
+    "oracle-config",
+    "admin-configuration",
+    "access-control"
+  ],
+  "finding_title": "set_invocation_costs_config() fails to authorize admin allowing anyone to set invocation costs",
+  "summary": "Reflector V3 的 Soroban oracle 合约中，价格查询收费配置入口缺少管理员授权，任意用户可以修改 invocation cost 配置，破坏 oracle 查询费用和可用性假设。",
+  "root_cause": "a public Soroban configuration entrypoint mutates oracle fee parameters without binding the call to the admin Address via require_auth",
+  "broken_invariants": [
+    "only the configured admin may mutate oracle fee or invocation-cost configuration",
+    "public configuration entrypoints must authenticate the same authority whose state they change"
+  ],
+  "attack_preconditions": [
+    "攻击者可以调用公开 Soroban entrypoint",
+    "配置变更会影响后续 oracle/beam 查询收费或调用可用性"
+  ],
+  "attacker_capability": "external Soroban user able to submit transactions with arbitrary config parameters",
+  "trigger_actions": [
+    "call set_invocation_costs_config without admin authorization",
+    "set costs to values that overcharge, undercharge, or disrupt expected query economics"
+  ],
+  "impact": {
+    "type": "unauthorized-configuration-mutation",
+    "description": "attacker-controlled oracle cost configuration can disrupt consumers and fee accounting"
+  },
+  "why_not_higher": "保留 final report 的 High；是否构成直接资金损失取决于下游协议是否把该 oracle 作为清算/借贷安全边界。",
+  "why_not_lower": "未授权配置修改影响 oracle 费用与服务可用性，且无需管理员权限即可触发。",
+  "common_false_positive_angles": [
+    "确认当前 entrypoint 是否确实 public 且缺少 require_auth",
+    "确认被修改配置不是仅测试环境或不可达状态",
+    "若只有治理/管理员可调用，则应降级为配置风险"
+  ],
+  "mitigations": [
+    "在所有配置 mutation entrypoint 中对 admin Address 执行 require_auth，并为非 admin 调用添加回归测试。"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-10-reflector/blob/21676f3d353ed72e53d53ee9a3538542221a1cb2/beam-contract/src/lib.rs#L404",
+      "note": "Code4rena final report permalink"
+    }
+  ],
+  "tags": [
+    "require-auth",
+    "admin-config",
+    "oracle-fees",
+    "unauthorized-mutation",
+    "soroban-rust",
+    "stellar-rust"
+  ]
+}

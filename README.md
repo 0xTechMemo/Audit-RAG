@@ -32,11 +32,11 @@
 - skill-aware triage 骨架
 
 当前状态：
-- `case_reports`: 107 条，主召回流只放 Medium/High 和少量手写高质量样本；已新增 Stellar/Soroban Rust 类目样本
-- `false_positive_cases`: 22 条，用于降级、误报和 QA-like caution 通道
-- `vulnerability_patterns`: 22 条，已从现有 C4 样本提炼出 oracle、connector、liquidation、access control、withdrawal、reward、cross-domain queue、Stellar/Soroban Rust 等核心模式
-- `component_checklists`: 9 条，用于组件级 intake / 模块审计辅助，包含 `stellar-soroban-rust-checklist`
-- `validation_recipes`: 14 条，用于把候选问题转成 PoC / 单测 / 状态机验证路线
+- `case_reports`: 113 条，主召回流只放 Medium/High 和少量手写高质量样本；已新增 Stellar/Soroban Rust 类目样本，以及 K2 借贷审计可复用的 Silo v3 hook / solvency / oracle 配置案例
+- `false_positive_cases`: 23 条，用于降级、误报和 QA-like caution 通道
+- `vulnerability_patterns`: 25 条，已从现有 C4 样本提炼出 oracle、connector、liquidation、access control、withdrawal、reward、cross-domain queue、Stellar/Soroban Rust、hook callback、stale solvency cache 等核心模式
+- `component_checklists`: 10 条，用于组件级 intake / 模块审计辅助，包含 `stellar-soroban-rust-checklist` 和 `k2-soroban-lending-external-report-checklist`
+- `validation_recipes`: 15 条，用于把候选问题转成 PoC / 单测 / 状态机验证路线
 - `contest_notes`: 3 条，用于保存 audit page / mitigation review 上下文
 - `hybrid_search.py`: 已有 lexical-first 实现；同时召回 case / pattern / validation recipe，并保持 false-positive caution 通道独立；支持 `ecosystem` / `language` / `runtime` 软加权和 `strict_runtime` 强过滤
 - `lead-ledger`: 已新增活跃审计线索台账，默认落盘到 `data/provisional/contests/<contest-slug>/lead-ledger.jsonl`

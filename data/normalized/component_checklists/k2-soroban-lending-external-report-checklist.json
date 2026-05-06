@@ -1,0 +1,62 @@
+{
+  "id": "k2-soroban-lending-external-report-checklist",
+  "component_type": "stellar-soroban-lending-protocol",
+  "description": "从 Reflector V3、Blend V2、Silo/Wise/Frax/Venus/Aave 类借贷审计报告抽出的 K2 专用审计 checklist，重点覆盖 Soroban 授权/TTL/oracle 与借贷协议账户、清算、状态迁移。",
+  "core_invariants": [
+    "每个 value-moving 或 config-mutating entrypoint 必须 require_auth 正确主体",
+    "价格查询必须使用完整、未过期、pair-specific 的 oracle 记录",
+    "repay/transfer/liquidate/migrate 后账户 solvency 配置必须从权威余额和 reserve 状态重算",
+    "所有普通路径、flash-loan 路径、defaulting/alternate liquidation 路径必须执行相同 pool/reserve status gate",
+    "hook/callback/external invocation 前后不能消费过期的检查结果",
+    "TTL/Vec/Map 维护不能因用户可控长度、零值或 partial update panic"
+  ],
+  "trust_boundaries": [
+    "external user vs authenticated Address",
+    "oracle publisher vs lending consumer",
+    "token/aToken/debt-token transfer hook vs account data",
+    "admin config vs public entrypoint",
+    "callback recipient vs pool accounting"
+  ],
+  "common_bug_classes": [
+    "missing require_auth",
+    "oracle partial-update latest-price failure",
+    "stale solvency/account cache",
+    "hook callback transitional-state reentrancy",
+    "alternate liquidation/status bypass",
+    "bad debt and liquidation rounding edge case",
+    "dynamic config encoding corruption"
+  ],
+  "check_items": [
+    "列出所有 pub fn：标记是否转移资产、改配置、改价格、改账户；逐个确认 require_auth 主体",
+    "对 oracle latest/last/twap/cross-price：构造 partial update，确认不会返回 None 或不完整价格给清算/借贷路径",
+    "对 aToken/debt token transfer：测试 repay 清零后转入相反债务，account data 是否重算",
+    "对 flash loan / alternate liquidation / defaulting path：确认 paused/frozen/inactive/status 与普通 borrow/withdraw/liquidate 一致",
+    "对 hook/callback：画出 check-effect-callback-final-transfer 顺序，回调后重新校验 health factor/reserve status",
+    "对 TTL/Vec：新增零值、重复资产、长度不一致、过期 ledger 后调用维护函数，确认不 panic/DoS",
+    "对低 decimal/1 wei collateral：检查 rounding up/down 是否能制造坏账或永久清算失败"
+  ],
+  "test_ideas": [
+    "Soroban unit test: complete price at t1, one-leg update at t2, x_last_price/latest used by lending must still find t1 pair-complete price",
+    "position sequence: deposit -> borrow -> repay -> debt-token transfer-in -> withdraw/borrow; assert health factor uses current reserve side",
+    "malicious callback/hook test: mutate collateral/debt/status between check and final transfer; expect revert or post-callback recheck",
+    "TTL regression: add asset with zero/default TTL fields then call extend_ttl; expect bounded success or explicit validation error, not panic"
+  ],
+  "related_pattern_ids": [
+    "soroban-require-auth-entrypoint-bypass-pattern",
+    "soroban-storage-ttl-rent-dos-pattern",
+    "oracle-partial-update-latest-price-pattern",
+    "lending-stale-solvency-config-transfer-pattern",
+    "hook-callback-transitional-state-reentrancy-pattern",
+    "soroban-integer-math-low-denominator-pattern"
+  ],
+  "tags": [
+    "soroban-rust",
+    "stellar-rust",
+    "lending",
+    "oracle-pricing",
+    "liquidation",
+    "solvency",
+    "storage-ttl",
+    "require-auth"
+  ]
+}

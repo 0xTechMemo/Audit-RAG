@@ -1,0 +1,67 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reflector V3 Findings & Analysis Report (2025-10)",
+  "protocol_name": "Reflector V3",
+  "project_repo": "https://github.com/code-423n4/2025-10-reflector",
+  "language": "rust-soroban",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "stellar-soroban-rust"
+  ],
+  "id": "c4-2025-10-reflector-v3-m-05",
+  "source_url": "https://code4rena.com/reports/2025-10-reflector-v3#m-05-x_last_price-uses-global-timestamp-incorrectly",
+  "severity": "medium",
+  "component_types": [
+    "oracle-pricing",
+    "cross-price",
+    "time-series-data"
+  ],
+  "finding_title": "x_last_price uses global timestamp incorrectly",
+  "summary": "Reflector V3 的 x_last_price 使用全局最新 timestamp 计算某一 asset pair 的 cross-price。若最新快照只更新了其中一个资产，该 pair 在全局最新时间没有完整记录，函数返回 None，尽管上一个时间点存在有效 cross-price。",
+  "root_cause": "cross-asset latest-price lookup uses a global last timestamp instead of the latest timestamp where both asset legs have records",
+  "broken_invariants": [
+    "latest cross-price must be resolved from the newest complete pair-specific observation, not from an unrelated global tick",
+    "partial oracle updates must not make otherwise valid pair prices disappear"
+  ],
+  "attack_preconditions": [
+    "oracle 支持 partial asset updates",
+    "下游消费者依赖 x_last_price 作为可用性或清算价格输入"
+  ],
+  "attacker_capability": "price publisher or market participant able to cause partial updates in the oracle history",
+  "trigger_actions": [
+    "publish an update for only one leg of a cross pair",
+    "call x_last_price for the pair whose other leg has no record at the global latest timestamp"
+  ],
+  "impact": {
+    "type": "oracle-availability-or-stale-price-failure",
+    "description": "valid pair price may return None after partial update, creating DoS or inconsistent downstream behavior"
+  },
+  "why_not_higher": "需要下游协议依赖该 API 且影响具体价值流；单独 oracle API 错误通常是 Medium。",
+  "why_not_lower": "final report 作为 Medium 收录，且会系统性破坏 latest cross-price 可用性。",
+  "common_false_positive_angles": [
+    "确认当前消费者是否改用 x_prices/x_twap 的回溯逻辑",
+    "确认 partial update 是否真实可发生",
+    "若只有 off-chain caller 多付费或重试即可恢复，可能降级"
+  ],
+  "mitigations": [
+    "按 asset pair 维护 latest complete timestamp，或在 x_last_price 中向后扫描直到找到两边都有记录的最近时间。"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-10-reflector/blob/21676f3d353ed72e53d53ee9a3538542221a1cb2/oracle/src/price_oracle.rs#L218",
+      "note": "global latest timestamp source"
+    }
+  ],
+  "tags": [
+    "oracle-pricing",
+    "partial-update",
+    "cross-price",
+    "timestamp",
+    "availability",
+    "soroban-rust",
+    "stellar-rust"
+  ]
+}

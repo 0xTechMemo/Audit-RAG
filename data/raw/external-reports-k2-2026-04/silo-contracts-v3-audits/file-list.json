@@ -1,0 +1,178 @@
+[
+  {
+    "name": "Silo - Defaulting Liquidations - Final Report .pdf",
+    "path": "audits/v2/Silo - Defaulting Liquidations - Final Report .pdf",
+    "sha": "bb6ccd2378cf45b8e20cb180905c1384386039c2",
+    "size": 560372,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/Silo%20-%20Defaulting%20Liquidations%20-%20Final%20Report%20.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/Silo%20-%20Defaulting%20Liquidations%20-%20Final%20Report%20.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/bb6ccd2378cf45b8e20cb180905c1384386039c2",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v2/Silo%20-%20Defaulting%20Liquidations%20-%20Final%20Report%20.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/Silo%20-%20Defaulting%20Liquidations%20-%20Final%20Report%20.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/bb6ccd2378cf45b8e20cb180905c1384386039c2",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/Silo%20-%20Defaulting%20Liquidations%20-%20Final%20Report%20.pdf"
+    }
+  },
+  {
+    "name": "25-11-2024_Certora.pdf",
+    "path": "audits/v2/reports/25-11-2024_Certora.pdf",
+    "sha": "b518d145526f283e7c3beabb3734a8c5a51ecb34",
+    "size": 409620,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/reports/25-11-2024_Certora.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/reports/25-11-2024_Certora.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/b518d145526f283e7c3beabb3734a8c5a51ecb34",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v2/reports/25-11-2024_Certora.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/reports/25-11-2024_Certora.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/b518d145526f283e7c3beabb3734a8c5a51ecb34",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/reports/25-11-2024_Certora.pdf"
+    }
+  },
+  {
+    "name": "Silo - Liquidation-by-Defaulting - Draft Report.pdf",
+    "path": "audits/v2/reports/Silo - Liquidation-by-Defaulting - Draft Report.pdf",
+    "sha": "7f36c413e54dfa833bedf2fc8f979ff93440590f",
+    "size": 552841,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/reports/Silo%20-%20Liquidation-by-Defaulting%20-%20Draft%20Report.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/reports/Silo%20-%20Liquidation-by-Defaulting%20-%20Draft%20Report.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/7f36c413e54dfa833bedf2fc8f979ff93440590f",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v2/reports/Silo%20-%20Liquidation-by-Defaulting%20-%20Draft%20Report.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/reports/Silo%20-%20Liquidation-by-Defaulting%20-%20Draft%20Report.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/7f36c413e54dfa833bedf2fc8f979ff93440590f",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/reports/Silo%20-%20Liquidation-by-Defaulting%20-%20Draft%20Report.pdf"
+    }
+  },
+  {
+    "name": "generate_call_graphs.py",
+    "path": "audits/v2/scripts/generate_call_graphs.py",
+    "sha": "ffe4c28712235fcc175cd740301bc04ade9ae67c",
+    "size": 3448,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/scripts/generate_call_graphs.py?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/scripts/generate_call_graphs.py",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/ffe4c28712235fcc175cd740301bc04ade9ae67c",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v2/scripts/generate_call_graphs.py",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/scripts/generate_call_graphs.py?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/ffe4c28712235fcc175cd740301bc04ade9ae67c",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/scripts/generate_call_graphs.py"
+    }
+  },
+  {
+    "name": "SiloHookV2.sol.Address.call-graph.png",
+    "path": "audits/v2/scripts/out/call-graph/SiloHookV2.sol.Address.call-graph.png",
+    "sha": "9d1dc6c1704bec9cee75a6cc49819834ca06cb91",
+    "size": 88274,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/scripts/out/call-graph/SiloHookV2.sol.Address.call-graph.png?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/scripts/out/call-graph/SiloHookV2.sol.Address.call-graph.png",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/9d1dc6c1704bec9cee75a6cc49819834ca06cb91",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v2/scripts/out/call-graph/SiloHookV2.sol.Address.call-graph.png",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2/scripts/out/call-graph/SiloHookV2.sol.Address.call-graph.png?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/9d1dc6c1704bec9cee75a6cc49819834ca06cb91",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/scripts/out/call-graph/SiloHookV2.sol.Address.call-graph.png"
+    }
+  },
+  {
+    "name": "0xJCN Audit · GitHub.pdf",
+    "path": "audits/v3/0xJCN Audit · GitHub.pdf",
+    "sha": "3bd31d7b98d957f8aa02bfa9c36676314a197cdb",
+    "size": 330830,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/0xJCN%20Audit%20%C2%B7%20GitHub.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/0xJCN%20Audit%20%C2%B7%20GitHub.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/3bd31d7b98d957f8aa02bfa9c36676314a197cdb",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v3/0xJCN Audit · GitHub.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/0xJCN%20Audit%20%C2%B7%20GitHub.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/3bd31d7b98d957f8aa02bfa9c36676314a197cdb",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/0xJCN%20Audit%20%C2%B7%20GitHub.pdf"
+    }
+  },
+  {
+    "name": "2026-02_Security Review_Silo Finance_Silo_v3.pdf",
+    "path": "audits/v3/2026-02_Security Review_Silo Finance_Silo_v3.pdf",
+    "sha": "687438929f84bb617b5db5cdd4e3a9e2a44df0c8",
+    "size": 486274,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/2026-02_Security%20Review_Silo%20Finance_Silo_v3.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/2026-02_Security%20Review_Silo%20Finance_Silo_v3.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/687438929f84bb617b5db5cdd4e3a9e2a44df0c8",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v3/2026-02_Security%20Review_Silo%20Finance_Silo_v3.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/2026-02_Security%20Review_Silo%20Finance_Silo_v3.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/687438929f84bb617b5db5cdd4e3a9e2a44df0c8",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/2026-02_Security%20Review_Silo%20Finance_Silo_v3.pdf"
+    }
+  },
+  {
+    "name": "Silo - Description - Final Report (2ad3aec).pdf",
+    "path": "audits/v3/Silo - Description - Final Report (2ad3aec).pdf",
+    "sha": "5884f640dc9b57db9b70baf7cd35b4304e2d7848",
+    "size": 560351,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/Silo%20-%20Description%20-%20Final%20Report%20(2ad3aec).pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20-%20Description%20-%20Final%20Report%20(2ad3aec).pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/5884f640dc9b57db9b70baf7cd35b4304e2d7848",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v3/Silo%20-%20Description%20-%20Final%20Report%20(2ad3aec).pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/Silo%20-%20Description%20-%20Final%20Report%20(2ad3aec).pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/5884f640dc9b57db9b70baf7cd35b4304e2d7848",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20-%20Description%20-%20Final%20Report%20(2ad3aec).pdf"
+    }
+  },
+  {
+    "name": "Silo - Silo - Aggregator and Manageable Oracle - Final Report.pdf",
+    "path": "audits/v3/Silo - Silo - Aggregator and Manageable Oracle - Final Report.pdf",
+    "sha": "8ce944b5151e04749ce160127f1b990e1ce14c18",
+    "size": 329950,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/Silo%20-%20Silo%20-%20Aggregator%20and%20Manageable%20Oracle%20-%20Final%20Report.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20-%20Silo%20-%20Aggregator%20and%20Manageable%20Oracle%20-%20Final%20Report.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/8ce944b5151e04749ce160127f1b990e1ce14c18",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v3/Silo%20-%20Silo%20-%20Aggregator%20and%20Manageable%20Oracle%20-%20Final%20Report.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/Silo%20-%20Silo%20-%20Aggregator%20and%20Manageable%20Oracle%20-%20Final%20Report.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/8ce944b5151e04749ce160127f1b990e1ce14c18",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20-%20Silo%20-%20Aggregator%20and%20Manageable%20Oracle%20-%20Final%20Report.pdf"
+    }
+  },
+  {
+    "name": "Silo Enterprise Continuous Audit.pdf",
+    "path": "audits/v3/Silo Enterprise Continuous Audit.pdf",
+    "sha": "6eb0ffcbc256ef0b879663f8e69b4d795990a707",
+    "size": 351511,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/6eb0ffcbc256ef0b879663f8e69b4d795990a707",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/6eb0ffcbc256ef0b879663f8e69b4d795990a707",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf"
+    }
+  },
+  {
+    "name": "report-cli-cantina-silo-finance-0124.pdf",
+    "path": "audits/v3/report-cli-cantina-silo-finance-0124.pdf",
+    "sha": "6752228720bf4e090e7a59887a96f5704e3139d9",
+    "size": 456679,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/report-cli-cantina-silo-finance-0124.pdf?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/report-cli-cantina-silo-finance-0124.pdf",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/6752228720bf4e090e7a59887a96f5704e3139d9",
+    "download_url": "https://raw.githubusercontent.com/silo-finance/silo-contracts-v3/develop/audits/v3/report-cli-cantina-silo-finance-0124.pdf",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3/report-cli-cantina-silo-finance-0124.pdf?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/blobs/6752228720bf4e090e7a59887a96f5704e3139d9",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/report-cli-cantina-silo-finance-0124.pdf"
+    }
+  }
+]

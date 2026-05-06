@@ -1,0 +1,34 @@
+[
+  {
+    "name": "v2",
+    "path": "audits/v2",
+    "sha": "931ce09d7f4d53dc56b842aa72a1a1d9cf328224",
+    "size": 0,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/tree/develop/audits/v2",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/trees/931ce09d7f4d53dc56b842aa72a1a1d9cf328224",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v2?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/trees/931ce09d7f4d53dc56b842aa72a1a1d9cf328224",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/tree/develop/audits/v2"
+    }
+  },
+  {
+    "name": "v3",
+    "path": "audits/v3",
+    "sha": "8a1fed224e017d799617e2384b5e2cecbd7744ab",
+    "size": 0,
+    "url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3?ref=develop",
+    "html_url": "https://github.com/silo-finance/silo-contracts-v3/tree/develop/audits/v3",
+    "git_url": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/trees/8a1fed224e017d799617e2384b5e2cecbd7744ab",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/silo-finance/silo-contracts-v3/contents/audits/v3?ref=develop",
+      "git": "https://api.github.com/repos/silo-finance/silo-contracts-v3/git/trees/8a1fed224e017d799617e2384b5e2cecbd7744ab",
+      "html": "https://github.com/silo-finance/silo-contracts-v3/tree/develop/audits/v3"
+    }
+  }
+]

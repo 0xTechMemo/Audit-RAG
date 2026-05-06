@@ -1,0 +1,65 @@
+{
+  "source_type": "public-audit-report",
+  "source_name": "Silo Finance silo-contracts-v3 audits directory",
+  "protocol_name": "Silo Finance v3",
+  "project_repo": "https://github.com/silo-finance/silo-contracts-v3",
+  "language": "solidity",
+  "validation_status": "reported-by-public-audit",
+  "validation_style": [
+    "public-audit-pdf",
+    "manual-pdf-text-extraction"
+  ],
+  "id": "public-silo-v3-continuous-m-01-stale-collateral-silo",
+  "source_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf",
+  "severity": "medium",
+  "component_types": [
+    "lending-accounting",
+    "debt-transfer",
+    "solvency"
+  ],
+  "finding_title": "Stale borrower collateral silo assignment corrupts solvency configuration for debt recipients",
+  "summary": "Silo Enterprise continuous audit 报告中，借款人还清一侧债务后，borrowerCollateralSilo 未被重置；之后通过 debt-share transfer 接收另一侧债务时，solvency 配置仍解析到旧 collateral silo，使同资产抵押/债务按 1:1 假设估值。K2 应重点映射到 aToken/debt token transfer、position owner 转移、reserve id/bitmap/cache 未刷新。",
+  "root_cause": "recipient debt-transfer logic reuses a stale collateral-side assignment instead of recomputing the recipient's solvency configuration for the transferred debt silo",
+  "broken_invariants": [
+    "a borrower's solvency configuration must be derived from live debt and collateral positions after every debt-share transfer",
+    "repaying one position must not leave stale collateral-side state that authorizes a later incompatible debt position"
+  ],
+  "attack_preconditions": [
+    "债务份额可转让或存在等价 position transfer 路径",
+    "账户在一个市场清债后仍保留旧 collateral-side/cache 状态"
+  ],
+  "attacker_capability": "user able to repay, receive transferred debt shares, and arrange collateral/debt side ordering",
+  "trigger_actions": [
+    "fully repay debt in one silo while stale collateral assignment remains",
+    "receive debt shares from the opposite silo",
+    "invoke solvency/withdraw/borrow path that consumes stale configuration"
+  ],
+  "impact": {
+    "type": "solvency-bypass-or-bad-debt",
+    "description": "account can be valued under the wrong collateral/debt relationship, allowing unsafe borrowing or bad debt"
+  },
+  "why_not_higher": "报告定级 Medium；实际升级需要证明可稳定提取资金或制造不可回收坏账。",
+  "why_not_lower": "破坏借贷协议核心 solvency 配置，且通过普通用户转账/还款顺序触发。",
+  "common_false_positive_angles": [
+    "若当前实现禁止 debt token transfer 或每次 transfer 后全量重算 account data，则不成立",
+    "只存在 view cache 错误但所有安全写路径重新读取权威状态时应降级"
+  ],
+  "mitigations": [
+    "在 debt transfer/repay/position migration 后强制重算或清空 borrower collateral assignment；安全路径不要消费陈旧 cache。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf",
+      "note": "PDF: stale borrowerCollateralSilo/debt recipients two-way markets Medium finding"
+    }
+  ],
+  "tags": [
+    "debt-transfer",
+    "stale-cache",
+    "solvency",
+    "collateral-accounting",
+    "position-transfer",
+    "lending"
+  ]
+}

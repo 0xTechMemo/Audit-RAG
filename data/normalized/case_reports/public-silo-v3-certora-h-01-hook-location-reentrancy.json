@@ -1,0 +1,64 @@
+{
+  "source_type": "public-audit-report",
+  "source_name": "Silo Finance silo-contracts-v3 audits directory",
+  "protocol_name": "Silo Finance v3",
+  "project_repo": "https://github.com/silo-finance/silo-contracts-v3",
+  "language": "solidity",
+  "validation_status": "reported-by-public-audit",
+  "validation_style": [
+    "public-audit-pdf",
+    "manual-pdf-text-extraction"
+  ],
+  "id": "public-silo-v3-certora-h-01-hook-location-reentrancy",
+  "source_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/reports/25-11-2024_Certora.pdf",
+  "severity": "high",
+  "component_types": [
+    "lending-hook",
+    "collateral-accounting",
+    "reentrancy"
+  ],
+  "finding_title": "Faulty hook location can lead to drains from legitimate hooks",
+  "summary": "Silo v2/v3 public audit notes that hook placement after checks but before final collateral/debt state updates can allow a legitimate hook configuration with reentrancy to free collateral tied to debt and drain a silo. K2 可借此检查 Soroban hook/callback、token receiver、flash-loan callback 或 compose-style 外部调用是否发生在不安全的中间状态。",
+  "root_cause": "external hook execution occurs after safety checks but before the debt/collateral relationship is finalized, allowing reentrant state changes to invalidate the checked assumptions",
+  "broken_invariants": [
+    "checks that bind debt to collateral must remain true across any external hook/callback before final state mutation",
+    "value-moving hooks must not observe or mutate partially transitioned borrower state"
+  ],
+  "attack_preconditions": [
+    "协议支持可配置 hook/callback 或外部 token interaction",
+    "hook 执行点处于 checks-effects-interactions 违背的中间状态"
+  ],
+  "attacker_capability": "borrower or hook participant able to trigger the value-moving flow and reenter through an allowed hook path",
+  "trigger_actions": [
+    "enter a flow that passes solvency/collateral checks",
+    "use hook/callback to create or move debt/collateral before final assignment",
+    "withdraw collateral that is no longer correctly bound to debt"
+  ],
+  "impact": {
+    "type": "loss-of-funds",
+    "description": "collateral can be freed from debt accounting and withdrawn while debt remains or is misassigned"
+  },
+  "why_not_higher": "保留 public audit 的 High；跨到 K2 时必须证明可重入/回调点真实存在且可改变同一安全边界。",
+  "why_not_lower": "hook 位置错误能破坏核心借贷抵押-债务绑定，影响资金安全。",
+  "common_false_positive_angles": [
+    "Soroban 单笔调用回滚不等于没有 callback 风险；但必须找到真实外部调用或 contract invocation 边界",
+    "如果 hook 在所有状态更新完成后执行，或 reentrancy guard 覆盖同一状态，则不成立"
+  ],
+  "mitigations": [
+    "将 hook 放在不会依赖过期检查的位置；对回调期间可变的账户/抵押/债务状态在返回后重新校验。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v2/reports/25-11-2024_Certora.pdf",
+      "note": "PDF: H-01 Faulty hook location can lead to drains from legitimate hooks"
+    }
+  ],
+  "tags": [
+    "hook-callback",
+    "reentrancy",
+    "checks-effects-interactions",
+    "collateral-accounting",
+    "lending"
+  ]
+}

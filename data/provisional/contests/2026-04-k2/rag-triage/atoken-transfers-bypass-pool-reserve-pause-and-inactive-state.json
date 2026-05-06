@@ -1,0 +1,109 @@
+{
+  "kind": "lead-triage-scorecard",
+  "scorecard": {
+    "contest_slug": "2026-04-k2",
+    "false_positive_risks": [
+      "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+      "address(0) blacklist interaction is a configuration edge case that blocks burns rather than enabling unauthorized asset extraction",
+      "native collateral minting unavailability is an asset-configuration limitation while redemption remains available; no direct theft path is shown"
+    ],
+    "impact_shape": [
+      "accounting-mismatch"
+    ],
+    "lead_id": "atoken-transfers-bypass-pool-reserve-pause-and-inactive-state",
+    "matching_cases": [
+      "c4-2023-07-reserve-m-15",
+      "c4-2024-11-ethena-labs-m-02",
+      "c4-2023-07-reserve-m-11",
+      "c4-2023-06-angle-m-07",
+      "c4-2025-04-kinetiq-m-03"
+    ],
+    "matching_patterns": [],
+    "pattern_similarity": "weak-or-none",
+    "probable_severity_range": "medium",
+    "raw_triage": {
+      "attacker_profile": "需要基于当前代码确认；历史相似案例仅提供候选攻击画像",
+      "broken_invariant": "token transfers must settle accrued rewards for sender and receiver before balance changes",
+      "false_positive_risks": [
+        "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+        "address(0) blacklist interaction is a configuration edge case that blocks burns rather than enabling unauthorized asset extraction",
+        "native collateral minting unavailability is an asset-configuration limitation while redemption remains available; no direct theft path is shown"
+      ],
+      "issue_text": "aToken.transfer_internal calls router.validate_and_finalize_transfer, but that router hook validates caller/HF/collateral bitmaps and does not enforce global pool pause or reserve paused/active flags. Direct aToken transfers may continue moving collateral shares during emergency pause/reserve pause/inactive state.",
+      "likely_root_cause": "StaticATokenLM transfer reward update gap can cause rewards to be lost or assigned to the wrong holder during token transfers",
+      "matching_cases": [
+        "c4-2023-07-reserve-m-15",
+        "c4-2024-11-ethena-labs-m-02",
+        "c4-2023-07-reserve-m-11",
+        "c4-2023-06-angle-m-07",
+        "c4-2025-04-kinetiq-m-03"
+      ],
+      "matching_patterns": [],
+      "next_validation_steps": [
+        "定位当前目标仓库中与 top matched case 对应的函数和状态变量",
+        "检查历史 root_cause 是否在当前代码中真实存在，而不是仅标题相似",
+        "用最小 PoC 或状态转移推演证明影响与权限/时序条件",
+        "对照 false_positive_risks 排除 privileged-only、unsupported-by-design、dust-loss 等降级路径"
+      ],
+      "notes": [
+        "Retrieved 8 positive matches and 5 caution matches from local normalized data."
+      ],
+      "probable_severity_range": "medium",
+      "query_type": "candidate_issue",
+      "skill_name": "contest-audit",
+      "sources": [
+        "local://case_reports/c4-2023-07-reserve-m-15",
+        "local://case_reports/c4-2024-11-ethena-labs-m-02",
+        "local://case_reports/c4-2023-07-reserve-m-11",
+        "local://case_reports/c4-2023-06-angle-m-07",
+        "local://case_reports/c4-2025-04-kinetiq-m-03",
+        "local://false_positive_cases/c4-2024-11-ethena-labs-fp-low-12",
+        "local://false_positive_cases/c4-2024-11-ethena-labs-fp-low-09",
+        "local://false_positive_cases/c4-2024-11-ethena-labs-fp-low-05"
+      ],
+      "stage_name": "candidate-triage",
+      "submission_blockers": [
+        "需要用当前目标仓库代码验证 reachability、权限边界和资产影响，不能只依赖历史相似案例",
+        "需要排除 caution/false-positive 通道召回的降级条件"
+      ],
+      "validation_gap": "尚未把当前目标仓库的具体代码路径、PoC 和数值影响接入验证链路"
+    },
+    "report_framing": {
+      "avoid_claims": [
+        "不要把历史相似案例当作当前漏洞证明",
+        "不要扩大到 PoC 未证明的入口、资产或状态维度",
+        "不要在 final submission 中写 audit-rag / V12 diligence 过程说明，除非用户要求"
+      ],
+      "recommended_title_shape": "[M-xx] <broken invariant> causes <concrete impact>",
+      "root_cause_focus": "只链接直接造成漏洞的当前仓库代码行；历史 RAG 来源仅作内部校准"
+    },
+    "root_cause_similarity": "exact-or-strong",
+    "status_before": "new",
+    "submission_blockers": [
+      "需要用当前目标仓库代码验证 reachability、权限边界和资产影响，不能只依赖历史相似案例",
+      "需要排除 caution/false-positive 通道召回的降级条件"
+    ],
+    "suppression_signals": [
+      "false-positive-caution-present",
+      "trusted_or_config",
+      "user_mistake"
+    ],
+    "title": "aToken transfers bypass pool/reserve pause and inactive state",
+    "validation_recipe": {
+      "goal": "用当前目标仓库证明 reachability、权限边界、状态变化和影响，而不是只证明历史相似",
+      "minimum_assertions": [
+        "当前代码路径可由有效攻击者或普通用户触发",
+        "关键状态变量或资产余额出现可观测错误变化",
+        "影响不是仅由 trusted-role misconfiguration、用户误操作或 unsupported token 触发",
+        "若作为 HM，PoC 或状态推演能支撑 C4 severity"
+      ],
+      "steps": [
+        "定位当前目标仓库中与 top matched case 对应的函数和状态变量",
+        "检查历史 root_cause 是否在当前代码中真实存在，而不是仅标题相似",
+        "用最小 PoC 或状态转移推演证明影响与权限/时序条件",
+        "对照 false_positive_risks 排除 privileged-only、unsupported-by-design、dust-loss 等降级路径"
+      ]
+    }
+  },
+  "status": "ok"
+}

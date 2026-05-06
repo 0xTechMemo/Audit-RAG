@@ -1,0 +1,76 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Reflector V3 Findings & Analysis Report (2025-10)",
+  "protocol_name": "Reflector V3",
+  "project_repo": "https://github.com/code-423n4/2025-10-reflector",
+  "language": "rust-soroban",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "stellar-soroban-rust"
+  ],
+  "id": "c4-2025-10-reflector-v3-m-02",
+  "source_url": "https://code4rena.com/reports/2025-10-reflector-v3#m-02-expiration-vector-length-mismatch-causes-panic-in-extend_ttl-when-assets-are-added-with-zero-initial-expiration-period",
+  "severity": "medium",
+  "component_types": [
+    "oracle-asset-registry",
+    "storage-ttl",
+    "vector-accounting"
+  ],
+  "finding_title": "Expiration vector length mismatch causes panic in extend_ttl() when assets are added with zero initial expiration period",
+  "summary": "Reflector V3 在 asset registry 中维护资产列表与 expiration vector。零初始 expiration 的新增资产会造成两个向量长度不一致，后续 extend_ttl() 按资产索引读取 expiration 时 panic，导致维护或查询流程 DoS。",
+  "root_cause": "parallel vectors for assets and expirations are allowed to diverge when zero-expiration assets are added, so TTL extension indexes into missing expiration entries",
+  "broken_invariants": [
+    "every registered asset must have a corresponding expiration/TTL entry before indexed maintenance",
+    "storage lifecycle maintenance must not panic on valid asset-addition parameters"
+  ],
+  "attack_preconditions": [
+    "攻击者或授权数据发布者能够添加带零初始 expiration 的资产",
+    "后续有人调用 extend_ttl 或依赖 TTL 维护流程"
+  ],
+  "attacker_capability": "user or publisher able to trigger asset registration parameters accepted by the contract",
+  "trigger_actions": [
+    "add asset with zero initial expiration period",
+    "call extend_ttl after asset and expiration vectors have diverged"
+  ],
+  "impact": {
+    "type": "denial-of-service",
+    "description": "TTL extension panics, blocking maintenance of oracle assets and potentially affecting dependent price feeds"
+  },
+  "why_not_higher": "影响主要是可用性/维护 DoS，不是直接盗取资产。",
+  "why_not_lower": "Soroban storage TTL 是链上状态生命周期边界；维护入口 panic 会影响真实 oracle 可用性。",
+  "common_false_positive_angles": [
+    "确认 vector 长度是否已经通过统一 struct/map 绑定",
+    "确认零 expiration 是否被所有入口拒绝",
+    "确认 panic 是否导致整笔交易回滚而不是安全跳过"
+  ],
+  "mitigations": [
+    "资产与 expiration 使用同一结构存储，或在添加资产时始终写入默认 expiration；extend_ttl 前校验长度一致。"
+  ],
+  "snippets": [
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-10-reflector/blob/main/oracle/src/assets.rs#L54-L80",
+      "note": "asset storage update path"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-10-reflector/blob/main/oracle/src/assets.rs#L109-L161",
+      "note": "TTL extension path"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2025-10-reflector/blob/main/oracle/src/assets.rs#L93-L106",
+      "note": "expiration access path"
+    }
+  ],
+  "tags": [
+    "storage-ttl",
+    "parallel-vector",
+    "panic-dos",
+    "oracle-registry",
+    "soroban-rust",
+    "stellar-rust"
+  ]
+}

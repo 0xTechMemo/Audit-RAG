@@ -1,0 +1,22 @@
+{
+  "id": "liquidation-rounding-minimal-collateral-low-fp-01",
+  "issue_claim": "rounding up one wei collateral during liquidation lets a borrower self-liquidate and create bad debt",
+  "why_it_looked_bad": "liquidation math that rounds up can allocate an entire dust collateral amount for a tiny debt repayment, which resembles a bad-debt creation vector in minimal collateral states",
+  "why_not_valid": "the public Silo/Cantina report treated this as Low/Informational because the scenario depended on economically unlikely 1 wei collateral representing meaningful value and no working PoC was produced",
+  "classification": "low-or-theoretical",
+  "downgrade_reason": "requires extreme token valuation/min-collateral configuration and lacks demonstrated profitable path; use it as a rounding test idea, not an HM finding by itself",
+  "trust_assumption": "market parameters enforce sane minimum collateral or token decimal/value constraints",
+  "when_it_could_be_real": [
+    "the protocol supports low-decimal/high-value collateral where 1 unit is economically meaningful",
+    "rounding direction combines with self-liquidation to create measurable bad debt",
+    "no minimum collateral/debt size prevents dust positions"
+  ],
+  "source_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/report-cli-cantina-silo-finance-0124.pdf",
+  "tags": [
+    "liquidation",
+    "rounding",
+    "dust-collateral",
+    "bad-debt",
+    "false-positive-caution"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "source_type": "public-audit-report",
+  "source_name": "Silo Finance silo-contracts-v3 audits directory",
+  "protocol_name": "Silo Finance v3",
+  "project_repo": "https://github.com/silo-finance/silo-contracts-v3",
+  "language": "solidity",
+  "validation_status": "reported-by-public-audit",
+  "validation_style": [
+    "public-audit-pdf",
+    "manual-pdf-text-extraction"
+  ],
+  "id": "public-silo-v3-continuous-m-02-dynamic-oracle-calldata",
+  "source_url": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf",
+  "severity": "medium",
+  "component_types": [
+    "oracle-factory",
+    "calldata-encoding",
+    "configuration"
+  ],
+  "finding_title": "Dynamic oracle factory calldata can be silently corrupted by overwriting the tail word with a deterministic salt",
+  "summary": "Silo Enterprise continuous audit 报告中，oracle factory calldata 的最后 32 bytes 被写入 deterministic salt；若 calldata 布局含 dynamic tail data，该写入会静默覆盖动态数据，部署出错误 oracle 配置。K2/Soroban 可类比检查 Address/BytesN/Vec 编码、salt、factory init args 与 oracle config 的边界。",
+  "root_cause": "factory initialization logic mutates the last calldata word without proving that the word is a reserved salt field rather than dynamic oracle configuration data",
+  "broken_invariants": [
+    "oracle factory initialization must preserve every semantic config field supplied by the caller",
+    "deterministic deployment salts must not alias dynamic calldata tail data"
+  ],
+  "attack_preconditions": [
+    "oracle/factory 接受 caller-supplied encoded config",
+    "编码布局中存在 dynamic bytes/vector/string 或可变长尾部"
+  ],
+  "attacker_capability": "market creator or configurer able to choose oracle factory calldata layout and parameters",
+  "trigger_actions": [
+    "supply dynamic oracle factory calldata whose tail contains semantic config",
+    "factory overwrites the tail with salt during deployment",
+    "deployed oracle uses corrupted config in pricing paths"
+  ],
+  "impact": {
+    "type": "oracle-misconfiguration",
+    "description": "oracle may be deployed with silently corrupted parameters, causing wrong prices or unusable markets"
+  },
+  "why_not_higher": "通常需要市场创建/配置权限且影响依赖具体 oracle 参数；默认 Medium。",
+  "why_not_lower": "错误发生在 oracle 配置源头，可能影响清算、借贷额度和市场可用性。",
+  "common_false_positive_angles": [
+    "如果 init args 是固定结构且最后 32 bytes 明确预留给 salt，则不成立",
+    "如果配置权限完全可信且市场上线前有独立验证，通常降级为治理/配置风险"
+  ],
+  "mitigations": [
+    "使用标准 factory interface 显式传 salt；避免原地修改任意 calldata；部署后验证 oracle config 与预期完全一致。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/silo-finance/silo-contracts-v3/blob/develop/audits/v3/Silo%20Enterprise%20Continuous%20Audit.pdf",
+      "note": "PDF: dynamic oracle calldata overwritten by deterministic salt Medium finding"
+    }
+  ],
+  "tags": [
+    "oracle-config",
+    "calldata-encoding",
+    "factory-deployment",
+    "deterministic-address",
+    "configuration-integrity"
+  ]
+}

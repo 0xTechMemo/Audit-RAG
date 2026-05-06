@@ -1,0 +1,31 @@
+{
+  "id": "soroban-lending-transfer-solvency-cache-recipe",
+  "pattern_id": "lending-stale-solvency-config-transfer-pattern",
+  "test_style": "soroban-unit-or-integration-test",
+  "goal": "验证 K2 账户在 repay、aToken/debt token transfer、position migration 后不会复用旧 collateral/reserve/solvency cache。",
+  "setup_requirements": [
+    "两个 reserve 或两个 silo/pool side，支持借贷和 token/share transfer",
+    "测试能读取或推断 account data/health factor/borrow capacity"
+  ],
+  "minimal_state": [
+    "Alice 在 reserve A 有抵押并借出 reserve B",
+    "Alice 完全 repay 或迁移使旧 debt/collateral side 应被清空",
+    "Bob 持有另一侧 debt/share 并能转给 Alice"
+  ],
+  "attacker_actions": [
+    "Alice 清掉旧债务但保留可能的旧 account config/cache",
+    "Bob 将 debt/share/position 转入 Alice",
+    "Alice 调用 withdraw/borrow/liquidate-sensitive path"
+  ],
+  "assertions": [
+    "Alice 的 account data 使用转入后真实 debt/reserve 配置重算",
+    "旧 collateral side/cache 不会让同资产债务按 1:1 或错误 oracle 估值",
+    "若转入会导致不健康，transfer 或后续 value-moving 操作必须 revert"
+  ],
+  "common_failures": [
+    "只更新余额不更新 account config bitmap",
+    "view 函数正确但写路径消费 stale cache",
+    "transfer hook 中跳过 borrow/withdraw 使用的 status/solvency check"
+  ],
+  "notes": "来自 Silo v3 stale borrowerCollateralSilo Medium finding，映射到 K2 时优先看 aToken/debt-token transfer 与 account-data helper 的权威输入。"
+}
