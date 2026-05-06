@@ -1,0 +1,74 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Wise Lending Findings & Analysis Report (2024-02)",
+  "protocol_name": "Wise Lending",
+  "project_repo": "https://github.com/code-423n4/2024-02-wise-lending",
+  "language": "solidity",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "evm-solidity"
+  ],
+  "id": "c4-2024-02-wise-lending-m-14",
+  "source_url": "https://code4rena.com/reports/2024-02-wise-lending#m-14-current-heartbeat-implementation-may-lead-to-a-prolonged-dos-for-chainlink-oracles",
+  "severity": "medium",
+  "component_types": [
+    "oracle-pricing",
+    "heartbeat",
+    "market-availability"
+  ],
+  "finding_title": "Current heartbeat implementation may lead to a prolonged DoS for Chainlink Oracles",
+  "summary": "Wise Lending 通过 recalibrate/heartbeat 逻辑判断 Chainlink 是否死亡；攻击者可使 oracle 在较长时间内被判定不可用，影响借贷、提现、清算等所有依赖价格路径。",
+  "root_cause": "oracle heartbeat calibration can be externally driven into a state where valid feeds are treated as dead for an extended period",
+  "broken_invariants": [
+    "oracle liveness checks must not be griefable into disabling an otherwise valid market",
+    "borrow, withdraw, and liquidation availability must not depend on attacker-triggerable heartbeat miscalibration"
+  ],
+  "attack_preconditions": [
+    "价格路径依赖 heartbeat/liveness check",
+    "recalibrate 或等价校准入口可被非可信主体触发，或可在不安全时机执行"
+  ],
+  "attacker_capability": "external caller able to trigger oracle recalibration/liveness update at adversarial timing",
+  "impact": {
+    "type": "oracle-market-dos",
+    "description": "affected market operations revert, potentially delaying liquidation and increasing bad-debt risk"
+  },
+  "why_not_higher": "主要为 oracle availability/market DoS；直接坏账需要配合价格剧烈变动或清算窗口错失。",
+  "why_not_lower": "价格不可用会阻塞核心借贷与清算路径，不只是单用户 inconvenience。",
+  "common_false_positive_angles": [
+    "若校准入口 trusted-only 且操作流程保证安全时机，则攻击面较小",
+    "若 consumer 有 fallback oracle 或 bounded stale mode，则影响降低"
+  ],
+  "mitigations": [
+    "使用 oracle 原生 heartbeat 或可信治理设置；限制 recalibrate 权限并避免在会造成 DoS 的状态下更新 heartbeat。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending-findings/issues/87",
+      "note": "Code4rena finding issue"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/1240a22a3bbffc13d5f8ae6300ef45de5edc7c19/contracts/WiseOracleHub/OracleHelper.sol#L579-L585",
+      "note": "dead oracle check"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/1240a22a3bbffc13d5f8ae6300ef45de5edc7c19/contracts/WiseOracleHub/OracleHelper.sol#L512-L514",
+      "note": "oracle heartbeat data path"
+    }
+  ],
+  "tags": [
+    "oracle-pricing",
+    "heartbeat",
+    "market-dos",
+    "liquidation",
+    "lending"
+  ],
+  "trigger_actions": [
+    "call recalibrate when feed timing makes heartbeat overly strict or stale",
+    "cause subsequent oracle reads to revert as dead for a prolonged interval"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Wise Lending Findings & Analysis Report (2024-02)",
+  "protocol_name": "Wise Lending",
+  "project_repo": "https://github.com/code-423n4/2024-02-wise-lending",
+  "language": "solidity",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "evm-solidity"
+  ],
+  "id": "c4-2024-02-wise-lending-h-02",
+  "source_url": "https://code4rena.com/reports/2024-02-wise-lending#h-02-user-can-erase-their-position-debt-for-free",
+  "severity": "high",
+  "component_types": [
+    "lending-accounting",
+    "position-token-list",
+    "bad-debt-repayment"
+  ],
+  "finding_title": "User can erase their position debt for free",
+  "summary": "Wise Lending 在 bad debt repay 路径中把未校验的 poolToken 传入 position token list 删除逻辑；当 token 不在用户数组中时，内部删除流程会清掉错误的 debt position，使用户可以免费抹除债务。",
+  "root_cause": "position cleanup assumes the supplied pool token exists in the user position token list and deletes debt state without proving membership",
+  "broken_invariants": [
+    "repay or bad-debt helper code must only remove position entries that are actually owned by the position",
+    "debt accounting must not be zeroed by passing a token that is absent from the authoritative position token list"
+  ],
+  "attack_preconditions": [
+    "攻击者拥有或控制一个借贷 position",
+    "存在可触发 bad-debt repay / position cleanup 的路径，且该路径可传入不属于 position 的 token"
+  ],
+  "attacker_capability": "position owner or external caller able to reach the bad-debt repayment cleanup path with a crafted pool token",
+  "trigger_actions": [
+    "call the bad-debt repayment path with a repay token absent from the user token array",
+    "let _removePositionData delete the wrong/last debt position entry"
+  ],
+  "impact": {
+    "type": "debt-erasure",
+    "description": "attacker can erase position debt without paying the corresponding liability, creating protocol bad debt"
+  },
+  "why_not_higher": "保留 final report High；实际范围取决于可清除债务规模和触发路径。",
+  "why_not_lower": "直接破坏债务账本，导致免费债务清除。",
+  "common_false_positive_angles": [
+    "确认当前协议的 position token list 是否是权威账本，而不是可重建缓存",
+    "确认删除函数是否先验证 membership；如果不存在可外部触发的 cleanup 路径则不能类比为 HM"
+  ],
+  "mitigations": [
+    "删除 position 数据前验证 token membership；若 token 不在 position token list 中直接 revert。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending-findings/issues/215",
+      "note": "Code4rena finding issue"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/79186b243d8553e66358c05497e5ccfd9488b5e2/contracts/FeeManager/FeeManager.sol#L816-L866",
+      "note": "bad debt repayment path"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/79186b243d8553e66358c05497e5ccfd9488b5e2/contracts/MainHelper.sol#L667-L727",
+      "note": "position data removal logic"
+    }
+  ],
+  "tags": [
+    "position-accounting",
+    "membership-check",
+    "debt-erasure",
+    "bad-debt",
+    "lending"
+  ]
+}

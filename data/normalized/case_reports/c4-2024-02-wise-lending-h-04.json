@@ -1,0 +1,74 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Wise Lending Findings & Analysis Report (2024-02)",
+  "protocol_name": "Wise Lending",
+  "project_repo": "https://github.com/code-423n4/2024-02-wise-lending",
+  "language": "solidity",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "evm-solidity"
+  ],
+  "id": "c4-2024-02-wise-lending-h-04",
+  "source_url": "https://code4rena.com/reports/2024-02-wise-lending#h-04-liquidators-can-pay-less-than-required-to-completely-liquidate-the-private-collateral-balance-of-an-uncollateralized-position",
+  "severity": "high",
+  "component_types": [
+    "liquidation",
+    "collateral-accounting",
+    "lending-accounting"
+  ],
+  "finding_title": "Liquidators can pay less than required to completely liquidate private collateral balance",
+  "summary": "Wise Lending 的 liquidation receive amount 计算在处理 uncollateralized/private collateral 时先消费了普通余额，过晚检查 uncollateralized 标志，使 liquidator 可以少付 shares 却拿走更多 collateral，增加坏账。",
+  "root_cause": "liquidation payout calculation mixes private/uncollateralized collateral with normal balance before enforcing the uncollateralized-position restriction",
+  "broken_invariants": [
+    "liquidation payout must be bounded by the debt shares actually repaid",
+    "private or uncollateralized balances must not be seized using pricing paths intended for normal collateral"
+  ],
+  "attack_preconditions": [
+    "存在 liquidation path 可选择 receive token 或 private collateral balance",
+    "目标 position 已处于可清算或 uncollateralized 状态"
+  ],
+  "attacker_capability": "liquidator able to choose liquidation tokens and amount",
+  "impact": {
+    "type": "underpaid-liquidation",
+    "description": "liquidator steals user collateral and leaves/increases protocol bad debt"
+  },
+  "why_not_higher": "保留 final report High；需要当前代码中存在同类 private/uncollateralized collateral separation。",
+  "why_not_lower": "影响是清算路径下的直接 collateral over-seizure 与坏账增加。",
+  "common_false_positive_angles": [
+    "如果所有 collateral balance 在清算前已统一按同一权重/风险参数重算，则不适用",
+    "如果 liquidator 不能选择 receive token 或不能触达 private collateral，则降级"
+  ],
+  "mitigations": [
+    "在计算 receive amount 之前先拒绝或隔离 uncollateralized/private collateral；不要在普通 collateral payout 中混用该余额。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending-findings/issues/33",
+      "note": "Code4rena finding issue"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/79186b243d8553e66358c05497e5ccfd9488b5e2/contracts/WiseSecurity/WiseSecurityHelper.sol#L760-L786",
+      "note": "receive amount helper"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/79186b243d8553e66358c05497e5ccfd9488b5e2/contracts/WiseCore.sol#L564-L586",
+      "note": "liquidation flow"
+    }
+  ],
+  "tags": [
+    "liquidation",
+    "collateral-accounting",
+    "bad-debt",
+    "underpayment",
+    "lending"
+  ],
+  "trigger_actions": [
+    "liquidate a vulnerable position while specifying receive token tied to private/uncollateralized balance",
+    "pay fewer debt shares than the seized collateral value requires"
+  ]
+}

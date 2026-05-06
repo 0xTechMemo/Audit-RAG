@@ -32,7 +32,7 @@
 - skill-aware triage 骨架
 
 当前状态：
-- `case_reports`: 113 条，主召回流只放 Medium/High 和少量手写高质量样本；已新增 Stellar/Soroban Rust 类目样本，以及 K2 借贷审计可复用的 Silo v3 hook / solvency / oracle 配置案例
+- `case_reports`: 117 条，主召回流只放 Medium/High 和少量手写高质量样本；已新增 Stellar/Soroban Rust 类目样本，以及 K2 借贷审计可复用的 Reflector V3、Wise Lending、Silo v3 hook / solvency / oracle 配置案例
 - `false_positive_cases`: 23 条，用于降级、误报和 QA-like caution 通道
 - `vulnerability_patterns`: 25 条，已从现有 C4 样本提炼出 oracle、connector、liquidation、access control、withdrawal、reward、cross-domain queue、Stellar/Soroban Rust、hook callback、stale solvency cache 等核心模式
 - `component_checklists`: 10 条，用于组件级 intake / 模块审计辅助，包含 `stellar-soroban-rust-checklist` 和 `k2-soroban-lending-external-report-checklist`
@@ -46,7 +46,7 @@
 - `export-contest-summary`: 已新增 contest lead 总结导出，默认写入 `data/provisional/contests/<contest-slug>/contest-summary.md`
 - `promote-provisional`: 已新增 provisional→normalized 的安全归档入口，默认 dry-run，必须显式 `--confirmed` 才会写入正式 normalized
 - `docs/skills/`: 已镜像相关 Hermes skill Markdown；后续 skill 更新后运行 `python3.11 scripts/sync_skill_docs.py` 同步进仓库
-- `data/eval/retrieval_queries.jsonl`: 32 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
+- `data/eval/retrieval_queries.jsonl`: 41 条手工 recall 查询样本，已覆盖 case / false-positive / pattern / checklist，并纳入 `pytest` 回归测试
 - `data/provisional/`: 活跃审计中的候选知识和 lead 状态暂存区，不参与正式 RAG 检索；最终确认后再归档
 
 当前架构默认采用：

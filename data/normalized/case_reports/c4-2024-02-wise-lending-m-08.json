@@ -1,0 +1,74 @@
+{
+  "source_type": "code4rena-report",
+  "source_name": "Code4rena Wise Lending Findings & Analysis Report (2024-02)",
+  "protocol_name": "Wise Lending",
+  "project_repo": "https://github.com/code-423n4/2024-02-wise-lending",
+  "language": "solidity",
+  "validation_status": "confirmed-in-final-report",
+  "validation_style": [
+    "public-contest-finding",
+    "report-included-code-links",
+    "evm-solidity"
+  ],
+  "id": "c4-2024-02-wise-lending-m-08",
+  "source_url": "https://code4rena.com/reports/2024-02-wise-lending#m-08-borrowers-can-dos-liquidations-by-repaying-as-little-as-1-share",
+  "severity": "medium",
+  "component_types": [
+    "liquidation",
+    "debt-shares",
+    "rounding"
+  ],
+  "finding_title": "Borrowers can DoS liquidations by repaying as little as 1 share",
+  "summary": "Wise Lending 的 liquidation 最大可还 shares 校验采用精确上限并在超过时 revert。借款人可先还 1 share 改变 maxShares，使 liquidator 使用原本有效的清算数量时超过新上限并 revert，形成清算 DoS。",
+  "root_cause": "liquidation share-limit validation reverts on slightly stale repay amounts instead of clamping to the current maximum liquidatable shares",
+  "broken_invariants": [
+    "a dust repayment must not make otherwise valid liquidation transactions revert indefinitely",
+    "liquidation max-share checks should tolerate small concurrent debt-share changes or clamp to live bounds"
+  ],
+  "attack_preconditions": [
+    "借款人处于可清算状态且能在 liquidator 交易前执行极小 repay",
+    "liquidation function 要求 liquidator 传入 shares 且超过当前 maxShares 时 revert"
+  ],
+  "attacker_capability": "liquidable borrower able to repay dust debt shares before liquidation attempts",
+  "impact": {
+    "type": "liquidation-dos",
+    "description": "borrower can delay or block liquidations, increasing bad-debt risk during price movement"
+  },
+  "why_not_higher": "主要是 liquidation availability / bad-debt risk，需市场价格继续恶化才扩大为直接损失。",
+  "why_not_lower": "dust repay 可以反复阻断清算窗口，影响协议坏账控制。",
+  "common_false_positive_angles": [
+    "若 liquidation 输入是 amount 而非 shares 且内部按 live debt clamp，则不适用",
+    "若 repay 与 liquidation 原子排序无法被借款人利用，则影响降低"
+  ],
+  "mitigations": [
+    "当 requested shares 超过当前 maxShares 时 clamp 到 maxShares，而不是直接 revert；或允许 liquidator 使用 close-factor percentage。"
+  ],
+  "snippets": [
+    {
+      "role": "finding-reference",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending-findings/issues/237",
+      "note": "Code4rena finding issue"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/main/contracts/WiseSecurity/WiseSecurityHelper.sol#L876-L900",
+      "note": "max shares check"
+    },
+    {
+      "role": "affected-code",
+      "code": "https://github.com/code-423n4/2024-02-wise-lending/blob/main/contracts/WiseLending.sol#L1204-L1238",
+      "note": "partial liquidation path"
+    }
+  ],
+  "tags": [
+    "liquidation",
+    "dust-repay",
+    "debt-shares",
+    "dos",
+    "bad-debt"
+  ],
+  "trigger_actions": [
+    "repay 1 debt share before liquidation",
+    "cause liquidator supplied share amount to exceed recomputed maxShares and revert"
+  ]
+}
