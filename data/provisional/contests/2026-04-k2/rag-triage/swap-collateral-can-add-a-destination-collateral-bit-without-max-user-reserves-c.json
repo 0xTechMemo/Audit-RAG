@@ -1,0 +1,115 @@
+{
+  "kind": "lead-triage-scorecard",
+  "scorecard": {
+    "contest_slug": "2026-04-k2",
+    "false_positive_risks": [
+      "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+      "the public Silo/Cantina report treated this as Low/Informational because the scenario depended on economically unlikely 1 wei collateral representing meaningful value and no working PoC was produced",
+      "dual whitelist/blacklist role assignment is an admin hygiene issue unless it creates a demonstrated value-moving bypass"
+    ],
+    "impact_shape": [
+      "accounting-mismatch",
+      "dos"
+    ],
+    "lead_id": "swap-collateral-can-add-a-destination-collateral-bit-without-max-user-reserves-c",
+    "matching_cases": [
+      "c4-2024-04-dyad-h-07",
+      "c4-2024-04-dyad-h-09",
+      "c4-2024-04-dyad-h-06",
+      "c4-2024-04-dyad-m-01",
+      "c4-2025-03-nudgexyz-m-03"
+    ],
+    "matching_patterns": [
+      "lending-stale-solvency-config-transfer-pattern"
+    ],
+    "pattern_similarity": "adjacent",
+    "probable_severity_range": "high",
+    "raw_triage": {
+      "attacker_profile": "需要基于当前代码确认；历史相似案例仅提供候选攻击画像",
+      "broken_invariant": "vault valuation must remain correct under the root cause: missing validation or protection in Missing enough exogenous collateral check in VaultManagerV2::liquidate makes the liquidation revert even if (DYAD Minted > Non Kerosene Value), leaving the affected path without the required safety check",
+      "false_positive_risks": [
+        "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+        "the public Silo/Cantina report treated this as Low/Informational because the scenario depended on economically unlikely 1 wei collateral representing meaningful value and no working PoC was produced",
+        "dual whitelist/blacklist role assignment is an admin hygiene issue unless it creates a demonstrated value-moving bypass"
+      ],
+      "issue_text": "K2 kinetic-router swap_collateral sets the to_asset collateral bit unconditionally after minting swapped collateral and only disables from_asset when new_user_scaled_balance == 0. Unlike supply/borrow/liquidation/aToken transfer finalize paths, it does not check count_active_reserves() against MAX_USER_RESERVES before adding a new destination reserve. Need determine whether partial swaps let a user exceed the 15 active-reserve cap, and whether impact is only self-account fragmentation/known dust-slot family or a distinct protocol-level DoS/accounting issue.",
+      "likely_root_cause": "missing validation or protection in Missing enough exogenous collateral check in VaultManagerV2::liquidate makes the liquidation revert even if (DYAD Minted > Non Kerosene Value), leaving the affected path without the required safety check",
+      "matching_cases": [
+        "c4-2024-04-dyad-h-07",
+        "c4-2024-04-dyad-h-09",
+        "c4-2024-04-dyad-h-06",
+        "c4-2024-04-dyad-m-01",
+        "c4-2025-03-nudgexyz-m-03"
+      ],
+      "matching_patterns": [
+        "lending-stale-solvency-config-transfer-pattern"
+      ],
+      "next_validation_steps": [
+        "定位当前目标仓库中与 top matched case 对应的函数和状态变量",
+        "检查历史 root_cause 是否在当前代码中真实存在，而不是仅标题相似",
+        "用最小 PoC 或状态转移推演证明影响与权限/时序条件",
+        "对照 false_positive_risks 排除 privileged-only、unsupported-by-design、dust-loss 等降级路径"
+      ],
+      "notes": [
+        "Retrieved 8 positive matches and 5 caution matches from local normalized data."
+      ],
+      "probable_severity_range": "high",
+      "query_type": "candidate_issue",
+      "skill_name": "contest-audit",
+      "sources": [
+        "local://component_checklists/k2-soroban-lending-external-report-checklist",
+        "local://vulnerability_patterns/lending-stale-solvency-config-transfer-pattern",
+        "local://case_reports/c4-2024-04-dyad-h-07",
+        "local://component_checklists/liquidation-checklist",
+        "local://case_reports/c4-2024-04-dyad-h-09",
+        "local://false_positive_cases/c4-2024-11-ethena-labs-fp-low-12",
+        "local://false_positive_cases/liquidation-rounding-minimal-collateral-low-fp-01",
+        "local://false_positive_cases/c4-2024-11-ethena-labs-fp-low-01"
+      ],
+      "stage_name": "candidate-triage",
+      "submission_blockers": [
+        "需要用当前目标仓库代码验证 reachability、权限边界和资产影响，不能只依赖历史相似案例",
+        "需要排除 caution/false-positive 通道召回的降级条件"
+      ],
+      "validation_gap": "尚未把当前目标仓库的具体代码路径、PoC 和数值影响接入验证链路"
+    },
+    "report_framing": {
+      "avoid_claims": [
+        "不要把历史相似案例当作当前漏洞证明",
+        "不要扩大到 PoC 未证明的入口、资产或状态维度",
+        "不要在 final submission 中写 audit-rag / V12 diligence 过程说明，除非用户要求"
+      ],
+      "recommended_title_shape": "[M-xx] <broken invariant> causes <concrete impact>",
+      "root_cause_focus": "只链接直接造成漏洞的当前仓库代码行；历史 RAG 来源仅作内部校准"
+    },
+    "root_cause_similarity": "exact-or-strong",
+    "status_before": "investigating",
+    "submission_blockers": [
+      "需要用当前目标仓库代码验证 reachability、权限边界和资产影响，不能只依赖历史相似案例",
+      "需要排除 caution/false-positive 通道召回的降级条件"
+    ],
+    "suppression_signals": [
+      "duplicate",
+      "false-positive-caution-present",
+      "trusted_or_config",
+      "user_mistake"
+    ],
+    "title": "swap_collateral can add a destination collateral bit without MAX_USER_RESERVES check",
+    "validation_recipe": {
+      "goal": "用当前目标仓库证明 reachability、权限边界、状态变化和影响，而不是只证明历史相似",
+      "minimum_assertions": [
+        "当前代码路径可由有效攻击者或普通用户触发",
+        "关键状态变量或资产余额出现可观测错误变化",
+        "影响不是仅由 trusted-role misconfiguration、用户误操作或 unsupported token 触发",
+        "若作为 HM，PoC 或状态推演能支撑 C4 severity"
+      ],
+      "steps": [
+        "定位当前目标仓库中与 top matched case 对应的函数和状态变量",
+        "检查历史 root_cause 是否在当前代码中真实存在，而不是仅标题相似",
+        "用最小 PoC 或状态转移推演证明影响与权限/时序条件",
+        "对照 false_positive_risks 排除 privileged-only、unsupported-by-design、dust-loss 等降级路径"
+      ]
+    }
+  },
+  "status": "ok"
+}

@@ -1,0 +1,115 @@
+{
+  "kind": "lead-triage-scorecard",
+  "scorecard": {
+    "contest_slug": "2026-04-k2",
+    "false_positive_risks": [
+      "missing oracle sanity checks are low unless invalid reward/slash values are reachable from untrusted sources and affect solvency",
+      "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+      "如果该 helper 不是公开 entrypoint，且所有公开调用者已经对同一个被扣款/被 claim 的 Address 完成 require_auth，则 helper 内不重复授权本身不是漏洞。"
+    ],
+    "impact_shape": [
+      "direct-loss",
+      "accounting-mismatch",
+      "auth-bypass"
+    ],
+    "lead_id": "fake-configured-incentives-asset-can-mint-and-drain-funded-rewards",
+    "matching_cases": [
+      "c4-2025-03-nudgexyz-m-01",
+      "c4-2025-03-nudgexyz-m-04",
+      "case-reward-debt-desync-01",
+      "c4-2023-07-reserve-m-12",
+      "c4-2023-07-reserve-m-15"
+    ],
+    "matching_patterns": [
+      "reward-transfer-hook-desync-pattern"
+    ],
+    "pattern_similarity": "adjacent",
+    "probable_severity_range": "medium",
+    "raw_triage": {
+      "attacker_profile": "需要基于当前代码确认；历史相似案例仅提供候选攻击画像",
+      "broken_invariant": "only legitimate user-driven swaps should create campaign participations",
+      "false_positive_risks": [
+        "missing oracle sanity checks are low unless invalid reward/slash values are reachable from untrusted sources and affect solvency",
+        "_beforeTokenTransfer whitelist check gap is related to role-state consistency, but the final report classified it as low absent a stronger value-loss path",
+        "如果该 helper 不是公开 entrypoint，且所有公开调用者已经对同一个被扣款/被 claim 的 Address 完成 require_auth，则 helper 内不重复授权本身不是漏洞。"
+      ],
+      "issue_text": "IncentivesContract stores lending_pool as authorized handle_action caller, but handle_action only token_address.require_auth() and never checks get_lending_pool. configure_asset_rewards lets emission_manager register arbitrary asset addresses. A fake asset contract configured as reward asset can call handle_action as itself with arbitrary total_supply/user_balance, accrue rewards for attacker, then claim real reward_token from incentives balance. Local PoC poc_fake_asset_contract_can_drain_funded_rewards passes in k2-unit-tests.",
+      "likely_root_cause": "permissionless third-party executor is treated as a trusted caller combined with incomplete reward accounting rollback during participation invalidation",
+      "matching_cases": [
+        "c4-2025-03-nudgexyz-m-01",
+        "c4-2025-03-nudgexyz-m-04",
+        "case-reward-debt-desync-01",
+        "c4-2023-07-reserve-m-12",
+        "c4-2023-07-reserve-m-15"
+      ],
+      "matching_patterns": [
+        "reward-transfer-hook-desync-pattern"
+      ],
+      "next_validation_steps": [
+        "定位当前目标仓库中与 top matched case 对应的函数和状态变量",
+        "检查历史 root_cause 是否在当前代码中真实存在，而不是仅标题相似",
+        "用最小 PoC 或状态转移推演证明影响与权限/时序条件",
+        "对照 false_positive_risks 排除 privileged-only、unsupported-by-design、dust-loss 等降级路径"
+      ],
+      "notes": [
+        "Retrieved 8 positive matches and 5 caution matches from local normalized data."
+      ],
+      "probable_severity_range": "medium",
+      "query_type": "candidate_issue",
+      "skill_name": "contest-audit",
+      "sources": [
+        "local://case_reports/c4-2025-03-nudgexyz-m-01",
+        "local://vulnerability_patterns/reward-transfer-hook-desync-pattern",
+        "local://case_reports/c4-2025-03-nudgexyz-m-04",
+        "local://component_checklists/checklist-reward-distribution",
+        "local://case_reports/case-reward-debt-desync-01",
+        "local://false_positive_cases/c4-2025-04-kinetiq-fp-low-10",
+        "local://false_positive_cases/c4-2024-11-ethena-labs-fp-low-12",
+        "local://false_positive_cases/soroban-internal-helper-missing-require-auth-fp-01"
+      ],
+      "stage_name": "candidate-triage",
+      "submission_blockers": [
+        "需要用当前目标仓库代码验证 reachability、权限边界和资产影响，不能只依赖历史相似案例",
+        "需要排除 caution/false-positive 通道召回的降级条件"
+      ],
+      "validation_gap": "尚未把当前目标仓库的具体代码路径、PoC 和数值影响接入验证链路"
+    },
+    "report_framing": {
+      "avoid_claims": [
+        "不要把历史相似案例当作当前漏洞证明",
+        "不要扩大到 PoC 未证明的入口、资产或状态维度",
+        "不要在 final submission 中写 audit-rag / V12 diligence 过程说明，除非用户要求"
+      ],
+      "recommended_title_shape": "[M-xx] <broken invariant> causes <concrete impact>",
+      "root_cause_focus": "只链接直接造成漏洞的当前仓库代码行；历史 RAG 来源仅作内部校准"
+    },
+    "root_cause_similarity": "exact-or-strong",
+    "status_before": "new",
+    "submission_blockers": [
+      "需要用当前目标仓库代码验证 reachability、权限边界和资产影响，不能只依赖历史相似案例",
+      "需要排除 caution/false-positive 通道召回的降级条件"
+    ],
+    "suppression_signals": [
+      "false-positive-caution-present",
+      "trusted_or_config",
+      "user_mistake"
+    ],
+    "title": "Fake configured incentives asset can mint and drain funded rewards",
+    "validation_recipe": {
+      "goal": "用当前目标仓库证明 reachability、权限边界、状态变化和影响，而不是只证明历史相似",
+      "minimum_assertions": [
+        "当前代码路径可由有效攻击者或普通用户触发",
+        "关键状态变量或资产余额出现可观测错误变化",
+        "影响不是仅由 trusted-role misconfiguration、用户误操作或 unsupported token 触发",
+        "若作为 HM，PoC 或状态推演能支撑 C4 severity"
+      ],
+      "steps": [
+        "定位当前目标仓库中与 top matched case 对应的函数和状态变量",
+        "检查历史 root_cause 是否在当前代码中真实存在，而不是仅标题相似",
+        "用最小 PoC 或状态转移推演证明影响与权限/时序条件",
+        "对照 false_positive_risks 排除 privileged-only、unsupported-by-design、dust-loss 等降级路径"
+      ]
+    }
+  },
+  "status": "ok"
+}
